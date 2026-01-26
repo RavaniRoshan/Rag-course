@@ -5,6 +5,7 @@ interface CodeBlockProps {
 }
 
 export async function CodeBlock({ code, lang, filename }: CodeBlockProps) {
+  // Use dynamic import to avoid bundling Shiki
   const { codeToHtml } = await import("shiki");
   const html = await codeToHtml(code, {
     lang,
