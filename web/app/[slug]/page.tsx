@@ -13,25 +13,25 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const module = await getModule(slug);
-  if (!module) return { title: 'Not Found' };
+  const courseModule = await getModule(slug);
+  if (!courseModule) return { title: 'Not Found' };
 
   return {
-    title: `${module.title} - RAG Course`,
+    title: `${courseModule.title} - RAG Course`,
   };
 }
 
 export default async function ModulePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const module = await getModule(slug);
+  const courseModule = await getModule(slug);
 
-  if (!module) {
+  if (!courseModule) {
     notFound();
   }
 
   // Remove the H1 from markdown if it exists to avoid duplication with our own H1
   // Simple heuristic: if markdown starts with # Title, remove it.
-  let content = module.markdown;
+  let content = courseModule.markdown;
   const titleRegex = /^#\s+.+\n/;
   if (titleRegex.test(content)) {
     content = content.replace(titleRegex, '');
@@ -40,19 +40,19 @@ export default async function ModulePage({ params }: { params: Promise<{ slug: s
   return (
     <div className="space-y-10 pb-20">
       <div>
-        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl mb-8">
-            {module.title}
+        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl mb-8 text-foreground">
+            {courseModule.title}
         </h1>
         <MarkdownRenderer content={content} />
       </div>
 
-      {module.codeFiles.length > 0 && (
+      {courseModule.codeFiles.length > 0 && (
         <div className="border-t pt-10">
           <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0 mb-6">
             Code Examples
           </h2>
           <div className="space-y-8">
-            {module.codeFiles.map((file) => (
+            {courseModule.codeFiles.map((file) => (
               <div key={file.name}>
                 <CodeBlock
                   code={file.content}

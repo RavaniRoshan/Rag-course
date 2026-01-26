@@ -61,13 +61,13 @@ export async function getModule(slug: string): Promise<ModuleContent | null> {
   }
 
   const modules = await getModules();
-  const module = modules.find(m => m.slug === slug);
+  const foundModule = modules.find(m => m.slug === slug);
 
-  if (!module) {
+  if (!foundModule) {
     return null;
   }
 
-  const dirPath = path.join(MODULES_DIR, module.dirName);
+  const dirPath = path.join(MODULES_DIR, foundModule.dirName);
   const readmePath = path.join(dirPath, 'README.md');
 
   let markdown = '';
@@ -91,7 +91,7 @@ export async function getModule(slug: string): Promise<ModuleContent | null> {
   }
 
   return {
-    ...module,
+    ...foundModule,
     markdown,
     codeFiles
   };

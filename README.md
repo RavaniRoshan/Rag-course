@@ -1,6 +1,10 @@
 # RAG Course: Deep Dive into Retrieval Augmented Generation
 
+[![Website](https://img.shields.io/badge/Website-rag--course--two.vercel.app-blue)](https://rag-course-two.vercel.app/)
+
 Welcome to the comprehensive RAG (Retrieval Augmented Generation) course! This deep-dive course covers 15 essential modules to master RAG systems, from foundational concepts to advanced production implementations.
+
+**View the course online at [rag-course-two.vercel.app](https://rag-course-two.vercel.app/) for a better reading experience with syntax highlighting and diagrams.**
 
 ## Course Overview
 
