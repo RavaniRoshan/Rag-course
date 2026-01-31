@@ -5,11 +5,12 @@ interface CodeBlockProps {
 }
 
 export async function CodeBlock({ code, lang, filename }: CodeBlockProps) {
-  // Use dynamic import with webpackIgnore to explicitly prevent bundling
-  // Use a variable to prevent Webpack from attempting static analysis if comments are stripped
-  const shikiModule = "shiki";
+  // Use new Function to completely bypass Webpack bundling for Shiki
+  // This ensures the import is handled strictly at runtime by Node.js
+  const dynamicImport = new Function("moduleName", "return import(moduleName)");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { codeToHtml } = (await import(/* webpackIgnore: true */ shikiModule)) as any;
+  const { codeToHtml } = (await dynamicImport("shiki")) as any;
+
   const html = await codeToHtml(code, {
     lang,
     themes: {
