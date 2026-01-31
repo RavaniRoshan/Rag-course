@@ -5,10 +5,7 @@ interface CodeBlockProps {
 }
 
 export async function CodeBlock({ code, lang, filename }: CodeBlockProps) {
-  // Use new Function to avoid Webpack bundling issues
-  const dynamicImport = new Function("moduleName", "return import(moduleName)");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { codeToHtml } = (await dynamicImport("shiki")) as any;
+  const { codeToHtml } = await import("shiki");
 
   const html = await codeToHtml(code, {
     lang,
