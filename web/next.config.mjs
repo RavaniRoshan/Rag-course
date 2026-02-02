@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ["shiki", "@shikijs/core", "vscode-oniguruma", "vscode-textmate"],
+  // Shiki removed
 };
 
 export default nextConfig;
