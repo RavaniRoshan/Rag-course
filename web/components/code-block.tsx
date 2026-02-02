@@ -1,3 +1,5 @@
+import { highlight } from "@/lib/highlighter";
+
 interface CodeBlockProps {
   code: string;
   lang: string;
@@ -5,15 +7,7 @@ interface CodeBlockProps {
 }
 
 export async function CodeBlock({ code, lang, filename }: CodeBlockProps) {
-  // Use dynamic import to avoid bundling Shiki
-  const { codeToHtml } = await import("shiki");
-  const html = await codeToHtml(code, {
-    lang,
-    themes: {
-      light: "github-light",
-      dark: "github-dark-dimmed",
-    },
-  });
+  const html = await highlight(code, lang);
 
   return (
     <div className="my-6 overflow-hidden rounded-lg border bg-[#22272e] dark:border-zinc-800">
