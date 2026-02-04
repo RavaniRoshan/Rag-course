@@ -1,6 +1,10 @@
+"use client"
+
+import React, { isValidElement } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Mermaid } from './mermaid';
+import { CodeBlock } from './code-block';
 
 export function MarkdownRenderer({ content }: { content: string }) {
   return (
@@ -8,14 +12,31 @@ export function MarkdownRenderer({ content }: { content: string }) {
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          code(props) {
-            const {children, className, ...rest} = props
-            const match = /language-(\w+)/.exec(className || '')
+          pre(props) {
+            const { children } = props;
+            const childArray = React.Children.toArray(children);
 
-            if (match && match[1] === 'mermaid') {
-              return <Mermaid chart={String(children).replace(/\n$/, '')} />
+            if (childArray.length === 1 && isValidElement(childArray[0])) {
+               const child = childArray[0] as React.ReactElement<any>;
+               // content is the code string
+               const content = String(child.props.children).replace(/\n$/, '');
+               const className = child.props.className || '';
+               const match = /language-(\w+)/.exec(className);
+
+               if (match && match[1] === 'mermaid') {
+                  return <Mermaid chart={content} />
+               }
+
+               // Use CodeBlock for all pre > code elements (blocks)
+               return <CodeBlock code={content} lang={match?.[1]} />
             }
 
+            // Fallback for non-standard pre content
+            return <pre {...props}>{children}</pre>
+          },
+          code(props) {
+            const {children, className, ...rest} = props
+            // This component is now only used for inline code (because pre intercepts blocks)
             return <code className={className} {...rest}>{children}</code>
           }
         }}
