@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@vercel/analytics':
+        specifier: file:./vendor/vercel-analytics
+        version: file:vendor/vercel-analytics
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -71,6 +74,9 @@ importers:
         version: 5.9.3
 
 packages:
+
+  '@vercel/analytics@file:vendor/vercel-analytics':
+    resolution: {directory: vendor/vercel-analytics, type: directory}
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -2573,6 +2579,8 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
+
+  '@vercel/analytics@file:vendor/vercel-analytics': {}
 
   '@alloc/quick-lru@5.2.0': {}
 

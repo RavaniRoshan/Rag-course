@@ -1,0 +1,13 @@
+{
+  "name": "@vercel/analytics",
+  "version": "1.5.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./next": {
+      "types": "./next/index.d.ts",
+      "import": "./next/index.js",
+      "require": "./next/index.js"
+    }
+  }
+}

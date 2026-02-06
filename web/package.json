@@ -16,7 +16,7 @@
     "mermaid": "^11.4.0",
     "next": "^16.1.6",
     "next-themes": "^0.4.4",
-    "@vercel/analytics": "^1.5.0",
+    "@vercel/analytics": "file:./vendor/vercel-analytics",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-markdown": "^9.0.3",
