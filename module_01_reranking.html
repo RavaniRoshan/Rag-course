@@ -137,6 +137,20 @@
             .prose h2 { font-size: 1.5rem; }
             .prose p { font-size: 0.95rem; }
         }
+        
+        /* Fix nav button spacing */
+        #search-btn, button[aria-label="Settings"] {
+            min-width: 32px;
+            min-height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .material-symbols-outlined {
+            display: block;
+            line-height: 1;
+        }
     </style>
 </head>
 <body class="bg-bg text-foreground antialiased selection:bg-primary/20 selection:text-foreground min-h-screen flex flex-col font-serif relative">
