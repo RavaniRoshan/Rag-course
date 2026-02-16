@@ -1,0 +1,205 @@
+# Academic RAG Journal
+
+## Product Overview
+
+**The Pitch:** A high-fidelity, distraction-free reading environment for mastering Retrieval Augmented Generation. This is not a "course platform" but a digital textbook that treats technical documentation with the typographic reverence of a printed academic journal.
+
+**For:** AI Engineers and Data Scientists who value deep work and need a calm, authoritative space to internalize complex architectural patterns.
+
+**Device:** Desktop (Primary focus: 1440px+ wide immersive reading).
+
+**Design Direction:** "The Digital Monograph." Warm, sepia-toned backgrounds, classical serif typography, and generous whitespace. It feels like reading a well-typeset paper on an iPad Pro, but on the web.
+
+**Inspired by:** *The New Yorker’s* long-form layout, *Stripe Press* books, *Distill.pub*.
+
+---
+
+## Screens
+
+- **01 - The Syllabus (Home):** Elegant Table of Contents presenting the 15 modules as book chapters.
+- **02 - The Reader (Module View):** The core reading experience with focused text column and marginalia.
+- **03 - The Artifact (Code View):** A specialized view for examining complex RAG implementation code.
+- **04 - The Index (Search/Glossary):** A fast, overlay-based tool to find definitions across modules.
+
+---
+
+## Key Flows
+
+**Flow: Linear Study**
+1. User lands on **The Syllabus** -> sees "Module 1: Reranking Strategies" marked as 'Next Up'.
+2. User clicks Module 1 card -> transitions to **The Reader**.
+3. User reads, scrolls past code blocks -> distinct syntax highlighting appears.
+4. User clicks "Next Chapter" in footer -> smoothly loads Module 2.
+
+**Flow: Reference Lookup**
+1. User is reading in **The Reader** -> encounters term "HyDE".
+2. User hits `Cmd+K` -> **The Index** overlay appears.
+3. User types "HyDE" -> selects "Hypothetical Document Embeddings" definition.
+4. User presses `Esc` -> returns to reading position instantly.
+
+---
+
+<details>
+<summary>Design System</summary>
+
+## Color Palette
+
+- **Primary:** `#2C2420` - "Deep Ink" (Body text, primary headers)
+- **Background:** `#F9F7F1` - "Old Paper" (Main page background)
+- **Surface:** `#EBE6DA` - "Parchment" (Card backgrounds, code block background)
+- **Border:** `#D8D1C4` - "Faded Line" (Dividers, borders)
+- **Accent:** `#9E2A2B` - "Editorial Red" (Active links, chapter numbers, highlights)
+- **Secondary Accent:** `#4A5D44` - "Library Green" (Success states, code strings)
+- **Muted:** `#8A817C` - "Graphite" (Meta data, captions)
+
+## Typography
+
+- **Headings (H1-H3):** *Newsreader*, 600 weight.
+  - H1: 48px, tracking -0.02em (Classic serif elegance)
+  - H2: 32px
+- **Body:** *Lora*, 400 weight, 19px size, 1.8 line-height. (Optimized for long-form reading).
+- **UI / Meta:** *Geist Mono* (or *IBM Plex Mono*), 400 weight, 13px. (Technical contrast).
+- **Code:** *JetBrains Mono*, 14px.
+
+**Style Notes:**
+- **Atmosphere:** No drop shadows. Use 1px borders for definition.
+- **Texture:** Subtle grain overlay on the background (opacity 2%) to simulate paper.
+- **Lines:** All borders are solid, 1px, color `#D8D1C4`. No rounded corners on outer containers; 2px radius on internal buttons.
+
+## Design Tokens
+
+```css
+:root {
+  --color-ink: #2C2420;
+  --color-paper: #F9F7F1;
+  --color-parchment: #EBE6DA;
+  --color-accent: #9E2A2B;
+  --font-serif-display: 'Newsreader', serif;
+  --font-serif-body: 'Lora', serif;
+  --font-mono: 'Geist Mono', monospace;
+  --spacing-reading: 72ch; /* Maximum reading width */
+  --grid-gap: 24px;
+}
+```
+
+</details>
+
+---
+
+<details>
+<summary>Screen Specifications</summary>
+
+### 01 - The Syllabus (Home)
+
+**Purpose:** Provide a structured, inviting overview of the curriculum.
+
+**Layout:**
+- **Header:** Centered, minimal. "Academic RAG Journal" logo in serif.
+- **Hero:** Large typographic title "Deep Dive into Retrieval Augmented Generation" + Subtitle.
+- **Grid:** A 3-column grid of "Chapter Cards" listing the 15 modules.
+
+**Key Elements:**
+- **Course Meta:** Top right. "15 Modules • 45h Reading • Adv. Level". Font: Mono, 12px, Caps.
+- **Chapter Card:**
+  - Border: 1px solid `#D8D1C4`.
+  - Padding: 32px.
+  - Number: "01" in `#9E2A2B`, 48px Display Serif.
+  - Title: "Reranking" in `#2C2420`, 24px Serif.
+  - Abstract: 3-line summary in `#8A817C`, 16px Serif.
+  - Status: "Start" (outlined button) or "Completed" (solid green dot).
+
+**States:**
+- **Hover Card:** Border color changes to `#2C2420`. Slight Y-axis lift (-2px).
+- **Progress:** Completed chapters have a "strikethrough" effect on the chapter number.
+
+**Interactions:**
+- Click Card -> Transitions to **Screen 02**.
+
+---
+
+### 02 - The Reader (Module View)
+
+**Purpose:** The primary reading interface. Zero distractions.
+
+**Layout:**
+- **Left Rail (Sticky):** 240px width. Minimal Table of Contents for the current module.
+- **Center Stage:** 720px width (optimal reading line length).
+- **Right Rail (Context):** 240px width. Footnotes and reference links appear here aligned with text.
+
+**Key Elements:**
+- **Module Header:** "Module 04", Mono, Red. Title: "Vector Databases", Serif, 56px.
+- **The Text:** Lora font, justified left.
+- **Marginalia:** Small notes in the right rail instead of bottom footnotes. Font: Mono, 12px, Color `#8A817C`.
+- **Inline Code:** Highlighted in `#EBE6DA` background, text `#2C2420`.
+- **Pagination:** Bottom of page. "← Previous: Chunking" (Left) | "Next: Embeddings →" (Right).
+
+**Components:**
+- **Code Block:** Full width of center column.
+  - Background: `#EBE6DA`.
+  - Header: Filename `pipeline.py` in Mono.
+  - Copy Button: Top right, minimal icon.
+  - Syntax Highlighting: "Sepia Theme" (Browns, Teals, Greens - no neon).
+
+**Interactions:**
+- Scroll -> Left rail TOC highlights current section.
+- Click Footnote marker `[1]` -> Auto-scrolls right rail to show the note.
+
+---
+
+### 03 - The Artifact (Code View)
+
+**Purpose:** A dedicated modal/view for analyzing large codebases referenced in the text.
+
+**Layout:** Split screen. Left: Explanation/Walkthrough. Right: Scrollable Code.
+
+**Key Elements:**
+- **Back Button:** "← Return to Article". Top left.
+- **Explanation Panel:** Serif text explaining specific lines.
+- **Code Panel:**
+  - Line numbers enabled.
+  - Active Line Highlight: `#D8D1C4` background strip.
+  - Sticky Header: Controls for "Copy", "Download", "Language".
+
+**States:**
+- **Line Focus:** Hovering over an explanation paragraph highlights the corresponding lines in the code panel.
+
+---
+
+### 04 - The Index (Search)
+
+**Purpose:** Fast navigation and glossary lookup.
+
+**Layout:** Large centered modal overlay. Backdrop blur (Sepia tint).
+
+**Key Elements:**
+- **Input Field:** Massive serif font (48px). Placeholder: "Search for concepts...". No border, just a blinking cursor.
+- **Results List:**
+  - **Category:** "Module 3" (Mono, small).
+  - **Result Title:** "Cross-Encoders" (Serif, large).
+  - **Context:** "...usage of cross-encoders in re-ranking..." (Serif, muted).
+
+**Interactions:**
+- `Cmd+K` anywhere to trigger.
+- Up/Down arrows to navigate results. Enter to select.
+
+</details>
+
+---
+
+<details>
+<summary>Build Guide</summary>
+
+**Stack:** HTML5 + Tailwind CSS v3.
+
+**Build Order:**
+1. **Screen 02 (The Reader):** This is the core product. Nail the typography (Lora/Newsreader combination), line heights, and "Paper" background texture first. If reading isn't pleasant, the product fails.
+2. **Screen 01 (The Syllabus):** Build the grid system and card interactions.
+3. **Screen 04 (The Index):** Implement the search modal overlay logic.
+4. **Screen 03 (The Artifact):** Complex layout implementation for code walkthroughs.
+
+**Tailwind Config Specifics:**
+- Extend `fontFamily` to include Newsreader and Lora.
+- Add custom colors `paper`, `ink`, `parchment`.
+- Use `prose` (Typography plugin) but heavily customized to remove default gray colors and replace with `ink` variables.
+
+</details>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic RAG Journal - The Index</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Lora:ital,wght@0,400..700;1,400..700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#b80f12", // Editorial Red override per instructions
+                        "ink": "#2C2420",
+                        "paper": "#F9F7F1",
+                        "parchment": "#EBE6DA",
+                        "faded": "#D8D1C4",
+                        "graphite": "#8A817C",
+                        "library-green": "#4A5D44",
+                        "background-light": "#F9F7F1",
+                        "background-dark": "#221011",
+                    },
+                    fontFamily: {
+                        "display": ["Newsreader", "serif"],
+                        "body": ["Lora", "serif"],
+                        "mono": ["IBM Plex Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem", 
+                        "lg": "0.25rem", 
+                        "xl": "0.5rem", 
+                        "full": "0.75rem"
+                    },
+                    boxShadow: {
+                        "paper": "0 20px 50px -12px rgba(44, 36, 32, 0.15)",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for the academic feel */
+        .academic-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .academic-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .academic-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #D8D1C4;
+            border-radius: 4px;
+        }
+        .academic-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: #8A817C;
+        }
+
+        /* Paper texture overlay */
+        .paper-texture {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body class="bg-background-light text-ink font-body antialiased h-screen overflow-hidden flex flex-col relative">
+<!-- Background Content (Blurred Context) -->
+<div class="absolute inset-0 z-0 flex flex-col pointer-events-none select-none blur-[2px] opacity-40">
+<!-- Mock Nav -->
+<nav class="h-16 border-b border-faded flex items-center justify-between px-8 bg-paper">
+<div class="font-display font-semibold text-xl tracking-tight">Academic RAG Journal</div>
+<div class="font-mono text-xs uppercase tracking-wider text-graphite">Module 03 • The Reader</div>
+</nav>
+<!-- Mock Content -->
+<main class="flex-1 flex max-w-7xl mx-auto w-full">
+<aside class="w-64 border-r border-faded p-8 hidden lg:block">
+<div class="space-y-4">
+<div class="h-4 bg-parchment w-3/4 rounded"></div>
+<div class="h-4 bg-parchment w-1/2 rounded"></div>
+<div class="h-4 bg-parchment w-5/6 rounded"></div>
+</div>
+</aside>
+<article class="flex-1 max-w-3xl mx-auto py-16 px-12">
+<h1 class="font-display text-5xl mb-8 text-ink">Cross-Encoders in Practice</h1>
+<p class="text-lg leading-relaxed mb-6 text-ink/80">
+                    The fundamental distinction between bi-encoders and cross-encoders lies in their interaction mechanism. While bi-encoders process sentences independently, cross-encoders process them simultaneously...
+                </p>
+<div class="h-64 w-full bg-parchment rounded border border-faded mb-8 relative overflow-hidden" data-alt="Abstract representation of code structure for RAG pipeline">
+<div class="absolute inset-0 bg-gradient-to-br from-parchment to-[#e0dbcd]"></div>
+</div>
+<p class="text-lg leading-relaxed text-ink/80">
+                    This full attention mechanism allows for significantly higher accuracy but comes at a computational cost that makes it unsuitable for first-stage retrieval in large corpora...
+                </p>
+</article>
+<aside class="w-64 border-l border-faded p-8 hidden lg:block">
+<div class="font-mono text-xs text-graphite mb-2">[1] Reimers, N. (2019)</div>
+</aside>
+</main>
+</div>
+<!-- Overlay Container -->
+<div class="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4 sm:px-6">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-[#2C2420]/20 backdrop-blur-sm transition-opacity"></div>
+<!-- The Index Modal -->
+<div class="relative w-full max-w-3xl bg-paper shadow-paper border border-faded rounded-lg overflow-hidden flex flex-col max-h-[70vh] animate-in fade-in zoom-in-95 duration-200">
+<!-- Paper Texture Overlay on Modal -->
+<div class="absolute inset-0 paper-texture pointer-events-none z-10 mix-blend-multiply"></div>
+<!-- Search Header -->
+<div class="relative z-20 px-8 py-8 border-b border-faded bg-paper">
+<div class="flex items-center justify-between mb-2">
+<label class="sr-only" for="search-index">Search</label>
+<div class="flex items-center w-full">
+<span class="material-symbols-outlined text-primary text-3xl mr-4 animate-pulse">
+                            terminal
+                        </span>
+<input autofocus="" class="w-full bg-transparent border-none p-0 text-4xl sm:text-5xl font-display font-medium text-ink placeholder:text-faded focus:ring-0 focus:outline-none placeholder:font-display placeholder:italic" id="search-index" placeholder="Find concept, code, or chapter..." type="text" value="Hy"/>
+</div>
+<div class="hidden sm:flex items-center gap-2 ml-4">
+<kbd class="hidden sm:inline-block px-2 py-1 text-xs font-mono text-graphite bg-parchment rounded border border-faded">ESC</kbd>
+</div>
+</div>
+</div>
+<!-- Search Results -->
+<div class="relative z-20 flex-1 overflow-y-auto academic-scrollbar bg-paper/50">
+<div class="py-2">
+<!-- Result Group: Best Match -->
+<div class="px-4 py-2">
+<h3 class="px-4 text-xs font-mono font-medium text-graphite uppercase tracking-widest mb-2">Best Match</h3>
+<!-- Active Result Item -->
+<button class="w-full text-left group flex items-start gap-4 p-4 rounded-lg bg-parchment border-l-4 border-primary transition-all duration-200">
+<div class="mt-1 min-w-8 flex justify-center">
+<span class="material-symbols-outlined text-primary text-xl">
+                                    article
+                                </span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1">
+<span class="font-mono text-xs text-primary font-medium tracking-wide">GLOSSARY</span>
+</div>
+<h4 class="font-display text-2xl text-ink font-semibold mb-1">HyDE (Hypothetical Document Embeddings)</h4>
+<p class="font-body text-base text-ink/80 line-clamp-2">
+                                    Generates a <span class="bg-primary/10 text-primary font-medium px-1">hy</span>pothetical document to improve retrieval by mapping queries to document space rather than query space.
+                                </p>
+</div>
+<div class="hidden sm:flex items-center text-primary opacity-100 transition-opacity">
+<span class="material-symbols-outlined">
+                                    keyboard_return
+                                </span>
+</div>
+</button>
+</div>
+<!-- Result Group: Modules -->
+<div class="px-4 py-2 mt-2">
+<h3 class="px-4 text-xs font-mono font-medium text-graphite uppercase tracking-widest mb-2">Modules</h3>
+<!-- Result Item -->
+<button class="w-full text-left group flex items-start gap-4 p-4 rounded-lg hover:bg-white/60 border-l-4 border-transparent hover:border-faded transition-all duration-200">
+<div class="mt-1 min-w-8 flex justify-center">
+<span class="material-symbols-outlined text-graphite group-hover:text-ink text-xl transition-colors">
+                                    library_books
+                                </span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1">
+<span class="font-mono text-xs text-graphite group-hover:text-ink font-medium tracking-wide transition-colors">MODULE 02</span>
+</div>
+<h4 class="font-display text-xl text-ink font-medium mb-1">Hybrid Search Strategies</h4>
+<p class="font-body text-sm text-graphite group-hover:text-ink/80 transition-colors line-clamp-1">
+                                    Combining dense and sparse vectors for optimal recall in domain-specific tasks...
+                                </p>
+</div>
+</button>
+<!-- Result Item -->
+<button class="w-full text-left group flex items-start gap-4 p-4 rounded-lg hover:bg-white/60 border-l-4 border-transparent hover:border-faded transition-all duration-200">
+<div class="mt-1 min-w-8 flex justify-center">
+<span class="material-symbols-outlined text-graphite group-hover:text-ink text-xl transition-colors">
+                                    library_books
+                                </span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1">
+<span class="font-mono text-xs text-graphite group-hover:text-ink font-medium tracking-wide transition-colors">MODULE 07</span>
+</div>
+<h4 class="font-display text-xl text-ink font-medium mb-1">Hyperparameters in Vector DBs</h4>
+<p class="font-body text-sm text-graphite group-hover:text-ink/80 transition-colors line-clamp-1">
+                                    Tuning HNSW index parameters (M, ef_construction) for latency vs accuracy trade-offs...
+                                </p>
+</div>
+</button>
+</div>
+<!-- Result Group: Code -->
+<div class="px-4 py-2 mt-2">
+<h3 class="px-4 text-xs font-mono font-medium text-graphite uppercase tracking-widest mb-2">Code Artifacts</h3>
+<!-- Result Item -->
+<button class="w-full text-left group flex items-start gap-4 p-4 rounded-lg hover:bg-white/60 border-l-4 border-transparent hover:border-faded transition-all duration-200">
+<div class="mt-1 min-w-8 flex justify-center">
+<span class="material-symbols-outlined text-graphite group-hover:text-ink text-xl transition-colors">
+                                    code
+                                </span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1">
+<span class="font-mono text-xs text-graphite group-hover:text-ink font-medium tracking-wide transition-colors">PYTHON</span>
+</div>
+<h4 class="font-display text-xl text-ink font-medium mb-1 font-mono text-base">hybrid_retriever.py</h4>
+<p class="font-body text-sm text-graphite group-hover:text-ink/80 transition-colors line-clamp-1">
+                                    Implementation of the ensemble retriever class used in Module 02...
+                                </p>
+</div>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer Hints -->
+<div class="relative z-20 bg-parchment/50 border-t border-faded px-6 py-3 flex items-center justify-between text-xs font-mono text-graphite">
+<div class="flex gap-4">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+<span class="material-symbols-outlined text-[14px]">arrow_downward</span>
+                        to navigate
+                    </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">keyboard_return</span>
+                        to select
+                    </span>
+</div>
+<div class="hidden sm:block">
+                    Indexed 45,201 tokens
+                </div>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic RAG Journal - Module 04</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;family=Geist+Mono:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#b80f12",
+                        "ink": "#2C2420",
+                        "paper": "#F9F7F1",
+                        "parchment": "#EBE6DA",
+                        "graphite": "#8A817C",
+                        "faded": "#D8D1C4",
+                        "library-green": "#4A5D44",
+                    },
+                    fontFamily: {
+                        "display": ["Newsreader", "serif"],
+                        "serif": ["Lora", "serif"],
+                        "mono": ["Geist Mono", "monospace"],
+                        "code": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem", 
+                        "lg": "0.25rem", 
+                        "xl": "0.5rem", 
+                        "full": "0.75rem"
+                    },
+                    backgroundImage: {
+                        'grain': "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9F7F1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8D1C4;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8A817C;
+        }
+
+        /* Hide scrollbar for clean UI but allow scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Typography overrides */
+        .prose-academic p {
+            margin-top: 1.5em;
+            margin-bottom: 1.5em;
+            line-height: 1.8;
+            font-family: 'Lora', serif;
+            font-size: 19px;
+            color: #2C2420;
+        }
+        .prose-academic h2 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 2em;
+            font-size: 32px;
+            letter-spacing: -0.01em;
+        }
+        .prose-academic h3 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 1.5em;
+            font-size: 24px;
+        }
+        
+        /* Sepia Code Theme */
+        .token.comment { color: #8A817C; font-style: italic; }
+        .token.function { color: #9E2A2B; }
+        .token.keyword { color: #b80f12; font-weight: bold; }
+        .token.string { color: #4A5D44; }
+        .token.number { color: #b80f12; }
+    </style>
+</head>
+<body class="bg-paper text-ink antialiased selection:bg-primary/20 selection:text-ink min-h-screen flex flex-col font-serif relative">
+<!-- Grain Texture Overlay -->
+<div class="fixed inset-0 pointer-events-none z-50 bg-grain mix-blend-multiply opacity-40"></div>
+<!-- Top Navigation (Minimal) -->
+<header class="sticky top-0 z-40 w-full border-b border-faded bg-paper/95 backdrop-blur-sm h-14 flex items-center justify-between px-6 lg:px-10">
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-2 text-ink hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-display font-medium text-lg tracking-tight">Syllabus</span>
+</a>
+<div class="h-4 w-px bg-faded mx-2"></div>
+<span class="font-mono text-xs uppercase tracking-wider text-graphite">Module 04</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-2 text-graphite text-xs font-mono">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>45 min read</span>
+</div>
+<div class="flex gap-3">
+<button aria-label="Search" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<button aria-label="Settings" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">text_fields</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 flex justify-center w-full relative">
+<div class="w-full max-w-[1440px] flex flex-row">
+<!-- Left Rail: Table of Contents -->
+<aside class="hidden lg:flex w-[240px] flex-col sticky top-14 h-[calc(100vh-3.5rem)] border-r border-faded overflow-y-auto pt-12 pb-10 pl-10 pr-6">
+<nav class="flex flex-col gap-8">
+<div>
+<h4 class="font-mono text-xs uppercase tracking-widest text-graphite mb-4">Contents</h4>
+<ul class="flex flex-col gap-3 font-mono text-[13px] leading-relaxed">
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#intro">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Introduction
+                                </a>
+</li>
+<li>
+<a class="text-ink font-medium text-primary hover:text-primary transition-colors flex items-start gap-2 relative" href="#vector-spaces">
+<span class="text-primary absolute -left-4">•</span>
+                                    Vector Spaces
+                                </a>
+</li>
+<li>
+<a class="text-graphite hover:text-primary transition-colors flex items-start gap-2" href="#hnsw">
+                                    HNSW Algorithm
+                                </a>
+</li>
+<li>
+<a class="text-graphite hover:text-primary transition-colors flex items-start gap-2" href="#implementation">
+                                    Implementation
+                                </a>
+</li>
+<li>
+<a class="text-graphite hover:text-primary transition-colors flex items-start gap-2" href="#complexity">
+                                    Time Complexity
+                                </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-8 border-t border-faded">
+<div class="flex flex-col gap-2">
+<span class="font-mono text-[11px] uppercase tracking-widest text-graphite">Progress</span>
+<div class="w-full bg-parchment h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[35%]"></div>
+</div>
+<span class="font-mono text-xs text-ink text-right">35%</span>
+</div>
+</div>
+</nav>
+</aside>
+<!-- Center Stage: The Reader -->
+<article class="flex-1 max-w-[720px] mx-auto pt-16 pb-32 px-6 md:px-12 min-h-screen">
+<!-- Module Header -->
+<header class="mb-16 border-b border-faded pb-12">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-mono text-sm font-medium text-primary px-2 py-1 bg-primary/10 rounded">Module 04</span>
+<span class="font-mono text-sm text-graphite">Advanced RAG Architectures</span>
+</div>
+<h1 class="font-display text-[48px] md:text-[56px] leading-[1.1] font-semibold text-ink tracking-tight mb-6">
+                        Vector Databases &amp; Approximate Nearest Neighbors
+                    </h1>
+<p class="font-serif text-xl text-ink/80 leading-relaxed max-w-[90%]">
+                        An exploration into high-dimensional vector spaces, the mechanics of HNSW, and how to optimize retrieval latency for production-grade RAG systems.
+                    </p>
+</header>
+<!-- Content Body -->
+<div class="prose-academic">
+<p>
+                        In the previous module, we discussed embedding models and how they compress semantic meaning into dense vectors. Now, we turn our attention to the infrastructure required to query these vectors efficiently. When dealing with millions of documents, a simple brute-force cosine similarity search—<span class="font-mono bg-parchment px-1 text-[0.9em] rounded-sm">O(N)</span> complexity—becomes prohibitively expensive.
+                    </p>
+<h2 id="vector-spaces">The Geometry of Meaning</h2>
+<p>
+                        Imagine a library where books aren't arranged by genre or author, but by their semantic coordinates in a 1,536-dimensional space. Books about "quantum mechanics" cluster in one region, while books about "culinary arts" inhabit a distant corner.
+                    </p>
+<p>
+                        To retrieve context for a Large Language Model (LLM), we must find the "nearest neighbors" to a user's query vector. This operation relies heavily on the concept of distance metrics. While Euclidean distance is intuitive in 2D or 3D space, high-dimensional spaces often suffer from the <em class="text-ink font-medium">Curse of Dimensionality</em><sup class="text-primary text-xs cursor-pointer font-bold hover:underline">[1]</sup>.
+                    </p>
+<div class="my-10 border border-faded bg-parchment/50 p-6 rounded-sm">
+<figure>
+<img alt="Vector Space Visualization" class="w-full h-auto mix-blend-multiply mb-4 filter sepia-[0.3]" data-alt="Abstract visualization of high-dimensional vector clusters connected by thin lines representing nearest neighbor relationships" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnr5qSGMIrLhF5DArSzcvMhL_4nVaTXV0EJSWHeV9gmrClm9cij2dO3aXExPxLTtVIXdVEagjCmAq1qAAZXA8OA_FH52AbKc8wBtvcgj_nEVacz6YWOGztsAc1gtdWEjV5lHoHDaodM6B1O7kEpG3RFJaxP7tZThxPYYs9fLMX6kM4X1JdC4fReURDsf3bZd8JN6JcWzi4I6BhVc0_XsaSMcqF_YpWp44JsscDkhSn-aISHii0D7nBIVOeLHjQC92kBeJRIEho1ujH"/>
+<figcaption class="font-mono text-xs text-graphite text-center mt-2">Figure 1: 2D Projection of Semantic Clusters using t-SNE</figcaption>
+</figure>
+</div>
+<h2 id="hnsw">Hierarchical Navigable Small Worlds</h2>
+<p>
+                        To solve the latency problem, we employ Approximate Nearest Neighbor (ANN) algorithms. The current state-of-the-art is HNSW. It constructs a multi-layered graph where the top layers allow for long-distance "skips" across the vector space, and lower layers provide fine-grained navigation. Think of it as an inter-state highway system for your data.
+                    </p>
+<!-- Code Block Component -->
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">index_builder.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> hnswlib
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+
+<span class="token comment"># Dimension of the embedding vectors</span>
+dim = <span class="token number">1536</span>
+num_elements = <span class="token number">10000</span>
+
+<span class="token comment"># Declaring index - Cosine distance</span>
+p = hnswlib.Index(space=<span class="token string">'cosine'</span>, dim=dim) 
+
+<span class="token comment"># Initialize the index (M: max connections, ef: construction depth)</span>
+p.init_index(max_elements=num_elements, ef_construction=<span class="token number">200</span>, M=<span class="token number">16</span>)
+
+<span class="token comment"># Generate random data points for demonstration</span>
+data = np.float32(np.random.random((num_elements, dim)))
+ids = np.arange(num_elements)
+
+<span class="token comment"># Build the HNSW graph</span>
+p.add_items(data, ids)
+
+<span class="token comment"># Controlling the recall quality by setting ef parameter</span>
+p.set_ef(<span class="token number">50</span>) 
+
+print(<span class="token string">"Index built successfully with current configuration."</span>)</code></pre>
+</div>
+</div>
+<p>
+                        In the code above, the parameter <code class="bg-parchment px-1 rounded-sm text-sm font-code text-primary">M</code> controls the number of bi-directional links created for every new element during construction. A higher <code class="bg-parchment px-1 rounded-sm text-sm font-code text-primary">M</code> leads to higher recall but slower index construction.
+                    </p>
+<p>
+                         Conversely, <code class="bg-parchment px-1 rounded-sm text-sm font-code text-primary">ef_construction</code> defines the size of the dynamic candidate list during the build process. It is a trade-off parameter: increasing it improves the quality of the index but extends the indexing time.
+                    </p>
+</div>
+<!-- Footer / Pagination -->
+<div class="mt-24 pt-10 border-t border-faded flex justify-between items-center group/footer">
+<a class="flex flex-col items-start gap-2 hover:bg-parchment/50 p-4 -ml-4 rounded transition-colors w-1/2" href="#">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Previous Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Chunking Strategies
+                        </span>
+</a>
+<div class="h-12 w-px bg-faded mx-4"></div>
+<a class="flex flex-col items-end gap-2 hover:bg-parchment/50 p-4 -mr-4 rounded transition-colors w-1/2" href="#">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Next Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+                            Ranking &amp; Scoring
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</span>
+</a>
+</div>
+</article>
+<!-- Right Rail: Marginalia -->
+<aside class="hidden xl:block w-[240px] sticky top-14 h-[calc(100vh-3.5rem)] pt-32 pb-10 pr-10 pl-4 overflow-y-auto">
+<div class="flex flex-col gap-24 relative">
+<!-- Note 1: Aligned roughly with "Curse of Dimensionality" paragraph -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[1]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">The Curse of Dimensionality</strong> refers to various phenomena that arise when analyzing and organizing data in high-dimensional spaces that do not occur in low-dimensional settings.
+                        </p>
+</div>
+<!-- Note 2: Aligned roughly with HNSW header -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-12">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[2]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Malkov &amp; Yashunin (2018)</strong> first proposed HNSW. It remains one of the most efficient algorithms for billion-scale similarity search.
+                        </p>
+<a class="inline-flex items-center gap-1 mt-2 text-[10px] uppercase tracking-widest text-primary font-bold hover:underline" href="#">
+                            View Paper <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+</a>
+</div>
+<!-- Note 3: Aligned roughly with code parameters -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-24">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[3]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            For production RAG, an <code class="bg-parchment px-0.5 rounded-sm">ef</code> value between 100-200 is usually sufficient for high recall (&gt;0.95).
+                        </p>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</body></html>
