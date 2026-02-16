@@ -143,16 +143,9 @@
 </div>
 <div class="flex items-center gap-6">
 <a class="font-mono text-xs uppercase tracking-wider text-muted hover:text-accent transition-colors" href="about.html">About</a>
-<div id="auth-buttons">
-<a class="font-mono text-xs uppercase tracking-wider text-muted hover:text-accent transition-colors" href="#" onclick="openLoginModal(); return false;">Login</a>
-<button class="ml-4 bg-accent text-accent-foreground font-mono text-xs uppercase tracking-wider px-4 py-2 brutal-border brutal-shadow-hover btn-brutal" onclick="openSubscribeModal()">
-                    Subscribe
-                </button>
-</div>
-<div id="user-info" class="hidden flex items-center gap-4">
-<span class="font-mono text-xs text-accent" id="user-email"></span>
-<button class="font-mono text-xs uppercase tracking-wider text-muted hover:text-destructive transition-colors" onclick="logout()">Logout</button>
-</div>
+<button class="bg-accent text-accent-foreground font-mono text-xs uppercase tracking-wider px-6 py-2 brutal-border brutal-shadow-hover btn-brutal" onclick="openSubscribeModal()">
+                Subscribe
+            </button>
 </div>
 </div>
 </nav>
@@ -188,7 +181,7 @@
 <!-- The Grid: Syllabus -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 brutal-border">
 <!-- Chapter 01: Next Up -->
-<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_01_reranking.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="accessModule('module_01_reranking.html')">
 <div class="flex justify-between items-start mb-6">
 <span class="font-sans text-5xl font-bold text-accent">01</span>
 <span class="inline-flex items-center justify-center w-2 h-2 rounded-full bg-accent animate-pulse" title="Next Up"></span>
@@ -203,7 +196,7 @@
 </div>
 </article>
 <!-- Chapter 02 -->
-<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_02_chunking_strategies.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick=\"accessModule('module_02_chunking_strategies.html')\">
 <div class="flex justify-between items-start mb-6">
 <span class="font-sans text-5xl font-bold text-accent">02</span>
 <span class="material-symbols-outlined text-muted">lock_open</span>
@@ -217,7 +210,7 @@
 </div>
 </article>
 <!-- Chapter 03 -->
-<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_03_embedding_models.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick=\"accessModule('module_03_embedding_models.html')\">
 <div class="flex justify-between items-start mb-6">
 <span class="font-sans text-5xl font-bold text-accent">03</span>
 <span class="material-symbols-outlined text-muted">lock_open</span>
@@ -231,7 +224,7 @@
 </div>
 </article>
 <!-- Chapter 04 -->
-<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_04_vector_databases.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick=\"accessModule('module_04_vector_databases.html')\">
 <div class="flex justify-between items-start mb-6">
 <span class="font-sans text-5xl font-bold text-accent">04</span>
 </div>
@@ -244,7 +237,7 @@
 </div>
 </article>
 <!-- Chapter 05 -->
-<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_05_hybrid_search.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick=\"accessModule('module_05_hybrid_search.html')\">
 <div class="flex justify-between items-start mb-6">
 <span class="font-sans text-5xl font-bold text-accent">05</span>
 </div>
@@ -274,7 +267,7 @@
 </div>
 </article>
 <!-- Chapter 07 -->
-<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_07_multi_query_expansion.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick=\"accessModule('module_07_multi_query_expansion.html')\">
 <div class="flex justify-between items-start mb-6">
 <span class="font-sans text-5xl font-bold text-accent">07</span>
 </div>
@@ -287,7 +280,7 @@
 </div>
 </article>
 <!-- Chapter 08 -->
-<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_08_context_compression.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick=\"accessModule('module_08_context_compression.html')\">
 <div class="flex justify-between items-start mb-6">
 <span class="font-sans text-5xl font-bold text-accent">08</span>
 </div>
@@ -300,7 +293,7 @@
 </div>
 </article>
 <!-- Chapter 09 -->
-<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_09_evaluation_metrics.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick=\"accessModule('module_09_evaluation_metrics.html')\">
 <div class="flex justify-between items-start mb-6">
 <span class="font-sans text-5xl font-bold text-accent">09</span>
 </div>
@@ -322,7 +315,7 @@
 <!-- Supplemental / Advanced Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-0 brutal-border">
 <!-- Chapter 10 -->
-<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_10_metadata_enhanced.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick=\"accessModule('module_10_metadata_enhanced.html')\">
 <div class="flex justify-between items-start mb-6">
 <span class="font-sans text-5xl font-bold text-accent">10</span>
 <span class="font-mono text-xs brutal-border-accent text-accent px-2 py-1">Case Study</span>
@@ -336,7 +329,7 @@
 </div>
 </article>
 <!-- Chapter 11 -->
-<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_11_agentic_workflows.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick=\"accessModule('module_11_agentic_workflows.html')\">
 <div class="flex justify-between items-start mb-6">
 <span class="font-sans text-5xl font-bold text-accent">11</span>
 <span class="font-mono text-xs brutal-border-accent text-accent px-2 py-1">Case Study</span>
@@ -350,7 +343,7 @@
 </div>
 </article>
 <!-- Chapter 12 -->
-<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_12_optimization_techniques.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick=\"accessModule('module_12_optimization_techniques.html')\">
 <div class="flex justify-between items-start mb-6">
 <span class="font-sans text-5xl font-bold text-accent">12</span>
 </div>
@@ -366,7 +359,7 @@
 <!-- Advanced Modules Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-0 brutal-border mt-12">
 <!-- Chapter 13 -->
-<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_13_domain_adaptation.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick=\"accessModule('module_13_domain_adaptation.html')\">
 <div class="flex justify-between items-start mb-6">
 <span class="font-sans text-5xl font-bold text-accent">13</span>
 </div>
@@ -379,7 +372,7 @@
 </div>
 </article>
 <!-- Chapter 14 -->
-<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_14_advanced_architectures.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick=\"accessModule('module_14_advanced_architectures.html')\">
 <div class="flex justify-between items-start mb-6">
 <span class="font-sans text-5xl font-bold text-accent">14</span>
 </div>
@@ -392,7 +385,7 @@
 </div>
 </article>
 <!-- Chapter 15 -->
-<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_15_production_deployment.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick=\"accessModule('module_15_production_deployment.html')\">
 <div class="flex justify-between items-start mb-6">
 <span class="font-sans text-5xl font-bold text-accent">15</span>
 </div>
@@ -427,36 +420,6 @@
 </div>
 </footer>
 
-<!-- Login Modal -->
-<div id="login-modal" class="fixed inset-0 z-50 hidden">
-<div class="modal-overlay absolute inset-0" onclick="closeLoginModal()"></div>
-<div class="flex items-center justify-center min-h-screen p-4">
-<div class="modal-content relative bg-bg-secondary brutal-border p-8 w-full max-w-md">
-<button class="absolute top-4 right-4 text-muted hover:text-foreground" onclick="closeLoginModal()">
-<span class="material-symbols-outlined">close</span>
-</button>
-<h2 class="font-sans text-2xl font-bold text-foreground mb-2">Welcome Back</h2>
-<p class="font-mono text-xs text-muted mb-6">Sign in to access your progress</p>
-<form id="login-form" onsubmit="handleLogin(event)">
-<div class="mb-4">
-<label class="block font-mono text-xs text-muted mb-2 uppercase">Email</label>
-<input type="email" id="login-email" required class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent" placeholder="you@example.com"/>
-</div>
-<div class="mb-6">
-<label class="block font-mono text-xs text-muted mb-2 uppercase">Password</label>
-<input type="password" id="login-password" required class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent" placeholder="••••••••"/>
-</div>
-<button type="submit" class="w-full bg-accent text-accent-foreground font-mono text-sm uppercase tracking-wider py-3 brutal-border brutal-shadow-hover btn-brutal">
-                    Sign In
-                </button>
-</form>
-<p class="font-mono text-xs text-muted text-center mt-6">
-                    Don't have an account? <a href="#" onclick="openSubscribeModal(); closeLoginModal(); return false;" class="text-accent hover:underline">Subscribe</a>
-</p>
-</div>
-</div>
-</div>
-
 <!-- Subscribe Modal -->
 <div id="subscribe-modal" class="fixed inset-0 z-50 hidden">
 <div class="modal-overlay absolute inset-0" onclick="closeSubscribeModal()"></div>
@@ -465,92 +428,63 @@
 <button class="absolute top-4 right-4 text-muted hover:text-foreground" onclick="closeSubscribeModal()">
 <span class="material-symbols-outlined">close</span>
 </button>
-<h2 class="font-sans text-2xl font-bold text-foreground mb-2">Subscribe</h2>
-<p class="font-mono text-xs text-muted mb-6">Get full access to all modules and resources</p>
+<h2 class="font-sans text-2xl font-bold text-foreground mb-2">Subscribe to Access</h2>
+<p class="font-mono text-xs text-muted mb-6">Enter your email to get full access to all 15 modules</p>
 <form id="subscribe-form" onsubmit="handleSubscribe(event)">
-<div class="mb-4">
-<label class="block font-mono text-xs text-muted mb-2 uppercase">Email</label>
+<div class="mb-6">
+<label class="block font-mono text-xs text-muted mb-2 uppercase">Email Address</label>
 <input type="email" id="subscribe-email" required class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent" placeholder="you@example.com"/>
 </div>
-<div class="mb-4">
-<label class="block font-mono text-xs text-muted mb-2 uppercase">Password</label>
-<input type="password" id="subscribe-password" required class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent" placeholder="Create a password"/>
-</div>
 <div class="mb-6">
-<label class="block font-mono text-xs text-muted mb-2 uppercase">Plan</label>
-<select id="subscribe-plan" class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent">
-<option value="free">Free - Basic Access</option>
-<option value="pro">Pro - $9/month (All Modules)</option>
-<option value="enterprise">Enterprise - $49/month (Team Access)</option>
-</select>
+<label class="flex items-start gap-3 cursor-pointer">
+<input type="checkbox" id="marketing-consent" class="mt-1 accent-accent"/>
+<span class="font-mono text-xs text-muted">I agree to receive marketing emails about new courses, updates, and related products. You can unsubscribe at any time.</span>
+</label>
 </div>
 <button type="submit" class="w-full bg-accent text-accent-foreground font-mono text-sm uppercase tracking-wider py-3 brutal-border brutal-shadow-hover btn-brutal">
-                    Create Account
-                </button>
+                Get Full Access
+            </button>
 </form>
 <p class="font-mono text-xs text-muted text-center mt-6">
-                    Already have an account? <a href="#" onclick="openLoginModal(); closeSubscribeModal(); return false;" class="text-accent hover:underline">Sign In</a>
+                Already subscribed? <a href="#" onclick="checkSubscription(); closeSubscribeModal(); return false;" class="text-accent hover:underline">Verify Access</a>
 </p>
 </div>
 </div>
 </div>
 
-<!-- JavaScript for Auth -->
+<!-- JavaScript for Subscription -->
 <script>
-// JWT Utility
-const JWT_SECRET = 'academic-rag-journal-secret-key-2026';
+// Subscription Management
+const SUBSCRIPTION_KEY = 'rag_journal_subscribed';
+const SUBSCRIPTION_EMAIL_KEY = 'rag_journal_email';
 
-function generateToken(email) {
-    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-    const payload = btoa(JSON.stringify({ 
-        email: email, 
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60) // 7 days
-    }));
-    const signature = btoa(`${header}.${payload}.${JWT_SECRET}`);
-    return `${header}.${payload}.${signature}`;
+function isSubscribed() {
+    return localStorage.getItem(SUBSCRIPTION_KEY) === 'true';
 }
 
-function verifyToken(token) {
-    try {
-        const parts = token.split('.');
-        if (parts.length !== 3) return null;
-        const payload = JSON.parse(atob(parts[1]));
-        if (payload.exp * 1000 < Date.now()) return null;
-        return payload;
-    } catch (e) {
-        return null;
-    }
+function getSubscriberEmail() {
+    return localStorage.getItem(SUBSCRIPTION_EMAIL_KEY);
 }
 
-function getToken() {
-    return localStorage.getItem('auth_token');
+function setSubscription(email) {
+    localStorage.setItem(SUBSCRIPTION_KEY, 'true');
+    localStorage.setItem(SUBSCRIPTION_EMAIL_KEY, email);
 }
 
-function setToken(token) {
-    localStorage.setItem('auth_token', token);
-}
-
-function removeToken() {
-    localStorage.removeItem('auth_token');
-}
-
-function getCurrentUser() {
-    const token = getToken();
-    if (!token) return null;
-    return verifyToken(token);
+function clearSubscription() {
+    localStorage.removeItem(SUBSCRIPTION_KEY);
+    localStorage.removeItem(SUBSCRIPTION_EMAIL_KEY);
 }
 
 // Modal Functions
-function openLoginModal() {
-    document.getElementById('login-modal').classList.remove('hidden');
-}
-
-function closeLoginModal() {
-    document.getElementById('login-modal').classList.add('hidden');
-}
-
 function openSubscribeModal() {
+    if (isSubscribed()) {
+        if (confirm('You are already subscribed. Want to reset your subscription?')) {
+            clearSubscription();
+        } else {
+            return;
+        }
+    }
     document.getElementById('subscribe-modal').classList.remove('hidden');
 }
 
@@ -558,69 +492,53 @@ function closeSubscribeModal() {
     document.getElementById('subscribe-modal').classList.add('hidden');
 }
 
-// Auth Functions
-function handleLogin(event) {
-    event.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    
-    // Simple validation (in production, verify with backend)
-    if (email && password) {
-        const token = generateToken(email);
-        setToken(token);
-        updateAuthUI();
-        closeLoginModal();
-        alert('Welcome back!');
+// Check subscription status
+function checkSubscription() {
+    if (isSubscribed()) {
+        const email = getSubscriberEmail();
+        alert(`You are subscribed with: ${email}\nFull access granted!`);
+    } else {
+        openSubscribeModal();
     }
 }
 
+// Subscribe Handler
 function handleSubscribe(event) {
     event.preventDefault();
     const email = document.getElementById('subscribe-email').value;
-    const password = document.getElementById('subscribe-password').value;
-    const plan = document.getElementById('subscribe-plan').value;
-    
-    if (email && password) {
-        const token = generateToken(email);
-        setToken(token);
-        localStorage.setItem('subscription_plan', plan);
-        updateAuthUI();
+    const marketingConsent = document.getElementById('marketing-consent').checked;
+
+    if (email) {
+        setSubscription(email);
+        if (marketingConsent) {
+            localStorage.setItem('marketing_consent', 'true');
+        }
         closeSubscribeModal();
-        alert(`Welcome! You've subscribed to the ${plan} plan.`);
+        alert('Welcome! You now have full access to all 15 modules.');
+        // Reload to show unlocked content
+        window.location.reload();
     }
 }
 
-function logout() {
-    removeToken();
-    localStorage.removeItem('subscription_plan');
-    updateAuthUI();
-    alert('You have been logged out.');
-}
-
-function updateAuthUI() {
-    const user = getCurrentUser();
-    const authButtons = document.getElementById('auth-buttons');
-    const userInfo = document.getElementById('user-info');
-    const userEmail = document.getElementById('user-email');
-    
-    if (user) {
-        authButtons.classList.add('hidden');
-        userInfo.classList.remove('hidden');
-        userEmail.textContent = user.email;
+// Module Access Control
+function accessModule(moduleUrl) {
+    if (isSubscribed()) {
+        window.location.href = moduleUrl;
     } else {
-        authButtons.classList.remove('hidden');
-        userInfo.classList.add('hidden');
+        openSubscribeModal();
     }
 }
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    updateAuthUI();
-    
+    // Check if user is subscribed and show welcome message
+    if (isSubscribed()) {
+        console.log('User is subscribed:', getSubscriberEmail());
+    }
+
     // Close modals on Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            closeLoginModal();
             closeSubscribeModal();
         }
     });
