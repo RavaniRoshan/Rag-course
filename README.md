@@ -1,5 +1,8 @@
 # Academic RAG Journal
 
+<img width="1683" height="807" alt="image" src="https://github.com/user-attachments/assets/630f5664-0ce3-41ac-8b5a-2e4943a88552" />
+
+
 [![Website](https://img.shields.io/badge/Website-rag--course--two.vercel.app-blue)](https://rag-course-two.vercel.app/)
 
 A high-fidelity, distraction-free reading environment for mastering Retrieval Augmented Generation. This digital textbook treats technical documentation with the typographic reverence of a printed academic journal.
