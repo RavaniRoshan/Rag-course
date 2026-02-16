@@ -7,8 +7,8 @@
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;family=Geist+Mono:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
 <!-- Theme Config -->
@@ -18,28 +18,25 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#b80f12",
-                        "ink": "#2C2420",
-                        "paper": "#F9F7F1",
-                        "parchment": "#EBE6DA",
-                        "graphite": "#8A817C",
-                        "faded": "#D8D1C4",
-                        "library-green": "#4A5D44",
+                        "bg": "#0E0E10",
+                        "bg-secondary": "#18181B",
+                        "border": "#27272A",
+                        "foreground": "#FAFAFA",
+                        "muted": "#A1A1AA",
+                        "accent": "#3ECF8E",
+                        "accent-secondary": "#24A472",
+                        "accent-foreground": "#0E0E10",
+                        "destructive": "#C92A2A",
+                        "warning": "#F59E0B",
+                        "info": "#3B82F6",
                     },
                     fontFamily: {
-                        "display": ["Newsreader", "serif"],
-                        "serif": ["Lora", "serif"],
-                        "mono": ["Geist Mono", "monospace"],
-                        "code": ["JetBrains Mono", "monospace"],
+                        "sans": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
                     },
-                    borderRadius: {
-                        "DEFAULT": "0.125rem",
-                        "lg": "0.25rem",
-                        "xl": "0.5rem",
-                        "full": "0.5rem"
-                    },
-                    backgroundImage: {
-                        'grain': "url('data:image.svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')",
+                    boxShadow: {
+                        'brutal': '4px 4px 0px 0px rgba(62, 207, 142, 0.3)',
+                        'brutal-lg': '6px 6px 0px 0px rgba(62, 207, 142, 0.4)',
                     }
                 },
             },
@@ -119,29 +116,29 @@
         }
     </style>
 </head>
-<body class="bg-paper text-ink antialiased selection:bg-primary/20 selection:text-ink min-h-screen flex flex-col font-serif relative">
+<body class="bg-bg text-foreground antialiased selection:bg-primary/20 selection:text-foreground min-h-screen flex flex-col font-serif relative">
 <!-- Grain Texture Overlay -->
 <div class="fixed inset-0 pointer-events-none z-50 bg-grain mix-blend-multiply opacity-40"></div>
 <!-- Top Navigation (Minimal) -->
-<header class="sticky top-0 z-40 w-full border-b border-faded bg-paper/95 backdrop-blur-sm h-14 flex items-center justify-between px-6 lg:px-10">
+<header class="sticky top-0 z-40 w-full border-b border-border bg-bg-secondary/95 backdrop-blur-sm h-14 flex items-center justify-between px-6 lg:px-10">
 <div class="flex items-center gap-4">
-<a class="flex items-center gap-2 text-ink hover:text-primary transition-colors group" href="index.html">
+<a class="flex items-center gap-2 text-foreground hover:text-accent transition-colors group" href="index.html">
 <span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
 <span class="font-display font-medium text-lg tracking-tight">Syllabus</span>
 </a>
 <div class="h-4 w-px bg-faded mx-2"></div>
-<span class="font-mono text-xs uppercase tracking-wider text-graphite">Module 09</span>
+<span class="font-mono text-xs uppercase tracking-wider text-muted">Module 09</span>
 </div>
 <div class="flex items-center gap-6">
-<div class="hidden md:flex items-center gap-2 text-graphite text-xs font-mono">
+<div class="hidden md:flex items-center gap-2 text-muted text-xs font-mono">
 <span class="material-symbols-outlined text-[16px]">schedule</span>
 <span id="reading-time">50 min read</span>
 </div>
 <div class="flex gap-3">
-<button id="search-btn" aria-label="Search" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<button id="search-btn" aria-label="Search" class="flex items-center justify-center size-8 rounded hover:bg-bg-secondary transition-colors text-foreground">
 <span class="material-symbols-outlined text-[20px]">search</span>
 </button>
-<button aria-label="Settings" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<button aria-label="Settings" class="flex items-center justify-center size-8 rounded hover:bg-bg-secondary transition-colors text-foreground">
 <span class="material-symbols-outlined text-[20px]">text_fields</span>
 </button>
 </div>
@@ -151,50 +148,50 @@
 <main class="flex-1 flex justify-center w-full relative">
 <div class="w-full max-w-[1440px] flex flex-row">
 <!-- Left Rail: Table of Contents -->
-<aside class="hidden lg:flex w-[240px] flex-col sticky top-14 h-[calc(100vh-3.5rem)] border-r border-faded overflow-y-auto pt-12 pb-10 pl-10 pr-6">
+<aside class="hidden lg:flex w-[240px] flex-col sticky top-14 h-[calc(100vh-3.5rem)] border-r border-border overflow-y-auto pt-12 pb-10 pl-10 pr-6">
 <nav class="flex flex-col gap-8">
 <div>
-<h4 class="font-mono text-xs uppercase tracking-widest text-graphite mb-4">Contents</h4>
+<h4 class="font-mono text-xs uppercase tracking-widest text-muted mb-4">Contents</h4>
 <ul class="flex flex-col gap-3 font-mono text-[13px] leading-relaxed">
 <li>
-<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#introduction">
-<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+<a class="text-foreground hover:text-accent transition-colors flex items-start gap-2 group" href="#introduction">
+<span class="text-accent font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
                                     Introduction
                                 </a>
 </li>
 <li>
-<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#retrieval-metrics">
-<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+<a class="text-foreground hover:text-accent transition-colors flex items-start gap-2 group" href="#retrieval-metrics">
+<span class="text-accent font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
                                     Retrieval Metrics
                                 </a>
 </li>
 <li>
-<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#generation-metrics">
-<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+<a class="text-foreground hover:text-accent transition-colors flex items-start gap-2 group" href="#generation-metrics">
+<span class="text-accent font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
                                     Generation Metrics
                                 </a>
 </li>
 <li>
-<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#rag-metrics">
-<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+<a class="text-foreground hover:text-accent transition-colors flex items-start gap-2 group" href="#rag-metrics">
+<span class="text-accent font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
                                     RAG-Specific Metrics
                                 </a>
 </li>
 <li>
-<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#evaluation-frameworks">
-<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+<a class="text-foreground hover:text-accent transition-colors flex items-start gap-2 group" href="#evaluation-frameworks">
+<span class="text-accent font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
                                     Evaluation Frameworks
                                 </a>
 </li>
 </ul>
 </div>
-<div class="mt-auto pt-8 border-t border-faded">
+<div class="mt-auto pt-8 border-t border-border">
 <div class="flex flex-col gap-2">
-<span class="font-mono text-[11px] uppercase tracking-widest text-graphite">Progress</span>
-<div class="w-full bg-parchment h-1 rounded-full overflow-hidden">
+<span class="font-mono text-[11px] uppercase tracking-widest text-muted">Progress</span>
+<div class="w-full bg-bg-secondary h-1 rounded-full overflow-hidden">
 <div class="bg-primary h-full w-[35%]"></div>
 </div>
-<span class="font-mono text-xs text-ink text-right">35%</span>
+<span class="font-mono text-xs text-foreground text-right">35%</span>
 </div>
 </div>
 </nav>
@@ -202,15 +199,15 @@
 <!-- Center Stage: The Reader -->
 <article class="flex-1 max-w-[720px] mx-auto pt-16 pb-32 px-6 md:px-12 min-h-screen">
 <!-- Module Header -->
-<header class="mb-16 border-b border-faded pb-12">
+<header class="mb-16 border-b border-border pb-12">
 <div class="flex items-center gap-3 mb-6">
-<span class="font-mono text-sm font-medium text-primary px-2 py-1 bg-primary/10 rounded">Module 09</span>
-<span class="font-mono text-sm text-graphite">Advanced RAG Architectures</span>
+<span class="font-mono text-sm font-medium text-accent px-2 py-1 bg-primary/10 rounded">Module 09</span>
+<span class="font-mono text-sm text-muted">Advanced RAG Architectures</span>
 </div>
-<h1 class="font-display text-[48px] md:text-[56px] leading-[1.1] font-semibold text-ink tracking-tight mb-6">
+<h1 class="font-display text-[48px] md:text-[56px] leading-[1.1] font-semibold text-foreground tracking-tight mb-6">
                         Evaluation Metrics &amp; Benchmarks
                     </h1>
-<p class="font-serif text-xl text-ink/80 leading-relaxed max-w-[90%]">
+<p class="font-serif text-xl text-foreground/80 leading-relaxed max-w-[90%]">
                         Implementing RAGAS and TruLens to quantitatively measure faithfulness, answer relevance, and context precision.
                     </p>
 </header>
@@ -221,10 +218,10 @@
 Evaluation in Retrieval-Augmented Generation (RAG) systems is a multifaceted challenge that requires assessing both the retrieval and generation components. Unlike traditional machine learning models, RAG systems involve multiple stages where errors can compound, making it essential to evaluate each component individually as well as the end-to-end system performance.
 </p>
 
-<div class="my-10 border border-faded bg-parchment/50 p-6 rounded-sm">
+<div class="my-10 border border-border bg-bg-secondary/50 p-6 rounded-sm">
 <figure>
 <img alt="RAG Evaluation Process" class="w-full h-auto mix-blend-multiply mb-4 filter sepia-[0.3]" data-alt="Visualization showing the evaluation process for RAG systems with retrieval and generation components" src="https://placehold.co/600x300/f9f7f1/ebe6da?text=RAG+Evaluation+Metrics" />
-<figcaption class="font-mono text-xs text-graphite text-center mt-2">Figure 1: Components of RAG Evaluation</figcaption>
+<figcaption class="font-mono text-xs text-muted text-center mt-2">Figure 1: Components of RAG Evaluation</figcaption>
 </figure>
 </div>
 
@@ -242,12 +239,12 @@ Precision and recall are fundamental information retrieval metrics that measure 
 <li><strong>Recall@K</strong>: The fraction of relevant documents that are retrieved among the top K results</li>
 </ul>
 
-<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
-<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
-<span class="font-mono text-xs text-ink">retrieval_metrics.py</span>
+<div class="not-prose my-12 border border-border bg-bg-secondary rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-border bg-[#e6dfd1]">
+<span class="font-mono text-xs text-foreground">retrieval_metrics.py</span>
 <div class="flex gap-2">
-<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
-<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="text-[10px] font-mono text-muted uppercase">Python</span>
+<button class="text-muted hover:text-accent transition-colors" onclick="copyCode(this)">
 <span class="material-symbols-outlined text-[16px]">content_copy</span>
 </button>
 </div>
@@ -354,12 +351,12 @@ Traditional metrics borrowed from machine translation and summarization:
 <li><strong>ROUGE</strong>: Measures recall of n-grams, word sequences, and word pairs between generated and reference text</li>
 </ul>
 
-<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
-<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
-<span class="font-mono text-xs text-ink">generation_metrics.py</span>
+<div class="not-prose my-12 border border-border bg-bg-secondary rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-border bg-[#e6dfd1]">
+<span class="font-mono text-xs text-foreground">generation_metrics.py</span>
 <div class="flex gap-2">
-<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
-<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="text-[10px] font-mono text-muted uppercase">Python</span>
+<button class="text-muted hover:text-accent transition-colors" onclick="copyCode(this)">
 <span class="material-symbols-outlined text-[16px]">content_copy</span>
 </button>
 </div>
@@ -485,12 +482,12 @@ RAGAS (RAG Assessment) is a framework specifically designed for evaluating RAG s
 <li><strong>Context Recall</strong>: Measures how much of the relevant information in the context is captured in the answer</li>
 </ul>
 
-<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
-<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
-<span class="font-mono text-xs text-ink">ragas_metrics.py</span>
+<div class="not-prose my-12 border border-border bg-bg-secondary rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-border bg-[#e6dfd1]">
+<span class="font-mono text-xs text-foreground">ragas_metrics.py</span>
 <div class="flex gap-2">
-<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
-<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="text-[10px] font-mono text-muted uppercase">Python</span>
+<button class="text-muted hover:text-accent transition-colors" onclick="copyCode(this)">
 <span class="material-symbols-outlined text-[16px]">content_copy</span>
 </button>
 </div>
@@ -620,12 +617,12 @@ RAGAS (RAG Assessment) is a framework specifically designed for evaluating RAG s
 Comprehensive evaluation frameworks combine multiple metrics to provide a holistic assessment of RAG system performance.
 </p>
 
-<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
-<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
-<span class="font-mono text-xs text-ink">evaluation_framework.py</span>
+<div class="not-prose my-12 border border-border bg-bg-secondary rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-border bg-[#e6dfd1]">
+<span class="font-mono text-xs text-foreground">evaluation_framework.py</span>
 <div class="flex gap-2">
-<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
-<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="text-[10px] font-mono text-muted uppercase">Python</span>
+<button class="text-muted hover:text-accent transition-colors" onclick="copyCode(this)">
 <span class="material-symbols-outlined text-[16px]">content_copy</span>
 </button>
 </div>
@@ -728,18 +725,18 @@ Comprehensive evaluation frameworks combine multiple metrics to provide a holist
 
 </div>
 <!-- Footer / Pagination -->
-<div class="mt-24 pt-10 border-t border-faded flex justify-between items-center group/footer">
-<a class="flex flex-col items-start gap-2 hover:bg-parchment/50 p-4 -ml-4 rounded transition-colors w-1/2" href="module_08_context_compression.html">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Previous Module</span>
-<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+<div class="mt-24 pt-10 border-t border-border flex justify-between items-center group/footer">
+<a class="flex flex-col items-start gap-2 hover:bg-bg-secondary/50 p-4 -ml-4 rounded transition-colors w-1/2" href="module_08_context_compression.html">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Previous Module</span>
+<span class="font-display text-lg font-medium text-foreground flex items-center gap-2">
 <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                             Context Compression
                         </span>
 </a>
 <div class="h-12 w-px bg-faded mx-4"></div>
-<a class="flex flex-col items-end gap-2 hover:bg-parchment/50 p-4 -mr-4 rounded transition-colors w-1/2" href="module_10_metadata_enhanced.html">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Next Module</span>
-<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+<a class="flex flex-col items-end gap-2 hover:bg-bg-secondary/50 p-4 -mr-4 rounded transition-colors w-1/2" href="module_10_metadata_enhanced.html">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Next Module</span>
+<span class="font-display text-lg font-medium text-foreground flex items-center gap-2">
                             Metadata Enhancement
                             <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
 </span>
@@ -751,39 +748,39 @@ Comprehensive evaluation frameworks combine multiple metrics to provide a holist
 <div class="flex flex-col gap-24 relative">
 <!-- Note 1: Aligned with introduction -->
 <div class="relative group cursor-pointer transition-transform hover:-translate-x-1">
-<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[1]</div>
-<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
-<strong class="text-ink">RAG evaluation</strong> requires metrics for both retrieval and generation components.
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-accent font-mono">[1]</div>
+<p class="font-mono text-[12px] leading-5 text-muted group-hover:text-foreground transition-colors">
+<strong class="text-foreground">RAG evaluation</strong> requires metrics for both retrieval and generation components.
                         </p>
 </div>
 <!-- Note 2: Aligned with RAGAS metrics -->
 <div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-12">
-<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[2]</div>
-<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
-<strong class="text-ink">RAGAS metrics</strong> provide comprehensive evaluation of RAG system quality.
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-accent font-mono">[2]</div>
+<p class="font-mono text-[12px] leading-5 text-muted group-hover:text-foreground transition-colors">
+<strong class="text-foreground">RAGAS metrics</strong> provide comprehensive evaluation of RAG system quality.
                         </p>
-<a class="inline-flex items-center gap-1 mt-2 text-[10px] uppercase tracking-widest text-primary font-bold hover:underline" href="artifact_view.html" target="_blank">
+<a class="inline-flex items-center gap-1 mt-2 text-[10px] uppercase tracking-widest text-accent font-bold hover:underline" href="artifact_view.html" target="_blank">
                             View Code <span class="material-symbols-outlined text-[10px]">open_in_new</span>
 </a>
 </div>
 <!-- Note 3: Aligned with evaluation frameworks -->
 <div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-24">
-<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[3]</div>
-<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
-                            <code class="bg-parchment px-0.5 rounded-sm">Evaluation frameworks</code> aggregate multiple metrics for holistic assessment.
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-accent font-mono">[3]</div>
+<p class="font-mono text-[12px] leading-5 text-muted group-hover:text-foreground transition-colors">
+                            <code class="bg-bg-secondary px-0.5 rounded-sm">Evaluation frameworks</code> aggregate multiple metrics for holistic assessment.
                         </p>
 </div>
 <!-- Additional marginalia for module-specific content -->
 <div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
-<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[4]</div>
-<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
-                            <strong class="text-ink">Faithfulness</strong> measures if answers are factually consistent with context.
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-accent font-mono">[4]</div>
+<p class="font-mono text-[12px] leading-5 text-muted group-hover:text-foreground transition-colors">
+                            <strong class="text-foreground">Faithfulness</strong> measures if answers are factually consistent with context.
                         </p>
 </div>
 <div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
-<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[5]</div>
-<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
-                            <strong class="text-ink">Context precision</strong> evaluates how well retrieved context is utilized.
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-accent font-mono">[5]</div>
+<p class="font-mono text-[12px] leading-5 text-muted group-hover:text-foreground transition-colors">
+                            <strong class="text-foreground">Context precision</strong> evaluates how well retrieved context is utilized.
                         </p>
 </div>
 </div>

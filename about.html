@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>About - Academic RAG Journal</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration - Brutalist Supabase-Inspired -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "bg": "#0E0E10",
+                        "bg-secondary": "#18181B",
+                        "border": "#27272A",
+                        "foreground": "#FAFAFA",
+                        "muted": "#A1A1AA",
+                        "accent": "#3ECF8E",
+                        "accent-secondary": "#24A472",
+                        "accent-foreground": "#0E0E10",
+                        "destructive": "#C92A2A",
+                        "warning": "#F59E0B",
+                        "info": "#3B82F6",
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                    },
+                    boxShadow: {
+                        'brutal': '4px 4px 0px 0px rgba(62, 207, 142, 0.3)',
+                        'brutal-lg': '6px 6px 0px 0px rgba(62, 207, 142, 0.4)',
+                        'brutal-sm': '2px 2px 0px 0px rgba(62, 207, 142, 0.2)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-feature-settings: "cv11", "ss01";
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .brutal-border {
+            border: 2px solid #27272A;
+        }
+
+        .brutal-border-accent {
+            border: 2px solid #3ECF8E;
+        }
+
+        .brutal-shadow-hover:hover {
+            box-shadow: 6px 6px 0px 0px #3ECF8E;
+            transform: translate(-2px, -2px);
+        }
+
+        .btn-brutal {
+            transition: all 0.15s ease-out;
+        }
+
+        .btn-brutal:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px 0px #3ECF8E;
+        }
+
+        .btn-brutal:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px 0px #3ECF8E;
+        }
+    </style>
+</head>
+<body class="bg-bg text-foreground font-sans antialiased min-h-screen flex flex-col">
+<!-- Navigation Header -->
+<nav class="sticky top-0 z-40 w-full border-b border-border bg-bg/95 backdrop-blur-sm px-6 py-4">
+<div class="max-w-7xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-3">
+<a href="index.html" class="flex items-center gap-3">
+<span class="material-symbols-outlined text-accent text-2xl">menu_book</span>
+<h2 class="font-sans font-bold text-xl tracking-tight text-foreground">Academic RAG Journal</h2>
+</a>
+</div>
+<div class="flex items-center gap-6">
+<a class="font-mono text-xs uppercase tracking-wider text-accent hover:text-foreground transition-colors" href="about.html">About</a>
+<div id="auth-buttons">
+<a class="font-mono text-xs uppercase tracking-wider text-muted hover:text-accent transition-colors" href="#" onclick="openLoginModal(); return false;">Login</a>
+<button class="ml-4 bg-accent text-accent-foreground font-mono text-xs uppercase tracking-wider px-4 py-2 brutal-border brutal-shadow-hover btn-brutal" onclick="openSubscribeModal()">
+                    Subscribe
+                </button>
+</div>
+<div id="user-info" class="hidden flex items-center gap-4">
+<span class="font-mono text-xs text-accent" id="user-email"></span>
+<button class="font-mono text-xs uppercase tracking-wider text-muted hover:text-destructive transition-colors" onclick="logout()">Logout</button>
+</div>
+</div>
+</div>
+</nav>
+
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-4xl mx-auto px-6 py-16">
+<!-- Header -->
+<header class="mb-16">
+<div class="inline-block mb-6 brutal-border-accent px-4 py-2">
+<span class="font-mono text-xs uppercase tracking-widest text-accent">About This Project</span>
+</div>
+<h1 class="font-sans text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight mb-6 text-foreground">
+                A Deep Dive into Retrieval Augmented Generation
+            </h1>
+<p class="font-sans text-lg text-muted leading-relaxed">
+                This comprehensive course is designed for AI Engineers and Data Scientists who want to master RAG systems from first principles to production deployment.
+            </p>
+</header>
+
+<!-- Content Sections -->
+<div class="space-y-12">
+<!-- What is RAG -->
+<section class="bg-bg-secondary brutal-border p-8">
+<h2 class="font-sans text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
+<span class="material-symbols-outlined text-accent">info</span>
+                    What is RAG?
+                </h2>
+<p class="font-sans text-muted leading-relaxed mb-4">
+                    Retrieval Augmented Generation (RAG) is an AI framework that combines the power of large language models with external knowledge retrieval. Instead of relying solely on the model's training data, RAG systems retrieve relevant information from external sources and use it to generate more accurate, up-to-date, and contextually relevant responses.
+                </p>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+<div class="brutal-border p-4">
+<span class="material-symbols-outlined text-accent text-3xl mb-2">search</span>
+<h3 class="font-sans font-bold text-foreground mb-2">Retrieve</h3>
+<p class="font-mono text-xs text-muted">Find relevant documents from your knowledge base using semantic search</p>
+</div>
+<div class="brutal-border p-4">
+<span class="material-symbols-outlined text-accent text-3xl mb-2">merge</span>
+<h3 class="font-sans font-bold text-foreground mb-2">Augment</h3>
+<p class="font-mono text-xs text-muted">Combine retrieved context with the user's query for better understanding</p>
+</div>
+<div class="brutal-border p-4">
+<span class="material-symbols-outlined text-accent text-3xl mb-2">auto_awesome</span>
+<h3 class="font-sans font-bold text-foreground mb-2">Generate</h3>
+<p class="font-mono text-xs text-muted">Use LLMs to produce accurate, context-aware responses</p>
+</div>
+</div>
+</section>
+
+<!-- Why This Course -->
+<section class="bg-bg-secondary brutal-border p-8">
+<h2 class="font-sans text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
+<span class="material-symbols-outlined text-accent">school</span>
+                    Why This Course?
+                </h2>
+<p class="font-sans text-muted leading-relaxed mb-6">
+                    Most RAG tutorials cover the basics but fail to address real-world challenges. This course bridges that gap with production-ready patterns and battle-tested strategies.
+                </p>
+<div class="space-y-4">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-accent mt-1">check_circle</span>
+<div>
+<h3 class="font-sans font-bold text-foreground mb-1">15 Comprehensive Modules</h3>
+<p class="font-mono text-xs text-muted">From reranking strategies to production deployment, covering every aspect of RAG systems</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-accent mt-1">check_circle</span>
+<div>
+<h3 class="font-sans font-bold text-foreground mb-1">Production-Ready Code</h3>
+<p class="font-mono text-xs text-muted">All examples are tested, modular, and ready for real-world deployment</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-accent mt-1">check_circle</span>
+<div>
+<h3 class="font-sans font-bold text-foreground mb-1">Industry Case Studies</h3>
+<p class="font-mono text-xs text-muted">Learn from real implementations in legal, financial, and enterprise contexts</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-accent mt-1">check_circle</span>
+<div>
+<h3 class="font-sans font-bold text-foreground mb-1">Evaluation Frameworks</h3>
+<p class="font-mono text-xs text-muted">Master RAGAS, TruLens, and other tools to measure and improve performance</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Tech Stack -->
+<section class="bg-bg-secondary brutal-border p-8">
+<h2 class="font-sans text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
+<span class="material-symbols-outlined text-accent">layers</span>
+                    Technologies Covered
+                </h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+<div class="brutal-border p-4 text-center">
+<p class="font-mono text-sm text-accent font-bold">Python</p>
+<p class="font-mono text-xs text-muted mt-1">Core Language</p>
+</div>
+<div class="brutal-border p-4 text-center">
+<p class="font-mono text-sm text-accent font-bold">LangChain</p>
+<p class="font-mono text-xs text-muted mt-1">RAG Framework</p>
+</div>
+<div class="brutal-border p-4 text-center">
+<p class="font-mono text-sm text-accent font-bold">ChromaDB</p>
+<p class="font-mono text-xs text-muted mt-1">Vector Store</p>
+</div>
+<div class="brutal-border p-4 text-center">
+<p class="font-mono text-sm text-accent font-bold">HuggingFace</p>
+<p class="font-mono text-xs text-muted mt-1">Models</p>
+</div>
+<div class="brutal-border p-4 text-center">
+<p class="font-mono text-sm text-accent font-bold">Transformers</p>
+<p class="font-mono text-xs text-muted mt-1">NLP Library</p>
+</div>
+<div class="brutal-border p-4 text-center">
+<p class="font-mono text-sm text-accent font-bold">RAGAS</p>
+<p class="font-mono text-xs text-muted mt-1">Evaluation</p>
+</div>
+<div class="brutal-border p-4 text-center">
+<p class="font-mono text-sm text-accent font-bold">FastAPI</p>
+<p class="font-mono text-xs text-muted mt-1">Deployment</p>
+</div>
+<div class="brutal-border p-4 text-center">
+<p class="font-mono text-sm text-accent font-bold">Docker</p>
+<p class="font-mono text-xs text-muted mt-1">Containerization</p>
+</div>
+</div>
+</section>
+
+<!-- About Author -->
+<section class="bg-bg-secondary brutal-border p-8">
+<h2 class="font-sans text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
+<span class="material-symbols-outlined text-accent">person</span>
+                    About the Author
+                </h2>
+<p class="font-sans text-muted leading-relaxed mb-4">
+                    This course was created by practitioners who have built and deployed RAG systems at scale. The content is based on real-world experience working with enterprise clients across finance, legal, healthcare, and technology sectors.
+                </p>
+<p class="font-sans text-muted leading-relaxed">
+                    The goal is to provide a resource that the authors wished they had when they first started working with RAG systems - comprehensive, practical, and focused on what actually works in production.
+                </p>
+</section>
+
+<!-- Contact -->
+<section class="brutal-border-accent p-8">
+<h2 class="font-sans text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
+<span class="material-symbols-outlined text-accent">mail</span>
+                    Get in Touch
+                </h2>
+<p class="font-sans text-muted leading-relaxed mb-6">
+                    Have questions, suggestions, or want to discuss enterprise training? We'd love to hear from you.
+                </p>
+<a href="mailto:contact@academic-rag-journal.com" class="inline-flex items-center gap-2 font-mono text-sm text-accent hover:text-foreground transition-colors">
+<span class="material-symbols-outlined">email</span>
+                    contact@academic-rag-journal.com
+                </a>
+</section>
+</div>
+</main>
+
+<!-- Footer -->
+<footer class="border-t border-border bg-bg-secondary py-12 px-6">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-3">
+<div class="size-6 text-accent">
+<svg fill="none" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M2 17L12 22L22 17" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M2 12L12 17L22 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<span class="font-sans font-bold text-lg text-foreground">Academic RAG Journal</span>
+</div>
+<div class="text-center md:text-right">
+<p class="font-mono text-xs text-muted">
+                    Designed for deep work. © 2026.
+                </p>
+</div>
+</div>
+</footer>
+
+<!-- Login Modal -->
+<div id="login-modal" class="fixed inset-0 z-50 hidden">
+<div class="modal-overlay absolute inset-0" onclick="closeLoginModal()"></div>
+<div class="flex items-center justify-center min-h-screen p-4">
+<div class="modal-content relative bg-bg-secondary brutal-border p-8 w-full max-w-md">
+<button class="absolute top-4 right-4 text-muted hover:text-foreground" onclick="closeLoginModal()">
+<span class="material-symbols-outlined">close</span>
+</button>
+<h2 class="font-sans text-2xl font-bold text-foreground mb-2">Welcome Back</h2>
+<p class="font-mono text-xs text-muted mb-6">Sign in to access your progress</p>
+<form id="login-form" onsubmit="handleLogin(event)">
+<div class="mb-4">
+<label class="block font-mono text-xs text-muted mb-2 uppercase">Email</label>
+<input type="email" id="login-email" required class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent" placeholder="you@example.com"/>
+</div>
+<div class="mb-6">
+<label class="block font-mono text-xs text-muted mb-2 uppercase">Password</label>
+<input type="password" id="login-password" required class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent" placeholder="••••••••"/>
+</div>
+<button type="submit" class="w-full bg-accent text-accent-foreground font-mono text-sm uppercase tracking-wider py-3 brutal-border brutal-shadow-hover btn-brutal">
+                    Sign In
+                </button>
+</form>
+<p class="font-mono text-xs text-muted text-center mt-6">
+                    Don't have an account? <a href="#" onclick="openSubscribeModal(); closeLoginModal(); return false;" class="text-accent hover:underline">Subscribe</a>
+</p>
+</div>
+</div>
+</div>
+
+<!-- Subscribe Modal -->
+<div id="subscribe-modal" class="fixed inset-0 z-50 hidden">
+<div class="modal-overlay absolute inset-0" onclick="closeSubscribeModal()"></div>
+<div class="flex items-center justify-center min-h-screen p-4">
+<div class="modal-content relative bg-bg-secondary brutal-border p-8 w-full max-w-md">
+<button class="absolute top-4 right-4 text-muted hover:text-foreground" onclick="closeSubscribeModal()">
+<span class="material-symbols-outlined">close</span>
+</button>
+<h2 class="font-sans text-2xl font-bold text-foreground mb-2">Subscribe</h2>
+<p class="font-mono text-xs text-muted mb-6">Get full access to all modules and resources</p>
+<form id="subscribe-form" onsubmit="handleSubscribe(event)">
+<div class="mb-4">
+<label class="block font-mono text-xs text-muted mb-2 uppercase">Email</label>
+<input type="email" id="subscribe-email" required class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent" placeholder="you@example.com"/>
+</div>
+<div class="mb-4">
+<label class="block font-mono text-xs text-muted mb-2 uppercase">Password</label>
+<input type="password" id="subscribe-password" required class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent" placeholder="Create a password"/>
+</div>
+<div class="mb-6">
+<label class="block font-mono text-xs text-muted mb-2 uppercase">Plan</label>
+<select id="subscribe-plan" class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent">
+<option value="free">Free - Basic Access</option>
+<option value="pro">Pro - $9/month (All Modules)</option>
+<option value="enterprise">Enterprise - $49/month (Team Access)</option>
+</select>
+</div>
+<button type="submit" class="w-full bg-accent text-accent-foreground font-mono text-sm uppercase tracking-wider py-3 brutal-border brutal-shadow-hover btn-brutal">
+                    Create Account
+                </button>
+</form>
+<p class="font-mono text-xs text-muted text-center mt-6">
+                    Already have an account? <a href="#" onclick="openLoginModal(); closeSubscribeModal(); return false;" class="text-accent hover:underline">Sign In</a>
+</p>
+</div>
+</div>
+</div>
+
+<!-- JavaScript for Auth -->
+<script>
+// JWT Utility
+const JWT_SECRET = 'academic-rag-journal-secret-key-2026';
+
+function generateToken(email) {
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(JSON.stringify({ 
+        email: email, 
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60) // 7 days
+    }));
+    const signature = btoa(`${header}.${payload}.${JWT_SECRET}`);
+    return `${header}.${payload}.${signature}`;
+}
+
+function verifyToken(token) {
+    try {
+        const parts = token.split('.');
+        if (parts.length !== 3) return null;
+        const payload = JSON.parse(atob(parts[1]));
+        if (payload.exp * 1000 < Date.now()) return null;
+        return payload;
+    } catch (e) {
+        return null;
+    }
+}
+
+function getToken() {
+    return localStorage.getItem('auth_token');
+}
+
+function setToken(token) {
+    localStorage.setItem('auth_token', token);
+}
+
+function removeToken() {
+    localStorage.removeItem('auth_token');
+}
+
+function getCurrentUser() {
+    const token = getToken();
+    if (!token) return null;
+    return verifyToken(token);
+}
+
+// Modal Functions
+function openLoginModal() {
+    document.getElementById('login-modal').classList.remove('hidden');
+}
+
+function closeLoginModal() {
+    document.getElementById('login-modal').classList.add('hidden');
+}
+
+function openSubscribeModal() {
+    document.getElementById('subscribe-modal').classList.remove('hidden');
+}
+
+function closeSubscribeModal() {
+    document.getElementById('subscribe-modal').classList.add('hidden');
+}
+
+// Auth Functions
+function handleLogin(event) {
+    event.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    if (email && password) {
+        const token = generateToken(email);
+        setToken(token);
+        updateAuthUI();
+        closeLoginModal();
+        alert('Welcome back!');
+    }
+}
+
+function handleSubscribe(event) {
+    event.preventDefault();
+    const email = document.getElementById('subscribe-email').value;
+    const password = document.getElementById('subscribe-password').value;
+    const plan = document.getElementById('subscribe-plan').value;
+    
+    if (email && password) {
+        const token = generateToken(email);
+        setToken(token);
+        localStorage.setItem('subscription_plan', plan);
+        updateAuthUI();
+        closeSubscribeModal();
+        alert(`Welcome! You've subscribed to the ${plan} plan.`);
+    }
+}
+
+function logout() {
+    removeToken();
+    localStorage.removeItem('subscription_plan');
+    updateAuthUI();
+    alert('You have been logged out.');
+}
+
+function updateAuthUI() {
+    const user = getCurrentUser();
+    const authButtons = document.getElementById('auth-buttons');
+    const userInfo = document.getElementById('user-info');
+    const userEmail = document.getElementById('user-email');
+    
+    if (user) {
+        authButtons.classList.add('hidden');
+        userInfo.classList.remove('hidden');
+        userEmail.textContent = user.email;
+    } else {
+        authButtons.classList.remove('hidden');
+        userInfo.classList.add('hidden');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateAuthUI();
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeLoginModal();
+            closeSubscribeModal();
+        }
+    });
+});
+</script>
+</body>
+</html>

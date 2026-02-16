@@ -7,63 +7,102 @@
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&amp;family=Lora:ital,wght@0,400..700;1,400..700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <!-- Material Icons -->
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<!-- Tailwind Configuration -->
+<!-- Tailwind Configuration - Brutalist Supabase-Inspired -->
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        "ink": "#2C2420", // Deep Ink
-                        "paper": "#F9F7F1", // Old Paper
-                        "parchment": "#EBE6DA", // Surface
-                        "faded-line": "#D8D1C4", // Border
-                        "editorial-red": "#9E2A2B", // Accent
-                        "library-green": "#4A5D44", // Secondary Accent
-                        "graphite": "#8A817C", // Muted
+                        "bg": "#0E0E10",
+                        "bg-secondary": "#18181B",
+                        "border": "#27272A",
+                        "foreground": "#FAFAFA",
+                        "muted": "#A1A1AA",
+                        "accent": "#3ECF8E",
+                        "accent-secondary": "#24A472",
+                        "accent-foreground": "#0E0E10",
+                        "destructive": "#C92A2A",
+                        "warning": "#F59E0B",
+                        "info": "#3B82F6",
                     },
                     fontFamily: {
-                        "serif-display": ["Newsreader", "serif"],
-                        "serif-body": ["Lora", "serif"],
-                        "mono": ["Geist Mono", "monospace"],
+                        "sans": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
                     },
-                    backgroundImage: {
-                        'paper-grain': "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E\")",
+                    boxShadow: {
+                        'brutal': '4px 4px 0px 0px rgba(62, 207, 142, 0.3)',
+                        'brutal-lg': '6px 6px 0px 0px rgba(62, 207, 142, 0.4)',
+                        'brutal-sm': '2px 2px 0px 0px rgba(62, 207, 142, 0.2)',
                     }
                 },
             },
         }
     </script>
 <style>
-        /* Custom Utilities for that specific print feel */
         body {
-            font-feature-settings: "kern", "liga", "calt"; /* Optimize legibility */
+            font-feature-settings: "cv11", "ss01";
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .brutal-border {
+            border: 2px solid #27272A;
+        }
+
+        .brutal-border-accent {
+            border: 2px solid #3ECF8E;
+        }
+
+        .brutal-shadow {
+            box-shadow: 4px 4px 0px 0px #3ECF8E;
+        }
+
+        .brutal-shadow-lg {
+            box-shadow: 6px 6px 0px 0px #3ECF8E;
+        }
+
+        .brutal-shadow-hover:hover {
+            box-shadow: 6px 6px 0px 0px #3ECF8E;
+            transform: translate(-2px, -2px);
         }
 
         .chapter-card {
-            transition: all 0.2s ease-out;
+            transition: all 0.15s ease-out;
         }
 
         .chapter-card:hover {
-            border-color: #2C2420; /* Ink */
-            transform: translateY(-2px);
+            border-color: #3ECF8E;
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px 0px #3ECF8E;
         }
 
-        /* Strikethrough effect for completed chapters */
+        .btn-brutal {
+            transition: all 0.15s ease-out;
+        }
+
+        .btn-brutal:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px 0px #3ECF8E;
+        }
+
+        .btn-brutal:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px 0px #3ECF8E;
+        }
+
         .completed-number {
             text-decoration: line-through;
-            text-decoration-color: #2C2420;
+            text-decoration-color: #A1A1AA;
             text-decoration-thickness: 2px;
             opacity: 0.6;
         }
 
-        /* Hide scrollbar for clean look but allow scrolling */
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -71,24 +110,49 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        /* Modal styles */
+        .modal-overlay {
+            background: rgba(14, 14, 16, 0.8);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
-<body class="bg-paper text-ink font-serif-body antialiased min-h-screen flex flex-col relative">
-<!-- Subtle Grain Overlay -->
-<div class="fixed inset-0 pointer-events-none z-50 bg-paper-grain mix-blend-multiply w-full h-full"></div>
+<body class="bg-bg text-foreground font-sans antialiased min-h-screen flex flex-col">
 <!-- Navigation Header -->
-<nav class="sticky top-0 z-40 w-full border-b border-faded-line bg-paper/95 backdrop-blur-sm px-6 py-4">
+<nav class="sticky top-0 z-40 w-full border-b border-border bg-bg/95 backdrop-blur-sm px-6 py-4">
 <div class="max-w-7xl mx-auto flex items-center justify-between">
 <div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-editorial-red text-2xl">menu_book</span>
-<h2 class="font-serif-display font-semibold text-xl tracking-tight text-ink">Academic RAG Journal</h2>
+<span class="material-symbols-outlined text-accent text-2xl">menu_book</span>
+<h2 class="font-sans font-bold text-xl tracking-tight text-foreground">Academic RAG Journal</h2>
 </div>
-<div class="flex items-center gap-8">
-<a class="font-mono text-xs uppercase tracking-wider text-ink hover:text-editorial-red transition-colors" href="#">About</a>
-<a class="font-mono text-xs uppercase tracking-wider text-ink hover:text-editorial-red transition-colors" href="#">Login</a>
-<button class="bg-ink text-paper font-mono text-xs uppercase tracking-wider px-4 py-2 rounded-sm hover:bg-editorial-red transition-colors">
+<div class="flex items-center gap-6">
+<a class="font-mono text-xs uppercase tracking-wider text-muted hover:text-accent transition-colors" href="about.html">About</a>
+<div id="auth-buttons">
+<a class="font-mono text-xs uppercase tracking-wider text-muted hover:text-accent transition-colors" href="#" onclick="openLoginModal(); return false;">Login</a>
+<button class="ml-4 bg-accent text-accent-foreground font-mono text-xs uppercase tracking-wider px-4 py-2 brutal-border brutal-shadow-hover btn-brutal" onclick="openSubscribeModal()">
                     Subscribe
                 </button>
+</div>
+<div id="user-info" class="hidden flex items-center gap-4">
+<span class="font-mono text-xs text-accent" id="user-email"></span>
+<button class="font-mono text-xs uppercase tracking-wider text-muted hover:text-destructive transition-colors" onclick="logout()">Logout</button>
+</div>
 </div>
 </div>
 </nav>
@@ -96,271 +160,471 @@
 <main class="flex-grow w-full max-w-7xl mx-auto px-6 py-16 md:py-24 relative z-10">
 <!-- Hero Section -->
 <header class="text-center mb-24 max-w-4xl mx-auto">
-<div class="inline-block mb-6 border-b border-editorial-red pb-1">
-<span class="font-mono text-xs uppercase tracking-widest text-editorial-red">Vol. 1 — Advanced Architectures</span>
+<div class="inline-block mb-6 brutal-border-accent px-4 py-2">
+<span class="font-mono text-xs uppercase tracking-widest text-accent">Vol. 1 — Advanced Architectures</span>
 </div>
-<h1 class="font-serif-display text-5xl md:text-7xl font-semibold leading-[1.1] tracking-tight mb-8 text-ink">
+<h1 class="font-sans text-5xl md:text-7xl font-bold leading-[1.1] tracking-tight mb-8 text-foreground">
                 Deep Dive into Retrieval Augmented Generation
             </h1>
-<p class="font-serif-body text-lg md:text-xl text-ink/80 leading-relaxed max-w-2xl mx-auto mb-10">
+<p class="font-sans text-lg md:text-xl text-muted leading-relaxed max-w-2xl mx-auto mb-10">
                 A comprehensive guide for AI Engineers and Data Scientists who value deep work and need a calm, authoritative space to internalize complex architectural patterns.
             </p>
 <!-- Course Meta Data -->
-<div class="flex flex-wrap justify-center items-center gap-6 md:gap-12 border-y border-faded-line py-4 bg-paper">
+<div class="flex flex-wrap justify-center items-center gap-6 md:gap-12 border-y border-border py-4 bg-bg-secondary">
 <div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-graphite text-lg">library_books</span>
-<span class="font-mono text-xs uppercase tracking-wider text-graphite">15 Modules</span>
+<span class="material-symbols-outlined text-accent text-lg">library_books</span>
+<span class="font-mono text-xs uppercase tracking-wider text-muted">15 Modules</span>
 </div>
 <div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-graphite text-lg">schedule</span>
-<span class="font-mono text-xs uppercase tracking-wider text-graphite">45h Reading</span>
+<span class="material-symbols-outlined text-accent text-lg">schedule</span>
+<span class="font-mono text-xs uppercase tracking-wider text-muted">45h Reading</span>
 </div>
 <div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-graphite text-lg">signal_cellular_alt</span>
-<span class="font-mono text-xs uppercase tracking-wider text-graphite">Adv. Level</span>
+<span class="material-symbols-outlined text-accent text-lg">signal_cellular_alt</span>
+<span class="font-mono text-xs uppercase tracking-wider text-muted">Adv. Level</span>
 </div>
 </div>
 </header>
 <!-- The Grid: Syllabus -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-faded-line border border-faded-line">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 brutal-border">
 <!-- Chapter 01: Next Up -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_01_reranking.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_01_reranking.html'">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red">01</span>
-<span class="inline-flex items-center justify-center w-2 h-2 rounded-full bg-editorial-red animate-pulse" title="Next Up"></span>
+<span class="font-sans text-5xl font-bold text-accent">01</span>
+<span class="inline-flex items-center justify-center w-2 h-2 rounded-full bg-accent animate-pulse" title="Next Up"></span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Reranking Strategies</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Reranking Strategies</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                     Understanding the trade-offs between bi-encoders and cross-encoders in modern information retrieval pipelines.
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Start Reading</span>
-<span class="material-symbols-outlined text-editorial-red text-sm opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1">arrow_forward</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Start Reading</span>
+<span class="material-symbols-outlined text-accent text-sm opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1">arrow_forward</span>
 </div>
 </article>
 <!-- Chapter 02 -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_02_chunking_strategies.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_02_chunking_strategies.html'">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red">02</span>
-<span class="material-symbols-outlined text-faded-line">lock_open</span>
+<span class="font-sans text-5xl font-bold text-accent">02</span>
+<span class="material-symbols-outlined text-muted">lock_open</span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Vector Databases</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Vector Databases</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                     A deep dive into HNSW indices, inverted file systems, and optimizing for high-dimensional nearest neighbor search.
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Estimated: 45m</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Estimated: 45m</span>
 </div>
 </article>
 <!-- Chapter 03 -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_03_embedding_models.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_03_embedding_models.html'">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red">03</span>
-<span class="material-symbols-outlined text-faded-line">lock_open</span>
+<span class="font-sans text-5xl font-bold text-accent">03</span>
+<span class="material-symbols-outlined text-muted">lock_open</span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Chunking Algorithms</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Chunking Algorithms</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                      Moving beyond fixed-size windows: semantic chunking, recursive splitting, and context-aware document segmentation.
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Estimated: 30m</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Estimated: 30m</span>
 </div>
 </article>
 <!-- Chapter 04 -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_04_vector_databases.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_04_vector_databases.html'">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red">04</span>
+<span class="font-sans text-5xl font-bold text-accent">04</span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Embeddings &amp; Latent Space</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Embeddings &amp; Latent Space</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                     Visualizing high-dimensional spaces and selecting the right embedding model for domain-specific tasks.
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Estimated: 55m</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Estimated: 55m</span>
 </div>
 </article>
 <!-- Chapter 05 -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_05_hybrid_search.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_05_hybrid_search.html'">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red">05</span>
+<span class="font-sans text-5xl font-bold text-accent">05</span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Hybrid Search</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Hybrid Search</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                     Combining sparse BM25 keyword matching with dense vector retrieval using Reciprocal Rank Fusion (RRF).
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Estimated: 40m</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Estimated: 40m</span>
 </div>
 </article>
 <!-- Chapter 06: Completed Example -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer opacity-75 hover:opacity-100">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer opacity-75 hover:opacity-100">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red completed-number">06</span>
-<span class="flex items-center justify-center w-5 h-5 rounded-full bg-library-green text-paper">
+<span class="font-sans text-5xl font-bold text-accent completed-number">06</span>
+<span class="flex items-center justify-center w-5 h-5 rounded brutal-border-accent bg-accent text-accent-foreground">
 <span class="material-symbols-outlined text-[14px] font-bold">check</span>
 </span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Prompt Engineering</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Prompt Engineering</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                     Chain-of-thought, few-shot prompting, and structuring context for optimal LLM adherence.
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-library-green uppercase tracking-wider font-medium">Completed</span>
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Review</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-accent uppercase tracking-wider font-medium">Completed</span>
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Review</span>
 </div>
 </article>
 <!-- Chapter 07 -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_07_multi_query_expansion.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_07_multi_query_expansion.html'">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red">07</span>
+<span class="font-sans text-5xl font-bold text-accent">07</span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Query Decomposition</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Query Decomposition</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                     Breaking down complex multi-hop questions into sub-queries for more accurate retrieval steps.
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Estimated: 50m</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Estimated: 50m</span>
 </div>
 </article>
 <!-- Chapter 08 -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_08_context_compression.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_08_context_compression.html'">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red">08</span>
+<span class="font-sans text-5xl font-bold text-accent">08</span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Evaluation Frameworks</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Evaluation Frameworks</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                     Implementing RAGAS and TruLens to quantitatively measure faithfulness, answer relevance, and context precision.
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Estimated: 60m</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Estimated: 60m</span>
 </div>
 </article>
 <!-- Chapter 09 -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_09_evaluation_metrics.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_09_evaluation_metrics.html'">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red">09</span>
+<span class="font-sans text-5xl font-bold text-accent">09</span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Agents &amp; Tool Use</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Agents &amp; Tool Use</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                     Transitioning from passive RAG pipelines to active agents capable of function calling and API interaction.
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Estimated: 55m</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Estimated: 55m</span>
 </div>
 </article>
 </div>
 <!-- Section Divider -->
 <div class="flex items-center justify-center my-16">
-<div class="h-px bg-faded-line w-full max-w-xs"></div>
-<span class="px-4 font-serif-display italic text-graphite">End of Core Curriculum</span>
-<div class="h-px bg-faded-line w-full max-w-xs"></div>
+<div class="h-px bg-border w-full max-w-xs"></div>
+<span class="px-4 font-mono text-xs text-muted uppercase tracking-wider">End of Core Curriculum</span>
+<div class="h-px bg-border w-full max-w-xs"></div>
 </div>
 <!-- Supplemental / Advanced Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-faded-line border border-faded-line">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-0 brutal-border">
 <!-- Chapter 10 -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_10_metadata_enhanced.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_10_metadata_enhanced.html'">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red">10</span>
-<span class="font-mono text-xs border border-editorial-red text-editorial-red px-2 py-1 rounded-sm uppercase">Case Study</span>
+<span class="font-sans text-5xl font-bold text-accent">10</span>
+<span class="font-mono text-xs brutal-border-accent text-accent px-2 py-1">Case Study</span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Legal Discovery RAG</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Legal Discovery RAG</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                     Architecting a system for analyzing millions of case files with 99.9% recall requirements.
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Read Case Study</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Read Case Study</span>
 </div>
 </article>
 <!-- Chapter 11 -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_11_agentic_workflows.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_11_agentic_workflows.html'">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red">11</span>
-<span class="font-mono text-xs border border-editorial-red text-editorial-red px-2 py-1 rounded-sm uppercase">Case Study</span>
+<span class="font-sans text-5xl font-bold text-accent">11</span>
+<span class="font-mono text-xs brutal-border-accent text-accent px-2 py-1">Case Study</span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Financial Analyst Agent</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Financial Analyst Agent</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                     Building a RAG pipeline that can interpret tabular data in PDFs and answer quantitative questions.
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Read Case Study</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Read Case Study</span>
 </div>
 </article>
 <!-- Chapter 12 -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_12_optimization_techniques.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_12_optimization_techniques.html'">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red">12</span>
+<span class="font-sans text-5xl font-bold text-accent">12</span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Optimization Techniques</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Optimization Techniques</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                     Advanced optimization strategies for improving RAG system performance, including caching, indexing, and model optimization techniques.
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Estimated: 55m</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Estimated: 55m</span>
 </div>
 </article>
 </div>
 <!-- Advanced Modules Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-faded-line border border-faded-line mt-12">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-0 brutal-border mt-12">
 <!-- Chapter 13 -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_13_domain_adaptation.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_13_domain_adaptation.html'">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red">13</span>
+<span class="font-sans text-5xl font-bold text-accent">13</span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Domain Adaptation</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Domain Adaptation</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                     Techniques for adapting RAG systems to specific domains, including domain-specific embeddings, fine-tuning approaches, and evaluation methodologies.
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Estimated: 50m</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Estimated: 50m</span>
 </div>
 </article>
 <!-- Chapter 14 -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_14_advanced_architectures.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_14_advanced_architectures.html'">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red">14</span>
+<span class="font-sans text-5xl font-bold text-accent">14</span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Advanced Architectures</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Advanced Architectures</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                     Exploring cutting-edge RAG architectures including multi-vector systems, graph-based retrieval, modular designs, and hybrid approaches.
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Estimated: 60m</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Estimated: 60m</span>
 </div>
 </article>
 <!-- Chapter 15 -->
-<article class="chapter-card group relative bg-paper p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_15_production_deployment.html'">
+<article class="chapter-card group relative bg-bg-secondary brutal-border p-8 flex flex-col h-full cursor-pointer" onclick="window.location.href='module_15_production_deployment.html'">
 <div class="flex justify-between items-start mb-6">
-<span class="font-serif-display text-5xl text-editorial-red">15</span>
+<span class="font-sans text-5xl font-bold text-accent">15</span>
 </div>
-<h3 class="font-serif-display text-2xl font-semibold text-ink mb-3 group-hover:text-editorial-red transition-colors">Production Deployment</h3>
-<p class="font-serif-body text-graphite text-base leading-relaxed mb-8 flex-grow">
+<h3 class="font-sans text-2xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">Production Deployment</h3>
+<p class="font-sans text-muted text-base leading-relaxed mb-8 flex-grow">
                     Best practices for deploying RAG systems in production environments, covering scalability, monitoring, security, and performance optimization.
                 </p>
-<div class="pt-6 border-t border-faded-line mt-auto flex justify-between items-center">
-<span class="font-mono text-xs text-graphite uppercase tracking-wider">Estimated: 65m</span>
+<div class="pt-6 border-t border-border mt-auto flex justify-between items-center">
+<span class="font-mono text-xs text-muted uppercase tracking-wider">Estimated: 65m</span>
 </div>
 </article>
 </div>
 </main>
 <!-- Footer -->
-<footer class="border-t border-faded-line bg-paper py-12 px-6 relative z-10">
+<footer class="border-t border-border bg-bg-secondary py-12 px-6">
 <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
 <div class="flex items-center gap-3">
-<div class="size-6 text-ink">
+<div class="size-6 text-accent">
 <svg fill="none" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
 <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
 </div>
-<span class="font-serif-display font-semibold text-lg text-ink">Academic RAG Journal</span>
+<span class="font-sans font-bold text-lg text-foreground">Academic RAG Journal</span>
 </div>
 <div class="text-center md:text-right">
-<p class="font-serif-body text-sm text-graphite italic">
-                    Designed for deep work. © 2023.
+<p class="font-mono text-xs text-muted">
+                    Designed for deep work. © 2026.
                 </p>
 </div>
 </div>
 </footer>
+
+<!-- Login Modal -->
+<div id="login-modal" class="fixed inset-0 z-50 hidden">
+<div class="modal-overlay absolute inset-0" onclick="closeLoginModal()"></div>
+<div class="flex items-center justify-center min-h-screen p-4">
+<div class="modal-content relative bg-bg-secondary brutal-border p-8 w-full max-w-md">
+<button class="absolute top-4 right-4 text-muted hover:text-foreground" onclick="closeLoginModal()">
+<span class="material-symbols-outlined">close</span>
+</button>
+<h2 class="font-sans text-2xl font-bold text-foreground mb-2">Welcome Back</h2>
+<p class="font-mono text-xs text-muted mb-6">Sign in to access your progress</p>
+<form id="login-form" onsubmit="handleLogin(event)">
+<div class="mb-4">
+<label class="block font-mono text-xs text-muted mb-2 uppercase">Email</label>
+<input type="email" id="login-email" required class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent" placeholder="you@example.com"/>
+</div>
+<div class="mb-6">
+<label class="block font-mono text-xs text-muted mb-2 uppercase">Password</label>
+<input type="password" id="login-password" required class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent" placeholder="••••••••"/>
+</div>
+<button type="submit" class="w-full bg-accent text-accent-foreground font-mono text-sm uppercase tracking-wider py-3 brutal-border brutal-shadow-hover btn-brutal">
+                    Sign In
+                </button>
+</form>
+<p class="font-mono text-xs text-muted text-center mt-6">
+                    Don't have an account? <a href="#" onclick="openSubscribeModal(); closeLoginModal(); return false;" class="text-accent hover:underline">Subscribe</a>
+</p>
+</div>
+</div>
+</div>
+
+<!-- Subscribe Modal -->
+<div id="subscribe-modal" class="fixed inset-0 z-50 hidden">
+<div class="modal-overlay absolute inset-0" onclick="closeSubscribeModal()"></div>
+<div class="flex items-center justify-center min-h-screen p-4">
+<div class="modal-content relative bg-bg-secondary brutal-border p-8 w-full max-w-md">
+<button class="absolute top-4 right-4 text-muted hover:text-foreground" onclick="closeSubscribeModal()">
+<span class="material-symbols-outlined">close</span>
+</button>
+<h2 class="font-sans text-2xl font-bold text-foreground mb-2">Subscribe</h2>
+<p class="font-mono text-xs text-muted mb-6">Get full access to all modules and resources</p>
+<form id="subscribe-form" onsubmit="handleSubscribe(event)">
+<div class="mb-4">
+<label class="block font-mono text-xs text-muted mb-2 uppercase">Email</label>
+<input type="email" id="subscribe-email" required class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent" placeholder="you@example.com"/>
+</div>
+<div class="mb-4">
+<label class="block font-mono text-xs text-muted mb-2 uppercase">Password</label>
+<input type="password" id="subscribe-password" required class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent" placeholder="Create a password"/>
+</div>
+<div class="mb-6">
+<label class="block font-mono text-xs text-muted mb-2 uppercase">Plan</label>
+<select id="subscribe-plan" class="w-full bg-bg brutal-border px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-accent">
+<option value="free">Free - Basic Access</option>
+<option value="pro">Pro - $9/month (All Modules)</option>
+<option value="enterprise">Enterprise - $49/month (Team Access)</option>
+</select>
+</div>
+<button type="submit" class="w-full bg-accent text-accent-foreground font-mono text-sm uppercase tracking-wider py-3 brutal-border brutal-shadow-hover btn-brutal">
+                    Create Account
+                </button>
+</form>
+<p class="font-mono text-xs text-muted text-center mt-6">
+                    Already have an account? <a href="#" onclick="openLoginModal(); closeSubscribeModal(); return false;" class="text-accent hover:underline">Sign In</a>
+</p>
+</div>
+</div>
+</div>
+
+<!-- JavaScript for Auth -->
+<script>
+// JWT Utility
+const JWT_SECRET = 'academic-rag-journal-secret-key-2026';
+
+function generateToken(email) {
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(JSON.stringify({ 
+        email: email, 
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60) // 7 days
+    }));
+    const signature = btoa(`${header}.${payload}.${JWT_SECRET}`);
+    return `${header}.${payload}.${signature}`;
+}
+
+function verifyToken(token) {
+    try {
+        const parts = token.split('.');
+        if (parts.length !== 3) return null;
+        const payload = JSON.parse(atob(parts[1]));
+        if (payload.exp * 1000 < Date.now()) return null;
+        return payload;
+    } catch (e) {
+        return null;
+    }
+}
+
+function getToken() {
+    return localStorage.getItem('auth_token');
+}
+
+function setToken(token) {
+    localStorage.setItem('auth_token', token);
+}
+
+function removeToken() {
+    localStorage.removeItem('auth_token');
+}
+
+function getCurrentUser() {
+    const token = getToken();
+    if (!token) return null;
+    return verifyToken(token);
+}
+
+// Modal Functions
+function openLoginModal() {
+    document.getElementById('login-modal').classList.remove('hidden');
+}
+
+function closeLoginModal() {
+    document.getElementById('login-modal').classList.add('hidden');
+}
+
+function openSubscribeModal() {
+    document.getElementById('subscribe-modal').classList.remove('hidden');
+}
+
+function closeSubscribeModal() {
+    document.getElementById('subscribe-modal').classList.add('hidden');
+}
+
+// Auth Functions
+function handleLogin(event) {
+    event.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    // Simple validation (in production, verify with backend)
+    if (email && password) {
+        const token = generateToken(email);
+        setToken(token);
+        updateAuthUI();
+        closeLoginModal();
+        alert('Welcome back!');
+    }
+}
+
+function handleSubscribe(event) {
+    event.preventDefault();
+    const email = document.getElementById('subscribe-email').value;
+    const password = document.getElementById('subscribe-password').value;
+    const plan = document.getElementById('subscribe-plan').value;
+    
+    if (email && password) {
+        const token = generateToken(email);
+        setToken(token);
+        localStorage.setItem('subscription_plan', plan);
+        updateAuthUI();
+        closeSubscribeModal();
+        alert(`Welcome! You've subscribed to the ${plan} plan.`);
+    }
+}
+
+function logout() {
+    removeToken();
+    localStorage.removeItem('subscription_plan');
+    updateAuthUI();
+    alert('You have been logged out.');
+}
+
+function updateAuthUI() {
+    const user = getCurrentUser();
+    const authButtons = document.getElementById('auth-buttons');
+    const userInfo = document.getElementById('user-info');
+    const userEmail = document.getElementById('user-email');
+    
+    if (user) {
+        authButtons.classList.add('hidden');
+        userInfo.classList.remove('hidden');
+        userEmail.textContent = user.email;
+    } else {
+        authButtons.classList.remove('hidden');
+        userInfo.classList.add('hidden');
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateAuthUI();
+    
+    // Close modals on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeLoginModal();
+            closeSubscribeModal();
+        }
+    });
+});
+</script>
 </body>
 </html>
