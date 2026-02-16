@@ -135,16 +135,30 @@
         
         /* Fix nav button spacing */
         #search-btn, button[aria-label="Settings"] {
-            min-width: 32px;
-            min-height: 32px;
-            display: inline-flex;
+            min-width: 40px;
+            min-height: 40px;
+            display: flex;
             align-items: center;
             justify-content: center;
+            padding: 8px;
+            gap: 4px;
+        }
+        
+        /* Fix schedule + reading time spacing */
+        .hidden.md\:flex.items-center.gap-2 {
+            gap: 8px !important;
         }
         
         .material-symbols-outlined {
             display: block;
             line-height: 1;
+            margin: 0;
+            vertical-align: middle;
+        }
+        
+        /* Fix button container spacing */
+        .flex.gap-3 {
+            gap: 8px !important;
         }
     </style>
 </head>
@@ -759,9 +773,7 @@ Dynamic tool selection allows agents to choose the most appropriate tool for eac
 <p class="font-mono text-[12px] leading-5 text-muted group-hover:text-foreground transition-colors">
 <strong class="text-foreground">ReAct pattern</strong> interleaves reasoning and acting for effective problem solving.
                         </p>
-<a class="inline-flex items-center gap-1 mt-2 text-[10px] uppercase tracking-widest text-accent font-bold hover:underline" href="artifact_view.html" target="_blank">
-                            View Code <span class="material-symbols-outlined text-[10px]">open_in_new</span>
-</a>
+<!-- Code view link removed -->
 </div>
 <!-- Note 3: Aligned with planning and reasoning -->
 <div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-24">
@@ -812,8 +824,6 @@ Dynamic tool selection allows agents to choose the most appropriate tool for eac
     });
 
     // Search button functionality
-    document.getElementById('search-btn').addEventListener('click', function() {
-        window.location.href = 'search_index.html';
-    });
+    // Search functionality disabled
 </script>
 </body></html>
