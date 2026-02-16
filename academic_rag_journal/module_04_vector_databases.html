@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic RAG Journal - Module 04: Vector Databases</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;family=Geist+Mono:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#b80f12",
+                        "ink": "#2C2420",
+                        "paper": "#F9F7F1",
+                        "parchment": "#EBE6DA",
+                        "graphite": "#8A817C",
+                        "faded": "#D8D1C4",
+                        "library-green": "#4A5D44",
+                    },
+                    fontFamily: {
+                        "display": ["Newsreader", "serif"],
+                        "serif": ["Lora", "serif"],
+                        "mono": ["Geist Mono", "monospace"],
+                        "code": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.5rem"
+                    },
+                    backgroundImage: {
+                        'grain': "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9F7F1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8D1C4;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8A817C;
+        }
+
+        /* Hide scrollbar for clean UI but allow scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Typography overrides */
+        .prose-academic p {
+            margin-top: 1.5em;
+            margin-bottom: 1.5em;
+            line-height: 1.8;
+            font-family: 'Lora', serif;
+            font-size: 19px;
+            color: #2C2420;
+        }
+        .prose-academic h2 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 2em;
+            font-size: 32px;
+            letter-spacing: -0.01em;
+        }
+        .prose-academic h3 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 1.5em;
+            font-size: 24px;
+        }
+
+        /* Sepia Code Theme */
+        .token.comment { color: #8A817C; font-style: italic; }
+        .token.function { color: #9E2A2B; }
+        .token.keyword { color: #b80f12; font-weight: bold; }
+        .token.string { color: #4A5D44; }
+        .token.number { color: #b80f12; }
+        
+        /* Marginalia hover effect */
+        .marginalia-item {
+            transition: transform 0.2s ease;
+        }
+        .marginalia-item:hover {
+            transform: translateX(-4px);
+        }
+        
+        /* Mermaid diagram styling */
+        .mermaid-diagram {
+            background: white;
+            border: 1px solid #D8D1C4;
+            border-radius: 4px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="bg-paper text-ink antialiased selection:bg-primary/20 selection:text-ink min-h-screen flex flex-col font-serif relative">
+<!-- Grain Texture Overlay -->
+<div class="fixed inset-0 pointer-events-none z-50 bg-grain mix-blend-multiply opacity-40"></div>
+<!-- Top Navigation (Minimal) -->
+<header class="sticky top-0 z-40 w-full border-b border-faded bg-paper/95 backdrop-blur-sm h-14 flex items-center justify-between px-6 lg:px-10">
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-2 text-ink hover:text-primary transition-colors group" href="index.html">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-display font-medium text-lg tracking-tight">Syllabus</span>
+</a>
+<div class="h-4 w-px bg-faded mx-2"></div>
+<span class="font-mono text-xs uppercase tracking-wider text-graphite">Module 04</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-2 text-graphite text-xs font-mono">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span id="reading-time">45 min read</span>
+</div>
+<div class="flex gap-3">
+<button id="search-btn" aria-label="Search" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<button aria-label="Settings" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">text_fields</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 flex justify-center w-full relative">
+<div class="w-full max-w-[1440px] flex flex-row">
+<!-- Left Rail: Table of Contents -->
+<aside class="hidden lg:flex w-[240px] flex-col sticky top-14 h-[calc(100vh-3.5rem)] border-r border-faded overflow-y-auto pt-12 pb-10 pl-10 pr-6">
+<nav class="flex flex-col gap-8">
+<div>
+<h4 class="font-mono text-xs uppercase tracking-widest text-graphite mb-4">Contents</h4>
+<ul class="flex flex-col gap-3 font-mono text-[13px] leading-relaxed">
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#introduction">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Introduction
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#vector-database-solutions">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Vector Database Solutions
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#implementation-examples">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Implementation Examples
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#performance-optimization">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Performance Optimization
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#production-considerations">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Production Considerations
+                                </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-8 border-t border-faded">
+<div class="flex flex-col gap-2">
+<span class="font-mono text-[11px] uppercase tracking-widest text-graphite">Progress</span>
+<div class="w-full bg-parchment h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[35%]"></div>
+</div>
+<span class="font-mono text-xs text-ink text-right">35%</span>
+</div>
+</div>
+</nav>
+</aside>
+<!-- Center Stage: The Reader -->
+<article class="flex-1 max-w-[720px] mx-auto pt-16 pb-32 px-6 md:px-12 min-h-screen">
+<!-- Module Header -->
+<header class="mb-16 border-b border-faded pb-12">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-mono text-sm font-medium text-primary px-2 py-1 bg-primary/10 rounded">Module 04</span>
+<span class="font-mono text-sm text-graphite">Advanced RAG Architectures</span>
+</div>
+<h1 class="font-display text-[48px] md:text-[56px] leading-[1.1] font-semibold text-ink tracking-tight mb-6">
+                        Vector Databases &amp; Approximate Nearest Neighbors
+                    </h1>
+<p class="font-serif text-xl text-ink/80 leading-relaxed max-w-[90%]">
+                        An exploration into high-dimensional vector spaces, the mechanics of HNSW, and how to optimize retrieval latency for production-grade RAG systems.
+                    </p>
+</header>
+<!-- Content Body -->
+<div class="prose-academic">
+<h2 id="introduction">Introduction to Vector Databases</h2>
+<p>
+Vector databases are specialized database systems designed to store and efficiently retrieve high-dimensional vector embeddings. They play a crucial role in RAG systems by enabling fast similarity search, which is essential for retrieving relevant documents based on user queries.
+</p>
+
+<p>
+The fundamental challenge in vector databases is the "curse of dimensionality"—as the number of dimensions increases, the volume of the space increases exponentially, making exact nearest neighbor search computationally expensive. Vector databases address this through various approximation algorithms that trade a small amount of accuracy for significant gains in speed.
+</p>
+
+<h2 id="vector-database-solutions">Vector Database Solutions</h2>
+<h3>Chroma</h3>
+<p>
+<strong>Chroma</strong> is an open-source vector database designed for AI applications. It's lightweight, easy to use, and suitable for prototyping and small to medium-scale applications.
+</p>
+
+<div class="my-6 p-4 border border-faded bg-parchment rounded-sm">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5">info</span>
+<div class="space-y-2">
+<h4 class="font-display font-bold text-ink">Pros and Cons of Chroma</h4>
+<p class="text-sm font-body text-ink/80 leading-relaxed">
+<strong>Pros:</strong> Easy to set up and use, open source with active community, built-in data management features, integrates well with LangChain and other frameworks.<br>
+<strong>Cons:</strong> Limited scalability compared to commercial solutions, not ideal for enterprise-level deployments, less advanced indexing options.
+</p>
+</div>
+</div>
+</div>
+
+<h3>FAISS (Facebook AI Similarity Search)</h3>
+<p>
+<strong>FAISS</strong> is an open-source library developed by Facebook AI Research for efficient similarity search and clustering of dense vectors.
+</p>
+
+<div class="my-6 p-4 border border-faded bg-parchment rounded-sm">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5">info</span>
+<div class="space-y-2">
+<h4 class="font-display font-bold text-ink">Pros and Cons of FAISS</h4>
+<p class="text-sm font-body text-ink/80 leading-relaxed">
+<strong>Pros:</strong> High performance and speed, multiple indexing algorithms, memory-efficient, supports both CPU and GPU.<br>
+<strong>Cons:</strong> Steeper learning curve, primarily a library, not a full database solution, requires manual management of indexing and storage.
+</p>
+</div>
+</div>
+</div>
+
+<h3>Pinecone</h3>
+<p>
+<strong>Pinecone</strong> is a managed vector database service designed for production applications.
+</p>
+
+<div class="my-6 p-4 border border-faded bg-parchment rounded-sm">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5">info</span>
+<div class="space-y-2">
+<h4 class="font-display font-bold text-ink">Pros and Cons of Pinecone</h4>
+<p class="text-sm font-body text-ink/80 leading-relaxed">
+<strong>Pros:</strong> Fully managed service, high scalability, real-time updates, auto-scaling capabilities.<br>
+<strong>Cons:</strong> Commercial solution (not free), vendor lock-in concerns, less control over infrastructure.
+</p>
+</div>
+</div>
+</div>
+
+<h3>Weaviate</h3>
+<p>
+<strong>Weaviate</strong> is an open-source vector database with a GraphQL API and built-in ML model integration.
+</p>
+
+<div class="my-6 p-4 border border-faded bg-parchment rounded-sm">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5">info</span>
+<div class="space-y-2">
+<h4 class="font-display font-bold text-ink">Pros and Cons of Weaviate</h4>
+<p class="text-sm font-body text-ink/80 leading-relaxed">
+<strong>Pros:</strong> Schema-based design, GraphQL API, built-in modules for ML models, supports hybrid search.<br>
+<strong>Cons:</strong> More complex setup, learning curve for GraphQL, smaller community compared to others.
+</p>
+</div>
+</div>
+</div>
+
+<h2 id="implementation-examples">Implementation Examples</h2>
+<p>
+In the <code>example.py</code> file included with this module, you'll find implementations of:
+</p>
+<ul class="list-disc pl-6 my-6">
+<li>Chroma vector database setup and usage</li>
+<li>FAISS indexing and search</li>
+<li>Integration with embedding models</li>
+<li>Performance comparison between different solutions</li>
+<li>Query optimization techniques</li>
+</ul>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">vector_db_base.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+<span class="token keyword">import</span> time
+<span class="token keyword">import</span> uuid
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Any<span class="token punctuation">,</span> Optional
+<span class="token keyword">from</span> sentence_transformers <span class="token keyword">import</span> SentenceTransformer
+<span class="token keyword">import</span> chromadb
+<span class="token keyword">from</span> chromadb<span class="token punctuation">.</span>config <span class="token keyword">import</span> Settings
+<span class="token keyword">import</span> faiss
+<span class="token keyword">import</span> pickle
+<span class="token keyword">import</span> os
+
+
+<span class="token keyword">class</span> <span class="token class-name">VectorDBBase</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""Base class for vector database implementations"""</span>
+
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> dimension<span class="token punctuation">:</span> int<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>dimension <span class="token operator">=</span> dimension
+        self<span class="token punctuation">.</span>embedder <span class="token operator">=</span> SentenceTransformer<span class="token punctuation">(</span><span class="token string">'all-MiniLM-L6-v2'</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">add_embeddings</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> texts<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> metadata<span class="token punctuation">:</span> Optional<span class="token punctuation">[</span>List<span class="token punctuation">[</span>Dict<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""Add embeddings to the database"""</span>
+        <span class="token keyword">raise</span> <span class="token builtin">NotImplementedError</span>
+
+    <span class="token keyword">def</span> <span class="token function">search</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""Search for similar embeddings"""</span>
+        <span class="token keyword">raise</span> <span class="token builtin">NotImplementedError</span>
+
+    <span class="token keyword">def</span> <span class="token function">batch_search</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> queries<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""Perform batch search"""</span>
+        results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> query <span class="token keyword">in</span> queries<span class="token punctuation">:</span>
+            results<span class="token punctuation">.</span>append<span class="token punctuation">(</span>self<span class="token punctuation">.</span>search<span class="token punctuation">(</span>query<span class="token punctuation">,</span> k<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> results</code></pre>
+</div>
+</div>
+
+<h3>ChromaDB Wrapper Implementation</h3>
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">chroma_wrapper.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">ChromaDBWrapper</span><span class="token punctuation">(</span>VectorDBBase<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""Chroma vector database wrapper"""</span>
+
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> collection_name<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"rag_collection"</span><span class="token punctuation">,</span> persist_directory<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"./chroma_db"</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token number">384</span><span class="token punctuation">)</span>  <span class="token comment"># all-MiniLM-L6-v2 dimension</span>
+        self<span class="token punctuation">.</span>persist_directory <span class="token operator">=</span> persist_directory
+        self<span class="token punctuation">.</span>client <span class="token operator">=</span> chromadb<span class="token punctuation">.</span>PersistentClient<span class="token punctuation">(</span>path<span class="token operator">=</span>persist_directory<span class="token punctuation">)</span>
+
+        <span class="token comment"># Create or get collection</span>
+        self<span class="token punctuation">.</span>collection <span class="token operator">=</span> self<span class="token punctuation">.</span>client<span class="token punctuation">.</span>get_or_create_collection<span class="token punctuation">(</span>
+            name<span class="token operator">=</span>collection_name<span class="token punctuation">,</span>
+            metadata<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">"hnsw:space"</span><span class="token punctuation">:</span> <span class="token string">"cosine"</span><span class="token punctuation">}</span>  <span class="token comment"># Use cosine similarity</span>
+        <span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">add_embeddings</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> texts<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> metadata<span class="token punctuation">:</span> Optional<span class="token punctuation">[</span>List<span class="token punctuation">[</span>Dict<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""Add embeddings to ChromaDB"""</span>
+        <span class="token comment"># Generate embeddings</span>
+        embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>embedder<span class="token punctuation">.</span>encode<span class="token punctuation">(</span>texts<span class="token punctuation">)</span><span class="token punctuation">.</span>tolist<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+        <span class="token comment"># Generate IDs</span>
+        ids <span class="token operator">=</span> <span class="token punctuation">[</span>str<span class="token punctuation">(</span>uuid<span class="token punctuation">.</span>uuid4<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> texts<span class="token punctuation">]</span>
+
+        <span class="token comment"># Prepare metadata</span>
+        <span class="token keyword">if</span> metadata <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            <span class="token comment"># ChromaDB requires non-empty metadata dictionaries or None</span>
+            metadatas <span class="token operator">=</span> <span class="token boolean">None</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># Ensure metadata is properly formatted</span>
+            metadatas <span class="token operator">=</span> metadata
+
+        <span class="token comment"># Add to collection</span>
+        self<span class="token punctuation">.</span>collection<span class="token punctuation">.</span>add<span class="token punctuation">(</span>
+            embeddings<span class="token operator">=</span>embeddings<span class="token punctuation">,</span>
+            documents<span class="token operator">=</span>texts<span class="token punctuation">,</span>
+            metadatas<span class="token operator">=</span>metadatas<span class="token punctuation">,</span>
+            ids<span class="token operator">=</span>ids
+        <span class="token punctuation">)</span>
+
+        <span class="token keyword">return</span> ids
+
+    <span class="token keyword">def</span> <span class="token function">search</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""Search for similar embeddings in ChromaDB"""</span>
+        <span class="token comment"># Generate query embedding</span>
+        query_embedding <span class="token operator">=</span> self<span class="token punctuation">.</span>embedder<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>query<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">.</span>tolist<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+        <span class="token comment"># Perform similarity search</span>
+        results <span class="token operator">=</span> self<span class="token punctuation">.</span>collection<span class="token punctuation">.</span>query<span class="token punctuation">(</span>
+            query_embeddings<span class="token operator">=</span>query_embedding<span class="token punctuation">,</span>
+            n_results<span class="token operator">=</span>k<span class="token punctuation">,</span>
+            include<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'documents'</span><span class="token punctuation">,</span> <span class="token string">'metadatas'</span><span class="token punctuation">,</span> <span class="token string">'distances'</span><span class="token punctuation">]</span>
+        <span class="token punctuation">)</span>
+
+        <span class="token comment"># Format results</span>
+        formatted_results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>results<span class="token punctuation">[</span><span class="token string">'documents'</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># Handle potential None metadata</span>
+            metadata <span class="token operator">=</span> results<span class="token punctuation">[</span><span class="token string">'metadatas'</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token keyword">if</span> results<span class="token punctuation">[</span><span class="token string">'metadatas'</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token keyword">is</span> <span class="token keyword">not</span> <span class="token boolean">None</span> <span class="token keyword">else</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+            formatted_results<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">{</span>
+                <span class="token string">'id'</span><span class="token punctuation">:</span> results<span class="token punctuation">[</span><span class="token string">'ids'</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span>
+                <span class="token string">'text'</span><span class="token punctuation">:</span> results<span class="token punctuation">[</span><span class="token string">'documents'</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span>
+                <span class="token string">'metadata'</span><span class="token punctuation">:</span> metadata<span class="token punctuation">,</span>
+                <span class="token string">'distance'</span><span class="token punctuation">:</span> results<span class="token punctuation">[</span><span class="token string">'distances'</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+            <span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+        <span class="token keyword">return</span> formatted_results
+
+    <span class="token keyword">def</span> <span class="token function">get_count</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> int<span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""Get the total number of embeddings in the collection"""</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>collection<span class="token punctuation">.</span>count<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+</div>
+</div>
+
+<h3>FAISS Wrapper Implementation</h3>
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">faiss_wrapper.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">FAISSWrapper</span><span class="token punctuation">(</span>VectorDBBase<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""FAISS vector database wrapper"""</span>
+
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> dimension<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">384</span><span class="token punctuation">,</span> index_type<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"Flat"</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>dimension<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>index_type <span class="token operator">=</span> index_type
+        self<span class="token punctuation">.</span>index <span class="token operator">=</span> <span class="token boolean">None</span>
+        self<span class="token punctuation">.</span>texts <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>metadata <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>ids <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+        <span class="token comment"># Create FAISS index based on type</span>
+        <span class="token keyword">if</span> index_type <span class="token operator">==</span> <span class="token string">"Flat"</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>index <span class="token operator">=</span> faiss<span class="token punctuation">.</span>IndexFlatIP<span class="token punctuation">(</span>dimension<span class="token punctuation">)</span>  <span class="token comment"># Inner Product (Cosine similarity with normalized vectors)</span>
+        <span class="token keyword">elif</span> index_type <span class="token operator">==</span> <span class="token string">"IVF"</span><span class="token punctuation">:</span>
+            <span class="token comment"># More complex index with quantizer - will be reinitialized with proper nlist during training</span>
+            quantizer <span class="token operator">=</span> faiss<span class="token punctuation">.</span>IndexFlatIP<span class="token punctuation">(</span>dimension<span class="token punctuation">)</span>
+            nlist <span class="token operator">=</span> <span class="token number">1</span>  <span class="token comment"># Placeholder, will be set properly during training</span>
+            self<span class="token punctuation">.</span>index <span class="token operator">=</span> faiss<span class="token punctuation">.</span>IndexIVFFlat<span class="token punctuation">(</span>quantizer<span class="token punctuation">,</span> dimension<span class="token punctuation">,</span> nlist<span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>quantizer <span class="token operator">=</span> quantizer
+        <span class="token keyword">elif</span> index_type <span class="token operator">==</span> <span class="token string">"HNSW"</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>index <span class="token operator">=</span> faiss<span class="token punctuation">.</span>IndexHNSWFlat<span class="token punctuation">(</span>dimension<span class="token punctuation">,</span> <span class="token number">32</span><span class="token punctuation">)</span>  <span class="token comment"># M=32</span>
+
+    <span class="token keyword">def</span> <span class="token function">add_embeddings</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> texts<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> metadata<span class="token punctuation">:</span> Optional<span class="token punctuation">[</span>List<span class="token punctuation">[</span>Dict<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""Add embeddings to FAISS"""</span>
+        <span class="token comment"># Generate embeddings</span>
+        embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>embedder<span class="token punctuation">.</span>encode<span class="token punctuation">(</span>texts<span class="token punctuation">)</span>
+
+        <span class="token comment"># Normalize embeddings for cosine similarity</span>
+        faiss<span class="token punctuation">.</span>normalize_L2<span class="token punctuation">(</span>embeddings<span class="token punctuation">)</span>
+
+        <span class="token comment"># Store texts and metadata</span>
+        self<span class="token punctuation">.</span>texts<span class="token punctuation">.</span>extend<span class="token punctuation">(</span>texts<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> metadata <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>metadata<span class="token punctuation">.</span>extend<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token builtin">len</span><span class="token punctuation">(</span>texts<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>metadata<span class="token punctuation">.</span>extend<span class="token punctuation">(</span>metadata<span class="token punctuation">)</span>
+
+        <span class="token comment"># Generate IDs</span>
+        ids <span class="token operator">=</span> <span class="token punctuation">[</span>str<span class="token punctuation">(</span>uuid<span class="token punctuation">.</span>uuid4<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> texts<span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>ids<span class="token punctuation">.</span>extend<span class="token punctuation">(</span>ids<span class="token punctuation">)</span>
+
+        <span class="token comment"># Add embeddings to index</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>index_type <span class="token operator">==</span> <span class="token string">"IVF"</span><span class="token punctuation">:</span>
+            <span class="token comment"># Train the index if it hasn't been trained</span>
+            <span class="token keyword">if</span> <span class="token keyword">not</span> self<span class="token punctuation">.</span>index<span class="token punctuation">.</span>is_trained<span class="token punctuation">:</span>
+                <span class="token comment"># Calculate appropriate number of clusters (nlist)</span>
+                <span class="token comment"># Rule of thumb: nlist should be between sqrt(N) and N/10, where N is number of vectors</span>
+                n <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>texts<span class="token punctuation">)</span>
+                <span class="token comment"># Use a minimum of 1 and ensure it's not more than the number of vectors</span>
+                nlist <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token builtin">min</span><span class="token punctuation">(</span>n<span class="token punctuation">,</span> int<span class="token punctuation">(</span>n <span class="token operator">**</span> <span class="token number">0.5</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+                <span class="token comment"># Reinitialize the index with the correct nlist</span>
+                quantizer <span class="token operator">=</span> self<span class="token punctuation">.</span>quantizer
+                self<span class="token punctuation">.</span>index <span class="token operator">=</span> faiss<span class="token punctuation">.</span>IndexIVFFlat<span class="token punctuation">(</span>quantizer<span class="token punctuation">,</span> self<span class="token punctuation">.</span>dimension<span class="token punctuation">,</span> nlist<span class="token punctuation">)</span>
+
+                <span class="token comment"># Train the index</span>
+                self<span class="token punctuation">.</span>index<span class="token punctuation">.</span>train<span class="token punctuation">(</span>embeddings<span class="token punctuation">.</span>astype<span class="token punctuation">(</span><span class="token string">'float32'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>index<span class="token punctuation">.</span>add<span class="token punctuation">(</span>embeddings<span class="token punctuation">.</span>astype<span class="token punctuation">(</span><span class="token string">'float32'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+        <span class="token keyword">return</span> ids
+
+    <span class="token keyword">def</span> <span class="token function">search</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""Search for similar embeddings in FAISS"""</span>
+        <span class="token comment"># Generate query embedding</span>
+        query_embedding <span class="token operator">=</span> self<span class="token punctuation">.</span>embedder<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>query<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        faiss<span class="token punctuation">.</span>normalize_L2<span class="token punctuation">(</span>query_embedding<span class="token punctuation">)</span>
+
+        <span class="token comment"># Perform similarity search</span>
+        scores<span class="token punctuation">,</span> indices <span class="token operator">=</span> self<span class="token punctuation">.</span>index<span class="token punctuation">.</span>search<span class="token punctuation">(</span>query_embedding<span class="token punctuation">.</span>astype<span class="token punctuation">(</span><span class="token string">'float32'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> k<span class="token punctuation">)</span>
+
+        <span class="token comment"># Format results</span>
+        formatted_results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>indices<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            idx <span class="token operator">=</span> indices<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+            <span class="token keyword">if</span> idx <span class="token operator">!=</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token keyword">and</span> idx <span class="token operator">&lt;</span> <span class="token builtin">len</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>texts<span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment"># Valid index check</span>
+                formatted_results<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">{</span>
+                    <span class="token string">'id'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>ids<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">,</span>
+                    <span class="token string">'text'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>texts<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">,</span>
+                    <span class="token string">'metadata'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>metadata<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">,</span>
+                    <span class="token string">'score'</span><span class="token punctuation">:</span> <span class="token builtin">float</span><span class="token punctuation">(</span>scores<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># Cosine similarity score</span>
+                <span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+        <span class="token keyword">return</span> formatted_results
+
+    <span class="token keyword">def</span> <span class="token function">save_index</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> filepath<span class="token punctuation">:</span> str<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""Save the FAISS index and associated data"""</span>
+        <span class="token comment"># Save the FAISS index</span>
+        faiss<span class="token punctuation">.</span>write_index<span class="token punctuation">(</span>self<span class="token punctuation">.</span>index<span class="token punctuation">,</span> f<span class="token string">"{filepath}.faiss"</span><span class="token punctuation">)</span>
+
+        <span class="token comment"># Save texts, metadata, and ids</span>
+        data <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">'texts'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>texts<span class="token punctuation">,</span>
+            <span class="token string">'metadata'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>metadata<span class="token punctuation">,</span>
+            <span class="token string">'ids'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>ids
+        <span class="token punctuation">}</span>
+        <span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span>f<span class="token string">"{filepath}.pkl"</span><span class="token punctuation">,</span> <span class="token string">'wb'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> f<span class="token punctuation">:</span>
+            pickle<span class="token punctuation">.</span>dump<span class="token punctuation">(</span>data<span class="token punctuation">,</span> f<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">load_index</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> filepath<span class="token punctuation">:</span> str<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""Load the FAISS index and associated data"""</span>
+        <span class="token comment"># Load the FAISS index</span>
+        self<span class="token punctuation">.</span>index <span class="token operator">=</span> faiss<span class="token punctuation">.</span>read_index<span class="token punctuation">(</span>f<span class="token string">"{filepath}.faiss"</span><span class="token punctuation">)</span>
+
+        <span class="token comment"># Load texts, metadata, and ids</span>
+        <span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span>f<span class="token string">"{filepath}.pkl"</span><span class="token punctuation">,</span> <span class="token string">'rb'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> f<span class="token punctuation">:</span>
+            data <span class="token operator">=</span> pickle<span class="token punctuation">.</span>load<span class="token punctuation">(</span>f<span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>texts <span class="token operator">=</span> data<span class="token punctuation">[</span><span class="token string">'texts'</span><span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>metadata <span class="token operator">=</span> data<span class="token punctuation">[</span><span class="token string">'metadata'</span><span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>ids <span class="token operator">=</span> data<span class="token punctuation">[</span><span class="token string">'ids'</span><span class="token punctuation">]</span>
+
+        <span class="token comment"># Update dimension based on loaded index</span>
+        self<span class="token punctuation">.</span>dimension <span class="token operator">=</span> self<span class="token punctuation">.</span>index<span class="token punctuation">.</span>d</code></pre>
+</div>
+</div>
+
+<h2 id="performance-optimization">Performance Optimization Techniques</h2>
+<h3>Index Selection</h3>
+<p>
+Different indexing algorithms provide various trade-offs between:
+</p>
+<ul class="list-disc pl-6 my-6">
+<li><strong>Speed vs. Accuracy</strong>: Approximate methods are faster but may sacrifice some accuracy</li>
+<li><strong>Memory Usage</strong>: More accurate methods often require more memory</li>
+<li><strong>Index Build Time</strong>: Some methods require longer indexing times</li>
+</ul>
+
+<h3>Parameter Tuning</h3>
+<p>
+Each vector database offers various parameters to tune:
+</p>
+<ul class="list-disc pl-6 my-6">
+<li>Number of clusters/probes for IVF</li>
+<li>HNSW parameters (M, efConstruction, ef)</li>
+<li>Quantization settings for memory optimization</li>
+<li>Filter settings for metadata-based search</li>
+</ul>
+
+<h3>Query Optimization</h3>
+<p>
+Effective query optimization techniques include:
+</p>
+<ul class="list-disc pl-6 my-6">
+<li>Use appropriate distance metrics (cosine, euclidean, dot product)</li>
+<li>Apply metadata filters to reduce search space</li>
+<li>Batch queries when possible</li>
+<li>Implement caching for frequent queries</li>
+</ul>
+
+<h2 id="production-considerations">Production Considerations</h2>
+<h3>Scalability</h3>
+<p>
+When deploying vector databases in production, consider:
+</p>
+<ul class="list-disc pl-6 my-6">
+<li><strong>Horizontal vs. vertical scaling</strong>: How to distribute load across multiple nodes</li>
+<li><strong>Sharding strategies</strong>: How to partition data for optimal performance</li>
+<li><strong>Load balancing</strong>: Distributing queries evenly across nodes</li>
+<li><strong>Data partitioning</strong>: Organizing data to minimize cross-node queries</li>
+</ul>
+
+<h3>Reliability</h3>
+<p>
+Ensure system reliability through:
+</p>
+<ul class="list-disc pl-6 my-6">
+<li><strong>Backup and recovery strategies</strong>: Protecting against data loss</li>
+<li><strong>High availability setups</strong>: Minimizing downtime</li>
+<li><strong>Monitoring and alerting</strong>: Detecting issues early</li>
+<li><strong>Data consistency models</strong>: Ensuring data integrity</li>
+</ul>
+
+<h3>Security</h3>
+<p>
+Protect your vector database with:
+</p>
+<ul class="list-disc pl-6 my-6">
+<li><strong>Access control and authentication</strong>: Restricting unauthorized access</li>
+<li><strong>Encryption at rest and in transit</strong>: Protecting sensitive data</li>
+<li><strong>Audit logging</strong>: Tracking access and changes</li>
+<li><strong>Network security</strong>: Securing communication channels</li>
+</ul>
+
+</div>
+<!-- Footer / Pagination -->
+<div class="mt-24 pt-10 border-t border-faded flex justify-between items-center group/footer">
+<a class="flex flex-col items-start gap-2 hover:bg-parchment/50 p-4 -ml-4 rounded transition-colors w-1/2" href="module_03_embedding_models.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Previous Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Embedding Models
+                        </span>
+</a>
+<div class="h-12 w-px bg-faded mx-4"></div>
+<a class="flex flex-col items-end gap-2 hover:bg-parchment/50 p-4 -mr-4 rounded transition-colors w-1/2" href="module_05_hybrid_search.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Next Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+                            Hybrid Search
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</span>
+</a>
+</div>
+</article>
+<!-- Right Rail: Marginalia -->
+<aside class="hidden xl:block w-[240px] sticky top-14 h-[calc(100vh-3.5rem)] pt-32 pb-10 pr-10 pl-4 overflow-y-auto">
+<div class="flex flex-col gap-24 relative">
+<!-- Note 1: Aligned with introduction -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[1]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Vector databases</strong> solve the curse of dimensionality through approximation algorithms.
+                        </p>
+</div>
+<!-- Note 2: Aligned with vector database solutions -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-12">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[2]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Solution selection</strong> depends on scalability, ease of use, and performance requirements.
+                        </p>
+<a class="inline-flex items-center gap-1 mt-2 text-[10px] uppercase tracking-widest text-primary font-bold hover:underline" href="artifact_view.html" target="_blank">
+                            View Code <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+</a>
+</div>
+<!-- Note 3: Aligned with performance optimization -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-24">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[3]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <code class="bg-parchment px-0.5 rounded-sm">HNSW</code> parameters significantly impact search performance.
+                        </p>
+</div>
+<!-- Additional marginalia for module-specific content -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[4]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Index selection</strong> requires balancing speed, accuracy, and memory usage.
+                        </p>
+</div>
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[5]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Production deployment</strong> requires careful consideration of scalability and reliability.
+                        </p>
+</div>
+</div>
+</aside>
+</div>
+</main>
+
+<script>
+    // Function to copy code to clipboard
+    function copyCode(button) {
+        const codeBlock = button.closest('.not-prose').querySelector('pre code');
+        navigator.clipboard.writeText(codeBlock.textContent.trim()).then(() => {
+            const originalIcon = button.querySelector('.material-symbols-outlined').textContent;
+            button.querySelector('.material-symbols-outlined').textContent = 'check';
+            setTimeout(() => {
+                button.querySelector('.material-symbols-outlined').textContent = originalIcon;
+            }, 2000);
+        });
+    }
+
+    // Calculate reading time based on content
+    document.addEventListener('DOMContentLoaded', function() {
+        const content = document.querySelector('.prose-academic').textContent;
+        const wordsPerMinute = 200; // Average reading speed
+        const wordCount = content.split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / wordsPerMinute);
+        
+        document.getElementById('reading-time').textContent = `${readingTime} min read`;
+    });
+
+    // Search button functionality
+    document.getElementById('search-btn').addEventListener('click', function() {
+        window.location.href = 'search_index.html';
+    });
+</script>
+</body></html>

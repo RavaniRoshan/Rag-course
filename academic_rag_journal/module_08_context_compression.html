@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic RAG Journal - Module 08: Context Compression</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;family=Geist+Mono:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#b80f12",
+                        "ink": "#2C2420",
+                        "paper": "#F9F7F1",
+                        "parchment": "#EBE6DA",
+                        "graphite": "#8A817C",
+                        "faded": "#D8D1C4",
+                        "library-green": "#4A5D44",
+                    },
+                    fontFamily: {
+                        "display": ["Newsreader", "serif"],
+                        "serif": ["Lora", "serif"],
+                        "mono": ["Geist Mono", "monospace"],
+                        "code": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.5rem"
+                    },
+                    backgroundImage: {
+                        'grain': "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9F7F1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8D1C4;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8A817C;
+        }
+
+        /* Hide scrollbar for clean UI but allow scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Typography overrides */
+        .prose-academic p {
+            margin-top: 1.5em;
+            margin-bottom: 1.5em;
+            line-height: 1.8;
+            font-family: 'Lora', serif;
+            font-size: 19px;
+            color: #2C2420;
+        }
+        .prose-academic h2 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 2em;
+            font-size: 32px;
+            letter-spacing: -0.01em;
+        }
+        .prose-academic h3 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 1.5em;
+            font-size: 24px;
+        }
+
+        /* Sepia Code Theme */
+        .token.comment { color: #8A817C; font-style: italic; }
+        .token.function { color: #9E2A2B; }
+        .token.keyword { color: #b80f12; font-weight: bold; }
+        .token.string { color: #4A5D44; }
+        .token.number { color: #b80f12; }
+        
+        /* Marginalia hover effect */
+        .marginalia-item {
+            transition: transform 0.2s ease;
+        }
+        .marginalia-item:hover {
+            transform: translateX(-4px);
+        }
+        
+        /* Mermaid diagram styling */
+        .mermaid-diagram {
+            background: white;
+            border: 1px solid #D8D1C4;
+            border-radius: 4px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="bg-paper text-ink antialiased selection:bg-primary/20 selection:text-ink min-h-screen flex flex-col font-serif relative">
+<!-- Grain Texture Overlay -->
+<div class="fixed inset-0 pointer-events-none z-50 bg-grain mix-blend-multiply opacity-40"></div>
+<!-- Top Navigation (Minimal) -->
+<header class="sticky top-0 z-40 w-full border-b border-faded bg-paper/95 backdrop-blur-sm h-14 flex items-center justify-between px-6 lg:px-10">
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-2 text-ink hover:text-primary transition-colors group" href="index.html">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-display font-medium text-lg tracking-tight">Syllabus</span>
+</a>
+<div class="h-4 w-px bg-faded mx-2"></div>
+<span class="font-mono text-xs uppercase tracking-wider text-graphite">Module 08</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-2 text-graphite text-xs font-mono">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span id="reading-time">45 min read</span>
+</div>
+<div class="flex gap-3">
+<button id="search-btn" aria-label="Search" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<button aria-label="Settings" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">text_fields</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 flex justify-center w-full relative">
+<div class="w-full max-w-[1440px] flex flex-row">
+<!-- Left Rail: Table of Contents -->
+<aside class="hidden lg:flex w-[240px] flex-col sticky top-14 h-[calc(100vh-3.5rem)] border-r border-faded overflow-y-auto pt-12 pb-10 pl-10 pr-6">
+<nav class="flex flex-col gap-8">
+<div>
+<h4 class="font-mono text-xs uppercase tracking-widest text-graphite mb-4">Contents</h4>
+<ul class="flex flex-col gap-3 font-mono text-[13px] leading-relaxed">
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#introduction">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Introduction
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#compression-techniques">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Compression Techniques
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#contextual-compression">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Contextual Compression
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#implementation-patterns">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Implementation Patterns
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#evaluation-metrics">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Evaluation Metrics
+                                </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-8 border-t border-faded">
+<div class="flex flex-col gap-2">
+<span class="font-mono text-[11px] uppercase tracking-widest text-graphite">Progress</span>
+<div class="w-full bg-parchment h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[35%]"></div>
+</div>
+<span class="font-mono text-xs text-ink text-right">35%</span>
+</div>
+</div>
+</nav>
+</aside>
+<!-- Center Stage: The Reader -->
+<article class="flex-1 max-w-[720px] mx-auto pt-16 pb-32 px-6 md:px-12 min-h-screen">
+<!-- Module Header -->
+<header class="mb-16 border-b border-faded pb-12">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-mono text-sm font-medium text-primary px-2 py-1 bg-primary/10 rounded">Module 08</span>
+<span class="font-mono text-sm text-graphite">Advanced RAG Architectures</span>
+</div>
+<h1 class="font-display text-[48px] md:text-[56px] leading-[1.1] font-semibold text-ink tracking-tight mb-6">
+                        Context Compression &amp; Summarization
+                    </h1>
+<p class="font-serif text-xl text-ink/80 leading-relaxed max-w-[90%]">
+                        Techniques for condensing retrieved context while preserving essential information for LLM generation.
+                    </p>
+</header>
+<!-- Content Body -->
+<div class="prose-academic">
+<h2 id="introduction">Introduction to Context Compression</h2>
+<p>
+Context compression is a critical technique in Retrieval-Augmented Generation (RAG) systems that addresses the challenge of fitting large amounts of retrieved information within the limited context window of large language models. As RAG systems retrieve potentially large documents or multiple passages, context compression techniques help distill the most relevant information while preserving essential details needed for accurate generation.
+</p>
+
+<div class="my-10 border border-faded bg-parchment/50 p-6 rounded-sm">
+<figure>
+<img alt="Context Compression Visualization" class="w-full h-auto mix-blend-multiply mb-4 filter sepia-[0.3]" data-alt="Visualization showing how large context is compressed to fit within LLM context limits" src="https://placehold.co/600x300/f9f7f1/ebe6da?text=Context+Compression" />
+<figcaption class="font-mono text-xs text-graphite text-center mt-2">Figure 1: Context Compression Process</figcaption>
+</figure>
+</div>
+
+<h2 id="compression-techniques">Compression Techniques</h2>
+<h3>Extractive Summarization</h3>
+<p>
+Extractive summarization selects the most important sentences or phrases from the retrieved context without altering the original text. This approach preserves the exact wording while reducing the overall length.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">extractive_summarizer.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>feature_extraction<span class="token punctuation">.</span>text <span class="token keyword">import</span> TfidfVectorizer
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics<span class="token punctuation">.</span>pairwise <span class="token keyword">import</span> cosine_similarity
+<span class="token keyword">import</span> re
+
+<span class="token keyword">class</span> <span class="token class-name">ExtractiveSummarizer</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> max_sentences<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>max_sentences <span class="token operator">=</span> max_sentences
+    
+    <span class="token keyword">def</span> <span class="token function">_split_into_sentences</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> text<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Simple sentence splitting - in practice, use NLTK or spaCy</span>
+        sentences <span class="token operator">=</span> re<span class="token punctuation">.</span>split<span class="token punctuation">(</span>r<span class="token string">'(?&lt;!\\)([.!?] | [.!?]$)'</span><span class="token punctuation">,</span> text<span class="token punctuation">)</span>
+        <span class="token comment"># Clean up sentences</span>
+        sentences <span class="token operator">=</span> <span class="token punctuation">[</span>s<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> s <span class="token keyword">in</span> sentences <span class="token keyword">if</span> s<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+        <span class="token keyword">return</span> sentences
+    
+    <span class="token keyword">def</span> <span class="token function">_calculate_sentence_scores</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> sentences<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>float<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Use TF-IDF to score sentences based on importance</span>
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>sentences<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">1</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token punctuation">[</span><span class="token number">1.0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token builtin">len</span><span class="token punctuation">(</span>sentences<span class="token punctuation">)</span>
+        
+        vectorizer <span class="token operator">=</span> TfidfVectorizer<span class="token punctuation">(</span>stop_words<span class="token operator">=</span><span class="token string">'english'</span><span class="token punctuation">,</span> lowercase<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+        tfidf_matrix <span class="token operator">=</span> vectorizer<span class="token punctuation">.</span>fit_transform<span class="token punctuation">(</span>sentences<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Calculate sentence importance as the sum of TF-IDF scores</span>
+        sentence_scores <span class="token operator">=</span> np<span class="token punctuation">.</span>array<span class="token punctuation">(</span>tfidf_matrix<span class="token punctuation">.</span>sum<span class="token punctuation">(</span>axis<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span>A1<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Normalize scores</span>
+        <span class="token keyword">if</span> sentence_scores<span class="token punctuation">.</span>max<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!</span><span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            sentence_scores <span class="token operator">=</span> sentence_scores <span class="token operator">/</span> sentence_scores<span class="token punctuation">.</span>max<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> sentence_scores<span class="token punctuation">.</span>tolist<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">compress</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> context<span class="token punctuation">:</span> str<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Split context into sentences</span>
+        sentences <span class="token operator">=</span> self<span class="token punctuation">.</span>_split_into_sentences<span class="token punctuation">(</span>context<span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>sentences<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> self<span class="token punctuation">.</span>max_sentences<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> context
+        
+        <span class="token comment"># Calculate sentence scores</span>
+        scores <span class="token operator">=</span> self<span class="token punctuation">.</span>_calculate_sentence_scores<span class="token punctuation">(</span>sentences<span class="token punctuation">)</span>
+        
+        <span class="token comment"># If query is provided, boost sentences that contain query terms</span>
+        <span class="token keyword">if</span> query<span class="token punctuation">:</span>
+            query_lower <span class="token operator">=</span> query<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token keyword">for</span> i<span class="token punctuation">,</span> sentence <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>sentences<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token keyword">if</span> <span class="token builtin">any</span><span class="token punctuation">(</span>word <span class="token keyword">in</span> sentence<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> word <span class="token keyword">in</span> query_lower<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                    scores<span class="token punctuation">[</span>i</span><span class="token punctuation">]</span> <span class="token operator">*=</span> <span class="token number">1.5</span>  <span class="token comment"># Boost relevance</span>
+        
+        <span class="token comment"># Get indices of top-scoring sentences</span>
+        top_indices <span class="token operator">=</span> np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>scores<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">:</span>self<span class="token punctuation">.</span>max_sentences<span class="token punctuation">]</span>
+        top_indices <span class="token operator">=</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>top_indices<span class="token punctuation">)</span>  <span class="token comment"># Maintain original order</span>
+        
+        <span class="token comment"># Construct compressed context</span>
+        compressed_sentences <span class="token operator">=</span> <span class="token punctuation">[</span>sentences<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> top_indices<span class="token punctuation">]</span>
+        
+        <span class="token keyword">return</span> <span class="token string">" "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>compressed_sentences<span class="token punctuation">)</span></code></pre>
+</div>
+</div>
+
+<h3>Abstractive Summarization</h3>
+<p>
+Abstractive summarization generates new sentences that capture the essence of the original content, potentially rephrasing and synthesizing information. This approach can be more concise but risks losing specific details.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">abstractive_summarizer.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> transformers <span class="token keyword">import</span> pipeline<span class="token punctuation">,</span> AutoTokenizer<span class="token punctuation">,</span> AutoModelForSeq2SeqLM
+
+<span class="token keyword">class</span> <span class="token class-name">AbstractiveSummarizer</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> model_name<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"facebook/bart-large-cnn"</span><span class="token punctuation">,</span> max_length<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">150</span><span class="token punctuation">,</span> min_length<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>summarizer <span class="token operator">=</span> pipeline<span class="token punctuation">(</span>
+            <span class="token string">"summarization"</span><span class="token punctuation">,</span>
+            model<span class="token operator">=</span>model_name<span class="token punctuation">,</span>
+            tokenizer<span class="token operator">=</span>model_name<span class="token punctuation">,</span>
+            device<span class="token operator">=</span><span class="token operator">-</span><span class="token number">1</span>  <span class="token comment"># Use CPU</span>
+        <span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>max_length <span class="token operator">=</span> max_length
+        self<span class="token punctuation">.</span>min_length <span class="token operator">=</span> min_length
+    
+    <span class="token keyword">def</span> <span class="token function">compress</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> context<span class="token punctuation">:</span> str<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># If the context is already short enough, return as is</span>
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>context<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">100</span><span class="token punctuation">:</span>  <span class="token comment"># Rough estimate of token count</span>
+            <span class="token keyword">return</span> context
+        
+        <span class="token comment"># Use the summarization pipeline</span>
+        <span class="token keyword">try</span><span class="token punctuation">:</span>
+            summary_result <span class="token operator">=</span> self<span class="token punctuation">.</span>summarizer<span class="token punctuation">(</span>
+                context<span class="token punctuation">,</span>
+                max_length<span class="token operator">=</span>self<span class="token punctuation">.</span>max_length<span class="token punctuation">,</span>
+                min_length<span class="token operator">=</span>self<span class="token punctuation">.</span>min_length<span class="token punctuation">,</span>
+                do_sample<span class="token operator">=</span><span class="token boolean">False</span>
+            <span class="token punctuation">)</span>
+            <span class="token keyword">return</span> summary_result<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'summary_text'</span><span class="token punctuation">]</span>
+        <span class="token keyword">except</span> <span class="token builtin">Exception</span> <span class="token keyword">as</span> e<span class="token punctuation">:</span>
+            <span class="token comment"># If summarization fails, fall back to extractive method</span>
+            extractor <span class="token operator">=</span> ExtractiveSummarizer<span class="token punctuation">(</span>max_sentences<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span> extractor<span class="token punctuation">.</span>compress<span class="token punctuation">(</span>context<span class="token punctuation">,</span> query<span class="token punctuation">)</span></code></pre>
+</div>
+</div>
+
+<h2 id="contextual-compression">Contextual Compression</h2>
+<p>
+Contextual compression focuses on preserving information that is most relevant to the specific query, potentially discarding less relevant portions of the retrieved context.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">contextual_compressor.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> sentence_transformers <span class="token keyword">import</span> SentenceTransformer
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics<span class="token punctuation">.</span>pairwise <span class="token keyword">import</span> cosine_similarity
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+
+<span class="token keyword">class</span> <span class="token class-name">ContextualCompressor</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> model_name<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"all-MiniLM-L6-v2"</span><span class="token punctuation">,</span> max_segments<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>model <span class="token operator">=</span> SentenceTransformer<span class="token punctuation">(</span>model_name<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>max_segments <span class="token operator">=</span> max_segments
+    
+    <span class="token keyword">def</span> <span class="token function">_split_into_segments</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> text<span class="token punctuation">:</span> str<span class="token punctuation">,</span> segment_size<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Split text into overlapping segments</span>
+        words <span class="token operator">=</span> text<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        segments <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>words<span class="token punctuation">)</span><span class="token punctuation">,</span> segment_size<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            segment <span class="token operator">=</span> <span class="token string">" "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>words<span class="token punctuation">[</span>i<span class="token punctuation">:</span>i<span class="token operator">+</span>segment_size<span class="token punctuation">]</span><span class="token punctuation">)</span>
+            segments<span class="token punctuation">.</span>append<span class="token punctuation">(</span>segment<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> segments
+    
+    <span class="token keyword">def</span> <span class="token function">compress</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> context<span class="token punctuation">:</span> str<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Split context into segments</span>
+        segments <span class="token operator">=</span> self<span class="token punctuation">.</span>_split_into_segments<span class="token punctuation">(</span>context<span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>segments<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> self<span class="token punctuation">.</span>max_segments<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> context
+        
+        <span class="token comment"># Encode query and segments</span>
+        query_embedding <span class="token operator">=</span> self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>query<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        segment_embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span>segments<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Calculate similarity between query and each segment</span>
+        similarities <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span>query_embedding<span class="token punctuation">,</span> segment_embeddings<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Get indices of most relevant segments</span>
+        top_indices <span class="token operator">=</span> np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>similarities<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">:</span>self<span class="token punctuation">.</span>max_segments<span class="token punctuation">]</span>
+        top_indices <span class="token operator">=</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>top_indices<span class="token punctuation">)</span>  <span class="token comment"># Maintain original order</span>
+        
+        <span class="token comment"># Construct compressed context from most relevant segments</span>
+        compressed_segments <span class="token operator">=</span> <span class="token punctuation">[</span>segments<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> top_indices<span class="token punctuation">]</span>
+        
+        <span class="token keyword">return</span> <span class="token string">" "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>compressed_segments<span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">compress_with_preservation</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> context<span class="token punctuation">:</span> str<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> 
+                               key_phrases<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Enhanced compression that preserves key phrases</span>
+        <span class="token keyword">if</span> key_phrases <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            key_phrases <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># First, do contextual compression</span>
+        compressed <span class="token operator">=</span> self<span class="token punctuation">.</span>compress<span class="token punctuation">(</span>context<span class="token punctuation">,</span> query<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Then ensure key phrases are preserved</span>
+        <span class="token keyword">for</span> phrase <span class="token keyword">in</span> key_phrases<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> phrase<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">in</span> context<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">and</span> phrase<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">not</span> <span class="token keyword">in</span> compressed<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token comment"># Find the sentence containing the phrase in the original context</span>
+                sentences <span class="token operator">=</span> context<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'.'</span><span class="token punctuation">)</span>
+                <span class="token keyword">for</span> sentence <span class="token keyword">in</span> sentences<span class="token punctuation">:</span>
+                    <span class="token keyword">if</span> phrase<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">in</span> sentence<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                        <span class="token comment"># Add the sentence to compressed context if it's not too long</span>
+                        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>sentence<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">50</span><span class="token punctuation">:</span>  <span class="token comment"># Prevent overly long additions</span>
+                            compressed <span class="token operator">+=</span> <span class="token string">" "</span> <span class="token operator">+</span> sentence<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"."</span>
+                        <span class="token keyword">break</span>
+        
+        <span class="token keyword">return</span> compressed</code></pre>
+</div>
+</div>
+
+<h2 id="implementation-patterns">Implementation Patterns</h2>
+<h3>Compression Pipeline</h3>
+<p>
+A compression pipeline combines multiple techniques to achieve optimal results, using different methods based on context characteristics.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">compression_pipeline.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">CompressionPipeline</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>extractive <span class="token operator">=</span> ExtractiveSummarizer<span class="token punctuation">(</span>max_sentences<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>abstractive <span class="token operator">=</span> AbstractiveSummarizer<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>contextual <span class="token operator">=</span> ContextualCompressor<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">compress</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> context<span class="token punctuation">:</span> str<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">,</span> method<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"auto"</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Determine the best compression method based on context characteristics</span>
+        <span class="token keyword">if</span> method <span class="token operator">==</span> <span class="token string">"auto"</span><span class="token punctuation">:</span>
+            method <span class="token operator">=</span> self<span class="token punctuation">.</span>_select_method<span class="token punctuation">(</span>context<span class="token punctuation">,</span> query<span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> method <span class="token operator">==</span> <span class="token string">"extractive"</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> self<span class="token punctuation">.</span>extractive<span class="token punctuation">.</span>compress<span class="token punctuation">(</span>context<span class="token punctuation">,</span> query<span class="token punctuation">)</span>
+        <span class="token keyword">elif</span> method <span class="token operator">==</span> <span class="token string">"abstractive"</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> self<span class="token punctuation">.</span>abstractive<span class="token punctuation">.</span>compress<span class="token punctuation">(</span>context<span class="token punctuation">,</span> query<span class="token punctuation">)</span>
+        <span class="token keyword">elif</span> method <span class="token operator">==</span> <span class="token string">"contextual"</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> query<span class="token punctuation">:</span>
+                <span class="token keyword">return</span> self<span class="token punctuation">.</span>contextual<span class="token punctuation">.</span>compress<span class="token punctuation">(</span>context<span class="token punctuation">,</span> query<span class="token punctuation">)</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                <span class="token keyword">return</span> self<span class="token punctuation">.</span>extractive<span class="token punctuation">.</span>compress<span class="token punctuation">(</span>context<span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># Default to extractive</span>
+            <span class="token keyword">return</span> self<span class="token punctuation">.</span>extractive<span class="token punctuation">.</span>compress<span class="token punctuation">(</span>context<span class="token punctuation">,</span> query<span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_select_method</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> context<span class="token punctuation">:</span> str<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Heuristic to select the best compression method</span>
+        context_length <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>context<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> context_length <span class="token operator">&lt;</span> <span class="token number">100</span><span class="token punctuation">:</span>
+            <span class="token comment"># Short context - no compression needed</span>
+            <span class="token keyword">return</span> <span class="token string">"none"</span>
+        <span class="token keyword">elif</span> context_length <span class="token operator">&lt;</span> <span class="token number">300</span> <span class="token keyword">and</span> query<span class="token punctuation">:</span>
+            <span class="token comment"># Medium context with query - use contextual compression</span>
+            <span class="token keyword">return</span> <span class="token string">"contextual"</span>
+        <span class="token keyword">elif</span> context_length <span class="token operator">&gt;</span> <span class="token number">500</span><span class="token punctuation">:</span>
+            <span class="token comment"># Very long context - use abstractive summarization</span>
+            <span class="token keyword">return</span> <span class="token string">"abstractive"</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># Default to extractive</span>
+            <span class="token keyword">return</span> <span class="token string">"extractive"</span>
+    
+    <span class="token keyword">def</span> <span class="token function">compress_batch</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> contexts<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> query<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Compress multiple contexts with the same query</span>
+        compressed <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> context <span class="token keyword">in</span> contexts<span class="token punctuation">:</span>
+            compressed<span class="token punctuation">.</span>append<span class="token punctuation">(</span>self<span class="token punctuation">.</span>compress<span class="token punctuation">(</span>context<span class="token punctuation">,</span> query<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> compressed</code></pre>
+</div>
+</div>
+
+<h2 id="evaluation-metrics">Evaluation Metrics</h2>
+<p>
+Evaluating context compression requires metrics that assess both the preservation of important information and the reduction in context length.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">compression_evaluator.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> typing <span class="token keyword">import</span> Dict<span class="token punctuation">,</span> Any
+<span class="token keyword">from</span> collections <span class="token keyword">import</span> Counter
+
+<span class="token keyword">class</span> <span class="token class-name">CompressionEvaluator</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>embedder <span class="token operator">=</span> SentenceTransformer<span class="token punctuation">(</span><span class="token string">"all-MiniLM-L6-v2"</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">evaluate_compression</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> original<span class="token punctuation">:</span> str<span class="token punctuation">,</span> compressed<span class="token punctuation">:</span> str<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Calculate various metrics for compression quality</span>
+        <span class="token keyword">return</span> <span class="token punctuation">{</span>
+            <span class="token string">'compression_ratio'</span><span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>compressed<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>original<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">'length_reduction'</span><span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>original<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token builtin">len</span><span class="token punctuation">(</span>compressed<span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">'semantic_similarity'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>_calculate_semantic_similarity<span class="token punctuation">(</span>original<span class="token punctuation">,</span> compressed<span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">'query_alignment'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>_calculate_query_alignment<span class="token punctuation">(</span>compressed<span class="token punctuation">,</span> query<span class="token punctuation">)</span> <span class="token keyword">if</span> query <span class="token keyword">else</span> <span class="token number">0</span><span class="token punctuation">,</span>
+            <span class="token string">'key_phrase_preservation'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>_calculate_key_phrase_preservation<span class="token punctuation">(</span>original<span class="token punctuation">,</span> compressed<span class="token punctuation">)</span>
+        <span class="token punctuation">}</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_calculate_semantic_similarity</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> original<span class="token punctuation">:</span> str<span class="token punctuation">,</span> compressed<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+        <span class="token comment"># Calculate semantic similarity between original and compressed text</span>
+        embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>embedder<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>original<span class="token punctuation">,</span> compressed<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        similarity <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span><span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        <span class="token keyword">return</span> similarity
+    
+    <span class="token keyword">def</span> <span class="token function">_calculate_query_alignment</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> compressed<span class="token punctuation">:</span> str<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+        <span class="token comment"># Calculate how well the compressed text aligns with the query</span>
+        query_words <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>query<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        compressed_words <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>compressed<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> <span class="token keyword">not</span> query_words<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token number">0.0</span>
+        
+        intersection <span class="token operator">=</span> query_words<span class="token punctuation">.</span>intersection<span class="token punctuation">(</span>compressed_words<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> <span class="token builtin">len</span><span class="token punctuation">(</span>intersection<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>query_words<span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_calculate_key_phrase_preservation</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> original<span class="token punctuation">:</span> str<span class="token punctuation">,</span> compressed<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+        <span class="token comment"># Calculate preservation of key phrases (using simple noun phrase extraction)</span>
+        original_counter <span class="token operator">=</span> Counter<span class="token punctuation">(</span>original<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        compressed_counter <span class="token operator">=</span> Counter<span class="token punctuation">(</span>compressed<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Find common words between original and compressed</span>
+        common_words <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>original_counter<span class="token punctuation">.</span>keys<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>intersection<span class="token punctuation">(</span><span class="token builtin">set</span><span class="token punctuation">(</span>compressed_counter<span class="token punctuation">.</span>keys<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> <span class="token keyword">not</span> common_words<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token number">0.0</span>
+        
+        <span class="token comment"># Calculate weighted preservation based on frequency in original</span>
+        total_weight <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>original_counter<span class="token punctuation">[</span>word<span class="token punctuation">]</span> <span class="token keyword">for</span> word <span class="token keyword">in</span> common_words<span class="token punctuation">)</span>
+        preserved_weight <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>min<span class="token punctuation">(</span>original_counter<span class="token punctuation">[</span>word<span class="token punctuation">]</span><span class="token punctuation">,</span> compressed_counter<span class="token punctuation">[</span>word<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">for</span> word <span class="token keyword">in</span> common_words<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> preserved_weight <span class="token operator">/</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>original_counter<span class="token punctuation">.</span>values<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">if</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>original_counter<span class="token punctuation">.</span>values<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">></span> <span class="token number">0</span> <span class="token keyword">else</span> <span class="token number">0.0</span></code></pre>
+</div>
+</div>
+
+</div>
+<!-- Footer / Pagination -->
+<div class="mt-24 pt-10 border-t border-faded flex justify-between items-center group/footer">
+<a class="flex flex-col items-start gap-2 hover:bg-parchment/50 p-4 -ml-4 rounded transition-colors w-1/2" href="module_07_multi_query_expansion.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Previous Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Multi-Query Expansion
+                        </span>
+</a>
+<div class="h-12 w-px bg-faded mx-4"></div>
+<a class="flex flex-col items-end gap-2 hover:bg-parchment/50 p-4 -mr-4 rounded transition-colors w-1/2" href="module_09_evaluation_metrics.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Next Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+                            Evaluation Metrics
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</span>
+</a>
+</div>
+</article>
+<!-- Right Rail: Marginalia -->
+<aside class="hidden xl:block w-[240px] sticky top-14 h-[calc(100vh-3.5rem)] pt-32 pb-10 pr-10 pl-4 overflow-y-auto">
+<div class="flex flex-col gap-24 relative">
+<!-- Note 1: Aligned with introduction -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[1]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Context compression</strong> is essential for fitting large contexts within LLM limits.
+                        </p>
+</div>
+<!-- Note 2: Aligned with compression techniques -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-12">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[2]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Extractive vs. abstractive</strong> summarization offer different trade-offs in compression.
+                        </p>
+<a class="inline-flex items-center gap-1 mt-2 text-[10px] uppercase tracking-widest text-primary font-bold hover:underline" href="artifact_view.html" target="_blank">
+                            View Code <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+</a>
+</div>
+<!-- Note 3: Aligned with contextual compression -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-24">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[3]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <code class="bg-parchment px-0.5 rounded-sm">Contextual compression</code> preserves query-relevant information.
+                        </p>
+</div>
+<!-- Additional marginalia for module-specific content -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[4]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Compression pipelines</strong> combine multiple techniques for optimal results.
+                        </p>
+</div>
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[5]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Evaluation metrics</strong> assess both compression ratio and information preservation.
+                        </p>
+</div>
+</div>
+</aside>
+</div>
+</main>
+
+<script>
+    // Function to copy code to clipboard
+    function copyCode(button) {
+        const codeBlock = button.closest('.not-prose').querySelector('pre code');
+        navigator.clipboard.writeText(codeBlock.textContent.trim()).then(() => {
+            const originalIcon = button.querySelector('.material-symbols-outlined').textContent;
+            button.querySelector('.material-symbols-outlined').textContent = 'check';
+            setTimeout(() => {
+                button.querySelector('.material-symbols-outlined').textContent = originalIcon;
+            }, 2000);
+        });
+    }
+
+    // Calculate reading time based on content
+    document.addEventListener('DOMContentLoaded', function() {
+        const content = document.querySelector('.prose-academic').textContent;
+        const wordsPerMinute = 200; // Average reading speed
+        const wordCount = content.split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / wordsPerMinute);
+        
+        document.getElementById('reading-time').textContent = `${readingTime} min read`;
+    });
+
+    // Search button functionality
+    document.getElementById('search-btn').addEventListener('click', function() {
+        window.location.href = 'search_index.html';
+    });
+</script>
+</body></html>

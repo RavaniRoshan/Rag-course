@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic RAG Journal - Module 15: Production Deployment</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;family=Geist+Mono:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#b80f12",
+                        "ink": "#2C2420",
+                        "paper": "#F9F7F1",
+                        "parchment": "#EBE6DA",
+                        "graphite": "#8A817C",
+                        "faded": "#D8D1C4",
+                        "library-green": "#4A5D44",
+                    },
+                    fontFamily: {
+                        "display": ["Newsreader", "serif"],
+                        "serif": ["Lora", "serif"],
+                        "mono": ["Geist Mono", "monospace"],
+                        "code": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.5rem"
+                    },
+                    backgroundImage: {
+                        'grain': "url('data:image.svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9F7F1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8D1C4;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8A817C;
+        }
+
+        /* Hide scrollbar for clean UI but allow scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Typography overrides */
+        .prose-academic p {
+            margin-top: 1.5em;
+            margin-bottom: 1.5em;
+            line-height: 1.8;
+            font-family: 'Lora', serif;
+            font-size: 19px;
+            color: #2C2420;
+        }
+        .prose-academic h2 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 2em;
+            font-size: 32px;
+            letter-spacing: -0.01em;
+        }
+        .prose-academic h3 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 1.5em;
+            font-size: 24px;
+        }
+
+        /* Sepia Code Theme */
+        .token.comment { color: #8A817C; font-style: italic; }
+        .token.function { color: #9E2A2B; }
+        .token.keyword { color: #b80f12; font-weight: bold; }
+        .token.string { color: #4A5D44; }
+        .token.number { color: #b80f12; }
+
+        /* Marginalia hover effect */
+        .marginalia-item {
+            transition: transform 0.2s ease;
+        }
+        .marginalia-item:hover {
+            transform: translateX(-4px);
+        }
+    </style>
+</head>
+<body class="bg-paper text-ink antialiased selection:bg-primary/20 selection:text-ink min-h-screen flex flex-col font-serif relative">
+<!-- Grain Texture Overlay -->
+<div class="fixed inset-0 pointer-events-none z-50 bg-grain mix-blend-multiply opacity-40"></div>
+<!-- Top Navigation (Minimal) -->
+<header class="sticky top-0 z-40 w-full border-b border-faded bg-paper/95 backdrop-blur-sm h-14 flex items-center justify-between px-6 lg:px-10">
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-2 text-ink hover:text-primary transition-colors group" href="index.html">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-display font-medium text-lg tracking-tight">Syllabus</span>
+</a>
+<div class="h-4 w-px bg-faded mx-2"></div>
+<span class="font-mono text-xs uppercase tracking-wider text-graphite">Module 15</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-2 text-graphite text-xs font-mono">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span id="reading-time">65 min read</span>
+</div>
+<div class="flex gap-3">
+<button id="search-btn" aria-label="Search" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<button aria-label="Settings" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">text_fields</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 flex justify-center w-full relative">
+<div class="w-full max-w-[1440px] flex flex-row">
+<!-- Left Rail: Table of Contents -->
+<aside class="hidden lg:flex w-[240px] flex-col sticky top-14 h-[calc(100vh-3.5rem)] border-r border-faded overflow-y-auto pt-12 pb-10 pl-10 pr-6">
+<nav class="flex flex-col gap-8">
+<div>
+<h4 class="font-mono text-xs uppercase tracking-widest text-graphite mb-4">Contents</h4>
+<ul class="flex flex-col gap-3 font-mono text-[13px] leading-relaxed">
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#introduction">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Introduction
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#scalability">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Scalability Patterns
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#monitoring">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Monitoring & Observability
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#security">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Security Considerations
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#performance">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Performance Optimization
+                                </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-8 border-t border-faded">
+<div class="flex flex-col gap-2">
+<span class="font-mono text-[11px] uppercase tracking-widest text-graphite">Progress</span>
+<div class="w-full bg-parchment h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[35%]"></div>
+</div>
+<span class="font-mono text-xs text-ink text-right">35%</span>
+</div>
+</div>
+</nav>
+</aside>
+<!-- Center Stage: The Reader -->
+<article class="flex-1 max-w-[720px] mx-auto pt-16 pb-32 px-6 md:px-12 min-h-screen">
+<!-- Module Header -->
+<header class="mb-16 border-b border-faded pb-12">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-mono text-sm font-medium text-primary px-2 py-1 bg-primary/10 rounded">Module 15</span>
+<span class="font-mono text-sm text-graphite">Production Systems</span>
+</div>
+<h1 class="font-display text-[48px] md:text-[56px] leading-[1.1] font-semibold text-ink tracking-tight mb-6">
+                        Production Deployment of RAG Systems
+                    </h1>
+<p class="font-serif text-xl text-ink/80 leading-relaxed max-w-[90%]">
+                        Best practices for deploying RAG systems in production environments, covering scalability, monitoring, security, and performance optimization.
+                    </p>
+</header>
+<!-- Content Body -->
+<div class="prose-academic">
+<h2 id="introduction">Introduction to Production Deployment</h2>
+<p>
+Deploying RAG systems in production environments introduces unique challenges that differ significantly from development and testing phases. Production RAG systems must handle real-world traffic patterns, maintain consistent performance under varying loads, ensure data privacy and security, and provide observability for troubleshooting and optimization.
+</p>
+
+<div class="my-10 border border-faded bg-parchment/50 p-6 rounded-sm">
+<figure>
+<img alt="Production RAG Architecture" class="w-full h-auto mix-blend-multiply mb-4 filter sepia-[0.3]" data-alt="Architecture diagram showing components of a production RAG system" src="https://placehold.co/600x300/f9f7f1/ebe6da?text=Production+RAG+Architecture" />
+<figcaption class="font-mono text-xs text-graphite text-center mt-2">Figure 1: Components of a Production RAG System</figcaption>
+</figure>
+</div>
+
+<p>
+Unlike experimental setups, production RAG systems must operate continuously with high availability, handle failures gracefully, and scale efficiently with demand. This module explores the key considerations and patterns for successfully deploying RAG systems in production environments.
+</p>
+
+<h2 id="scalability">Scalability Patterns for RAG Systems</h2>
+<p>
+Scaling RAG systems requires careful consideration of both the retrieval and generation components, each with different resource requirements and scaling characteristics.
+</p>
+
+<h3>Horizontal Scaling of Retrieval Components</h3>
+<p>
+The retrieval component of RAG systems often becomes the primary scaling bottleneck due to the computational cost of similarity search operations.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">scaling_patterns.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> asyncio
+<span class="token keyword">import</span> aioredis
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Any
+<span class="token keyword">from</span> concurrent<span class="token punctuation">.</span>futures <span class="token keyword">import</span> ThreadPoolExecutor
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+
+<span class="token keyword">class</span> <span class="token class-name">ShardedVectorStore</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> num_shards<span class="token punctuation">:</span> int<span class="token punctuation">,</span> shard_mapping_strategy<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"hash"</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>num_shards <span class="token operator">=</span> num_shards
+        self<span class="token punctuation">.</span>shards <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>shard_mapping_strategy <span class="token operator">=</span> shard_mapping_strategy
+        
+        <span class="token comment"># Initialize shards</span>
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_shards<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            shard <span class="token operator">=</span> VectorShard<span class="token punctuation">(</span>shard_id<span class="token operator">=</span>i<span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>shards<span class="token punctuation">.</span>append<span class="token punctuation">(</span>shard<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">_get_shard_index</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> key<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> int<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>shard_mapping_strategy <span class="token operator">==</span> <span class="token string">"hash"</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token builtin">hash</span><span class="token punctuation">(</span>key<span class="token punctuation">)</span> <span class="token operator">%</span> self<span class="token punctuation">.</span>num_shards
+        <span class="token keyword">elif</span> self<span class="token punctuation">.</span>shard_mapping_strategy <span class="token operator">==</span> <span class="token string">"range"</span><span class="token punctuation">:</span>
+            <span class="token comment"># Range-based sharding could be implemented based on document IDs</span>
+            <span class="token keyword">return</span> <span class="token builtin">int</span><span class="token punctuation">(</span>key<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">)</span> <span class="token operator">%</span> self<span class="token punctuation">.</span>num_shards
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">raise</span> <span class="token builtin">ValueError</span><span class="token punctuation">(</span><span class="token string">f"Unsupported shard mapping strategy: {self.shard_mapping_strategy}"</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">add_document</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> doc_id<span class="token punctuation">:</span> str<span class="token punctuation">,</span> content<span class="token punctuation">:</span> str<span class="token punctuation">,</span> embedding<span class="token punctuation">:</span> np<span class="token punctuation">.</span>ndarray<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        shard_index <span class="token operator">=</span> self<span class="token punctuation">.</span>_get_shard_index<span class="token punctuation">(</span>doc_id<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>shards<span class="token punctuation">[</span>shard_index<span class="token punctuation">]</span><span class="token punctuation">.</span>add_document<span class="token punctuation">(</span>doc_id<span class="token punctuation">,</span> content<span class="token punctuation">,</span> embedding<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">search</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query_embedding<span class="token punctuation">:</span> np<span class="token punctuation">.</span>ndarray<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Search all shards in parallel</span>
+        <span class="token keyword">with</span> ThreadPoolExecutor<span class="token punctuation">(</span><span class="token builtin">max</span>_workers<span class="token operator">=</span>self<span class="token punctuation">.</span>num_shards<span class="token punctuation">)</span> <span class="token keyword">as</span> executor<span class="token punctuation">:</span>
+            futures <span class="token operator">=</span> <span class="token punctuation">[</span>executor<span class="token punctuation">.</span>submit<span class="token punctuation">(</span>shard<span class="token punctuation">.</span>search<span class="token punctuation">,</span> query_embedding<span class="token punctuation">,</span> k<span class="token punctuation">)</span> 
+                         <span class="token keyword">for</span> shard <span class="token keyword">in</span> self<span class="token punctuation">.</span>shards<span class="token punctuation">]</span>
+            
+            all_results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+            <span class="token keyword">for</span> future <span class="token keyword">in</span> futures<span class="token punctuation">:</span>
+                shard_results <span class="token operator">=</span> future<span class="token punctuation">.</span>result<span class="token punctuation">(</span><span class="token punctuation">)</span>
+                all_results<span class="token punctuation">.</span>extend<span class="token punctuation">(</span>shard_results<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Combine and rerank results from all shards</span>
+        <span class="token comment"># Sort by similarity score and return top-k</span>
+        all_results<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">[</span><span class="token string">'score'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> all_results<span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span>
+
+<span class="token keyword">class</span> <span class="token class-name">VectorShard</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> shard_id<span class="token punctuation">:</span> int<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>shard_id <span class="token operator">=</span> shard_id
+        self<span class="token punctuation">.</span>documents <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        self<span class="token punctuation">.</span>embeddings <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+
+    <span class="token keyword">def</span> <span class="token function">add_document</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> doc_id<span class="token punctuation">:</span> str<span class="token punctuation">,</span> content<span class="token punctuation">:</span> str<span class="token punctuation">,</span> embedding<span class="token punctuation">:</span> np<span class="token punctuation">.</span>ndarray<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>documents<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span> <span class="token operator">=</span> content
+        self<span class="token punctuation">.</span>embeddings<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span> <span class="token operator">=</span> embedding
+
+    <span class="token keyword">def</span> <span class="token function">search</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query_embedding<span class="token punctuation">:</span> np<span class="token punctuation">.</span>ndarray<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics<span class="token punctuation">.</span>pairwise <span class="token keyword">import</span> cosine_similarity
+        
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>embeddings<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Get all embeddings in this shard</span>
+        doc_ids <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>embeddings<span class="token punctuation">.</span>keys<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        shard_embeddings <span class="token operator">=</span> np<span class="token punctuation">.</span>vstack<span class="token punctuation">(</span><span class="token punctuation">[</span>self<span class="token punctuation">.</span>embeddings<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span> <span class="token keyword">for</span> doc_id <span class="token keyword">in</span> doc_ids<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Calculate similarities</span>
+        similarities <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span>query_embedding<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+                                          shard_embeddings<span class="token punctuation">)</span><span class="token punctuation">.</span>flatten<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Create results with doc info and scores</span>
+        results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> i<span class="token punctuation">,</span> doc_id <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>doc_ids<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            results<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">{</span>
+                <span class="token string">'id'</span><span class="token punctuation">:</span> doc_id<span class="token punctuation">,</span>
+                <span class="token string">'content'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>documents<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span><span class="token punctuation">,</span>
+                <span class="token string">'score'</span><span class="token punctuation">:</span> float<span class="token punctuation">(</span>similarities<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+            <span class="token punctuation">}</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Sort by score and return top-k</span>
+        results<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">[</span><span class="token string">'score'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> results<span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span>
+
+<span class="token comment"># Example usage</span>
+<span class="token comment"># sharded_store = ShardedVectorStore(num_shards=4)</span>
+<span class="token comment"># sharded_store.add_document("doc1", "Content of document 1", embedding1)</span>
+<span class="token comment"># results = sharded_store.search(query_embedding, k=5)</span></code></pre>
+</div>
+</div>
+
+<h3>Load Balancing and Request Distribution</h3>
+<p>
+Effective load balancing ensures even distribution of requests across multiple RAG service instances to prevent hotspots and maximize resource utilization.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">load_balancer.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> random
+<span class="token keyword">import</span> time
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Optional
+<span class="token keyword">from</span> dataclasses <span class="token keyword">import</span> dataclass<span class="token punctuation">,</span> field
+
+<span class="token decorator">@dataclass</span>
+<span class="token keyword">class</span> <span class="token class-name">RAGInstance</span><span class="token punctuation">:</span>
+    host<span class="token punctuation">:</span> str
+    port<span class="token punctuation">:</span> int
+    health_status<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"healthy"</span>  <span class="token comment"># healthy, unhealthy, degraded</span>
+    active_requests<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">0</span>
+    total_requests<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">0</span>
+    error_count<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">0</span>
+    last_request_time<span class="token punctuation">:</span> float <span class="token operator">=</span> field<span class="token punctuation">(</span>default_factory<span class="token operator">=</span>time<span class="token punctuation">.</span>time<span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">get_load</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+        <span class="token comment"># Calculate load as ratio of active requests to a baseline capacity</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>active_requests <span class="token operator">/</span> <span class="token number">10.0</span>  <span class="token comment"># Assuming baseline capacity of 10</span>
+
+<span class="token keyword">class</span> <span class="token class-name">RAGLoadBalancer</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> instances<span class="token punctuation">:</span> List<span class="token punctuation">[</span>RAGInstance<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>instances <span class="token operator">=</span> instances
+        self<span class="token punctuation">.</span>current_index <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment"># For round-robin</span>
+
+    <span class="token keyword">def</span> <span class="token function">health_check</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Simulate health checking of instances</span>
+        <span class="token keyword">for</span> instance <span class="token keyword">in</span> self<span class="token punctuation">.</span>instances<span class="token punctuation">:</span>
+            <span class="token comment"># In a real system, this would make an HTTP request to a health endpoint</span>
+            <span class="token comment"># For simulation, we'll randomly mark some as unhealthy</span>
+            <span class="token keyword">if</span> instance<span class="token punctuation">.</span>error_count <span class="token operator">></span> <span class="token number">5</span><span class="token punctuation">:</span>
+                instance<span class="token punctuation">.</span>health_status <span class="token operator">=</span> <span class="token string">"unhealthy"</span>
+            <span class="token keyword">elif</span> instance<span class="token punctuation">.</span>active_requests <span class="token operator">></span> <span class="token number">20</span><span class="token punctuation">:</span>
+                instance<span class="token punctuation">.</span>health_status <span class="token operator">=</span> <span class="token string">"degraded"</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                instance<span class="token punctuation">.</span>health_status <span class="token operator">=</span> <span class="token string">"healthy"</span>
+
+    <span class="token keyword">def</span> <span class="token function">select_instance_round_robin</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Optional<span class="token punctuation">[</span>RAGInstance<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Round-robin selection among healthy instances</span>
+        healthy_instances <span class="token operator">=</span> <span class="token punctuation">[</span>inst <span class="token keyword">for</span> inst <span class="token keyword">in</span> self<span class="token punctuation">.</span>instances <span class="token keyword">if</span> inst<span class="token punctuation">.</span>health_status <span class="token operator">==</span> <span class="token string">"healthy"</span><span class="token punctuation">]</span>
+        
+        <span class="token keyword">if</span> <span class="token builtin">not</span> healthy_instances<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">None</span>
+        
+        selected <span class="token operator">=</span> healthy_instances<span class="token punctuation">[</span>self<span class="token punctuation">.</span>current_index <span class="token operator">%</span> <span class="token builtin">len</span><span class="token punctuation">(</span>healthy_instances<span class="token punctuation">)</span><span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>current_index <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+        <span class="token keyword">return</span> selected
+
+    <span class="token keyword">def</span> <span class="token function">select_instance_least_loaded</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Optional<span class="token punctuation">[</span>RAGInstance<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Select the instance with the lowest load</span>
+        healthy_instances <span class="token operator">=</span> <span class="token punctuation">[</span>inst <span class="token keyword">for</span> inst <span class="token keyword">in</span> self<span class="token punctuation">.</span>instances 
+                              <span class="token keyword">if</span> inst<span class="token punctuation">.</span>health_status <span class="token operator">==</span> <span class="token string">"healthy"</span> <span class="token keyword">and</span> inst<span class="token punctuation">.</span>active_requests <span class="token operator">&lt;</span> <span class="token number">50</span><span class="token punctuation">]</span>
+        
+        <span class="token keyword">if</span> <span class="token builtin">not</span> healthy_instances<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">None</span>
+        
+        <span class="token keyword">return</span> <span class="token builtin">min</span><span class="token punctuation">(</span>healthy_instances<span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">.</span>get_load<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">select_instance_random</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Optional<span class="token punctuation">[</span>RAGInstance<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Random selection among healthy instances</span>
+        healthy_instances <span class="token operator">=</span> <span class="token punctuation">[</span>inst <span class="token keyword">for</span> inst <span class="token keyword">in</span> self<span class="token punctuation">.</span>instances <span class="token keyword">if</span> inst<span class="token punctuation">.</span>health_status <span class="token operator">==</span> <span class="token string">"healthy"</span><span class="token punctuation">]</span>
+        
+        <span class="token keyword">if</span> <span class="token builtin">not</span> healthy_instances<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">None</span>
+        
+        <span class="token keyword">return</span> random<span class="token punctuation">.</span>choice<span class="token punctuation">(</span>healthy_instances<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">handle_request</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> selection_strategy<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"least_loaded"</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Optional<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Perform health check periodically</span>
+        self<span class="token punctuation">.</span>health_check<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Select instance based on strategy</span>
+        <span class="token keyword">if</span> selection_strategy <span class="token operator">==</span> <span class="token string">"round_robin"</span><span class="token punctuation">:</span>
+            selected_instance <span class="token operator">=</span> self<span class="token punctuation">.</span>select_instance_round_robin<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">elif</span> selection_strategy <span class="token operator">==</span> <span class="token string">"least_loaded"</span><span class="token punctuation">:</span>
+            selected_instance <span class="token operator">=</span> self<span class="token punctuation">.</span>select_instance_least_loaded<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">elif</span> selection_strategy <span class="token operator">==</span> <span class="token string">"random"</span><span class="token punctuation">:</span>
+            selected_instance <span class="token operator">=</span> self<span class="token punctuation">.</span>select_instance_random<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            selected_instance <span class="token operator">=</span> self<span class="token punctuation">.</span>select_instance_least_loaded<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> <span class="token builtin">not</span> selected_instance<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token punctuation">{</span><span class="token string">"error"</span><span class="token punctuation">:</span> <span class="token string">"No healthy instances available"</span><span class="token punctuation">}</span>
+        
+        <span class="token comment"># Simulate sending request to selected instance</span>
+        selected_instance<span class="token punctuation">.</span>active_requests <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+        selected_instance<span class="token punctuation">.</span>total_requests <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+        selected_instance<span class="token punctuation">.</span>last_request_time <span class="token operator">=</span> time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Simulate processing and return mock response</span>
+        <span class="token keyword">try</span><span class="token punctuation">:</span>
+            <span class="token comment"># In a real system, this would be an HTTP request to the selected instance</span>
+            response <span class="token operator">=</span> <span class="token punctuation">{</span>
+                <span class="token string">"response"</span><span class="token punctuation">:</span> <span class="token string">f"Response to query: {query}"</span><span class="token punctuation">,</span>
+                <span class="token string">"instance"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span><span class="token string">"host"</span><span class="token punctuation">:</span> selected_instance<span class="token punctuation">.</span>host<span class="token punctuation">,</span> <span class="token string">"port"</span><span class="token punctuation">:</span> selected_instance<span class="token punctuation">.</span>port<span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">return</span> response
+        <span class="token keyword">except</span> <span class="token builtin">Exception</span> <span class="token keyword">as</span> e<span class="token punctuation">:</span>
+            selected_instance<span class="token punctuation">.</span>error_count <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+            <span class="token keyword">return</span> <span class="token punctuation">{</span><span class="token string">"error"</span><span class="token punctuation">:</span> <span class="token builtin">str</span><span class="token punctuation">(</span>e<span class="token punctuation">)</span><span class="token punctuation">}</span>
+        <span class="token keyword">finally</span><span class="token punctuation">:</span>
+            selected_instance<span class="token punctuation">.</span>active_requests <span class="token operator">-</span><span class="token operator">=</span> <span class="token number">1</span>
+
+<span class="token comment"># Example usage</span>
+<span class="token comment"># instances = [RAGInstance("host1", 8000), RAGInstance("host2", 8001), RAGInstance("host3", 8002)]</span>
+<span class="token comment"># lb = RAGLoadBalancer(instances)</span>
+<span class="token comment"># response = lb.handle_request("What is RAG?", selection_strategy="least_loaded")</span></code></pre>
+</div>
+</div>
+
+<h2 id="monitoring">Monitoring and Observability</h2>
+<p>
+Comprehensive monitoring is essential for maintaining the reliability and performance of production RAG systems. Effective observability encompasses metrics, logging, and tracing across all system components.
+</p>
+
+<h3>Key Metrics for RAG Systems</h3>
+<p>
+Tracking the right metrics helps identify performance bottlenecks and ensures service level objectives are met.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">monitoring.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> time
+<span class="token keyword">import</span> threading
+<span class="token keyword">from</span> collections <span class="token keyword">import</span> deque<span class="token punctuation">,</span> defaultdict
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> Dict<span class="token punctuation">,</span> List<span class="token punctuation">,</span> Optional
+<span class="token keyword">import</span> json
+
+<span class="token keyword">class</span> <span class="token class-name">RAGMetricsCollector</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> retention_window<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">3600</span><span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment"># 1 hour in seconds</span>
+        self<span class="token punctuation">.</span>retention_window <span class="token operator">=</span> retention_window
+        self<span class="token punctuation">.</span>request_times <span class="token operator">=</span> deque<span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># (timestamp, duration)</span>
+        self<span class="token punctuation">.</span>error_counts <span class="token operator">=</span> defaultdict<span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>request_counts <span class="token operator">=</span> <span class="token number">0</span>
+        self<span class="token punctuation">.</span>retrieval_counts <span class="token operator">=</span> <span class="token number">0</span>
+        self<span class="token punctuation">.</span>generation_counts <span class="token operator">=</span> <span class="token number">0</span>
+        self<span class="token punctuation">.</span>lock <span class="token operator">=</span> threading<span class="token punctuation">.</span>RLock<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">record_request</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> duration<span class="token punctuation">:</span> float<span class="token punctuation">,</span> success<span class="token punctuation">:</span> <span class="token builtin">bool</span> <span class="token operator">=</span> <span class="token boolean">True</span><span class="token punctuation">,</span> error_type<span class="token punctuation">:</span> Optional<span class="token punctuation">[</span>str<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">with</span> self<span class="token punctuation">.</span>lock<span class="token punctuation">:</span>
+            current_time <span class="token operator">=</span> time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>request_times<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">(</span>current_time<span class="token punctuation">,</span> duration<span class="token punctuation">)</span><span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>request_counts <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+            
+            <span class="token keyword">if</span> <span class="token operator">not</span> success<span class="token punctuation">:</span>
+                self<span class="token punctuation">.</span>error_counts<span class="token punctuation">[</span>error_type <span class="token keyword">or</span> <span class="token string">"unknown"</span><span class="token punctuation">]</span> <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+            
+            <span class="token comment"># Clean old entries</span>
+            self<span class="token punctuation">.</span>_clean_old_entries<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">record_retrieval</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> duration<span class="token punctuation">:</span> float<span class="token punctuation">,</span> num_docs<span class="token punctuation">:</span> int<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">with</span> self<span class="token punctuation">.</span>lock<span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>retrieval_counts <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+
+    <span class="token keyword">def</span> <span class="token function">record_generation</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> duration<span class="token punctuation">:</span> float<span class="token punctuation">,</span> tokens_generated<span class="token punctuation">:</span> int<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">with</span> self<span class="token punctuation">.</span>lock<span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>generation_counts <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+
+    <span class="token keyword">def</span> <span class="token function">_clean_old_entries</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Remove entries older than retention window</span>
+        current_time <span class="token operator">=</span> time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        cutoff_time <span class="token operator">=</span> current_time <span class="token operator">-</span> self<span class="token punctuation">.</span>retention_window
+        
+        <span class="token keyword">while</span> self<span class="token punctuation">.</span>request_times <span class="token keyword">and</span> self<span class="token punctuation">.</span>request_times<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">&lt;</span> cutoff_time<span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>request_times<span class="token punctuation">.</span>popleft<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">get_p95_latency</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Optional<span class="token punctuation">[</span>float<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">with</span> self<span class="token punctuation">.</span>lock<span class="token punctuation">:</span>
+            recent_times <span class="token operator">=</span> <span class="token punctuation">[</span>duration <span class="token keyword">for</span> _<span class="token punctuation">,</span> duration <span class="token keyword">in</span> self<span class="token punctuation">.</span>request_times<span class="token punctuation">]</span>
+            <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>recent_times<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+                <span class="token keyword">return</span> <span class="token boolean">None</span>
+            
+            <span class="token comment"># Simple percentile calculation (in a real system, use numpy or statistics)</span>
+            sorted_times <span class="token operator">=</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>recent_times<span class="token punctuation">)</span>
+            index <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.95</span> <span class="token operator">*</span> <span class="token builtin">len</span><span class="token punctuation">(</span>sorted_times<span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span> sorted_times<span class="token punctuation">[</span><span class="token builtin">min</span><span class="token punctuation">(</span>index<span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>sorted_times<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+    <span class="token keyword">def</span> <span class="token function">get_error_rate</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+        <span class="token keyword">with</span> self<span class="token punctuation">.</span>lock<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> self<span class="token punctuation">.</span>request_counts <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+                <span class="token keyword">return</span> <span class="token number">0.0</span>
+            <span class="token keyword">return</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>error_counts<span class="token punctuation">.</span>values<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">/</span> self<span class="token punctuation">.</span>request_counts
+
+    <span class="token keyword">def</span> <span class="token function">get_throughput</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> window_seconds<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">60</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+        <span class="token keyword">with</span> self<span class="token punctuation">.</span>lock<span class="token punctuation">:</span>
+            current_time <span class="token operator">=</span> time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            cutoff_time <span class="token operator">=</span> current_time <span class="token operator">-</span> window_seconds
+            
+            recent_requests <span class="token operator">=</span> <span class="token punctuation">[</span>t <span class="token keyword">for</span> t<span class="token punctuation">,</span> _ <span class="token keyword">in</span> self<span class="token punctuation">.</span>request_times <span class="token keyword">if</span> t <span class="token operator">>=</span> cutoff_time<span class="token punctuation">]</span>
+            <span class="token keyword">return</span> <span class="token builtin">len</span><span class="token punctuation">(</span>recent_requests<span class="token punctuation">)</span> <span class="token operator">/</span> window_seconds
+
+    <span class="token keyword">def</span> <span class="token function">get_metrics_summary</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> <span class="token builtin">float</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token punctuation">{</span>
+            <span class="token string">"p95_latency"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>get_p95_latency<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">"error_rate"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>get_error_rate<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">"throughput_rpm"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>get_throughput<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">60</span><span class="token punctuation">,</span>
+            <span class="token string">"total_requests"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>request_counts<span class="token punctuation">,</span>
+            <span class="token string">"retrieval_calls"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>retrieval_counts<span class="token punctuation">,</span>
+            <span class="token string">"generation_calls"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>generation_counts
+        <span class="token punctuation">}</span>
+
+<span class="token keyword">class</span> <span class="token class-name">RAGRequestLogger</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> log_level<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"INFO"</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>log_level <span class="token operator">=</span> log_level
+        self<span class="token punctuation">.</span>logs <span class="token operator">=</span> deque<span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># In production, use a proper logging system</span>
+
+    <span class="token keyword">def</span> <span class="token function">log_request</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> response<span class="token punctuation">:</span> str<span class="token punctuation">,</span> duration<span class="token punctuation">:</span> float<span class="token punctuation">,</span> metadata<span class="token punctuation">:</span> Dict <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        log_entry <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">"timestamp"</span><span class="token punctuation">:</span> time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">"event"</span><span class="token punctuation">:</span> <span class="token string">"rag_request"</span><span class="token punctuation">,</span>
+            <span class="token string">"query"</span><span class="token punctuation">:</span> query<span class="token punctuation">,</span>
+            <span class="token string">"response_length"</span><span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>response<span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">"duration"</span><span class="token punctuation">:</span> duration<span class="token punctuation">,</span>
+            <span class="token string">"metadata"</span><span class="token punctuation">:</span> metadata <span class="token operator">or</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        self<span class="token punctuation">.</span>logs<span class="token punctuation">.</span>append<span class="token punctuation">(</span>json<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>log_entry<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">log_error</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> error_msg<span class="token punctuation">:</span> str<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        log_entry <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">"timestamp"</span><span class="token punctuation">:</span> time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">"event"</span><span class="token punctuation">:</span> <span class="token string">"rag_error"</span><span class="token punctuation">,</span>
+            <span class="token string">"error"</span><span class="token punctuation">:</span> error_msg<span class="token punctuation">,</span>
+            <span class="token string">"query"</span><span class="token punctuation">:</span> query
+        <span class="token punctuation">}</span>
+        self<span class="token punctuation">.</span>logs<span class="token punctuation">.</span>append<span class="token punctuation">(</span>json<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>log_entry<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># Example usage</span>
+<span class="token comment"># metrics_collector = RAGMetricsCollector()</span>
+<span class="token comment"># logger = RAGRequestLogger()</span>
+<span class="token comment"># metrics_collector.record_request(duration=0.5, success=True)</span>
+<span class="token comment"># summary = metrics_collector.get_metrics_summary()</span></code></pre>
+</div>
+</div>
+
+<h2 id="security">Security Considerations</h2>
+<p>
+Security in production RAG systems encompasses data protection, access control, and prevention of adversarial attacks that could compromise system integrity or leak sensitive information.
+</p>
+
+<h3>Data Protection and Access Control</h3>
+<p>
+Implementing robust security measures to protect sensitive data and ensure authorized access to RAG systems.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">security.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> jwt
+<span class="token keyword">import</span> hashlib
+<span class="token keyword">import</span> hmac
+<span class="token keyword">from</span> datetime <span class="token keyword">import</span> datetime<span class="token punctuation">,</span> timedelta
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> Dict<span class="token punctuation">,</span> List<span class="token punctuation">,</span> Optional
+<span class="token keyword">from</span> enum <span class="token keyword">import</span> Enum
+
+<span class="token keyword">class</span> <span class="token class-name">Permission</span><span class="token punctuation">(</span>Enum<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    READ <span class="token operator">=</span> <span class="token string">"read"</span>
+    WRITE <span class="token operator">=</span> <span class="token string">"write"</span>
+    ADMIN <span class="token operator">=</span> <span class="token string">"admin"</span>
+
+<span class="token keyword">class</span> <span class="token class-name">UserDataClassifier</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Define patterns for sensitive data classification</span>
+        self<span class="token punctuation">.</span>sensitive_patterns <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">"PII"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>r<span class="token string">"\b\d{3}-\d{2}-\d{4}\b"</span><span class="token punctuation">,</span>  <span class="token comment"># SSN pattern</span>
+                   r<span class="token string">"\b\d{3}-?\d{3}-?\d{4}\b"</span><span class="token punctuation">,</span>  <span class="token comment"># Phone pattern</span>
+                   r<span class="token string">"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>  <span class="token comment"># Email pattern</span>
+            <span class="token string">"FINANCIAL"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>r<span class="token string">"\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}\b"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>  <span class="token comment"># Credit card pattern</span>
+            <span class="token string">"MEDICAL"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>r<span class="token string">"\b\d{3}-\d{2}-\d{4}\b"</span><span class="token punctuation">]</span>  <span class="token comment"># Medical record pattern</span>
+        <span class="token punctuation">}</span>
+
+    <span class="token keyword">def</span> <span class="token function">classify_text</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> text<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Classify text based on sensitive patterns</span>
+        detected_categories <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> category<span class="token punctuation">,</span> patterns <span class="token keyword">in</span> self<span class="token punctuation">.</span>sensitive_patterns<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">for</span> pattern <span class="token keyword">in</span> patterns<span class="token punctuation">:</span>
+                <span class="token keyword">import</span> re
+                <span class="token keyword">if</span> re<span class="token punctuation">.</span>search<span class="token punctuation">(</span>pattern<span class="token punctuation">,</span> text<span class="token punctuation">,</span> re<span class="token punctuation">.</span>IGNORECASE<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                    <span class="token keyword">if</span> category <span class="token keyword">not</span> <span class="token keyword">in</span> detected_categories<span class="token punctuation">:</span>
+                        detected_categories<span class="token punctuation">.</span>append<span class="token punctuation">(</span>category<span class="token punctuation">)</span>
+                    <span class="token keyword">break</span>
+        <span class="token keyword">return</span> detected_categories
+
+<span class="token keyword">class</span> <span class="token class-name">RAGAccessControl</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> secret_key<span class="token punctuation">:</span> str<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>secret_key <span class="token operator">=</span> secret_key
+        self<span class="token punctuation">.</span>user_permissions <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>  <span class="token comment"># user_id -> [permissions]</span>
+        self<span class="token punctuation">.</span>document_access_levels <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>  <span class="token comment"># doc_id -> access_level</span>
+        self<span class="token punctuation">.</span>classifier <span class="token operator">=</span> UserDataClassifier<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">create_token</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> user_id<span class="token punctuation">:</span> str<span class="token punctuation">,</span> permissions<span class="token punctuation">:</span> List<span class="token punctuation">[</span>Permission<span class="token punctuation">]</span><span class="token punctuation">,</span> expiry_hours<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">24</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        payload <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">"user_id"</span><span class="token punctuation">:</span> user_id<span class="token punctuation">,</span>
+            <span class="token string">"permissions"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>p<span class="token punctuation">.</span>value <span class="token keyword">for</span> p <span class="token keyword">in</span> permissions<span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token string">"exp"</span><span class="token punctuation">:</span> datetime<span class="token punctuation">.</span>utcnow<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> timedelta<span class="token punctuation">(</span>hours<span class="token operator">=</span>expiry_hours<span class="token punctuation">)</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> jwt<span class="token punctuation">.</span>encode<span class="token punctuation">(</span>payload<span class="token punctuation">,</span> self<span class="token punctuation">.</span>secret_key<span class="token punctuation">,</span> algorithm<span class="token operator">=</span><span class="token string">"HS256"</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">verify_token</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> token<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Optional<span class="token punctuation">[</span>Dict<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">try</span><span class="token punctuation">:</span>
+            payload <span class="token operator">=</span> jwt<span class="token punctuation">.</span>decode<span class="token punctuation">(</span>token<span class="token punctuation">,</span> self<span class="token punctuation">.</span>secret_key<span class="token punctuation">,</span> algorithms<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">"HS256"</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span> payload
+        <span class="token keyword">except</span> jwt<span class="token punctuation">.</span>ExpiredSignatureError<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">None</span>
+        <span class="token keyword">except</span> jwt<span class="token punctuation">.</span>InvalidTokenError<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">None</span>
+
+    <span class="token keyword">def</span> <span class="token function">has_permission</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> user_id<span class="token punctuation">:</span> str<span class="token punctuation">,</span> required_permission<span class="token punctuation">:</span> Permission<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token builtin">bool</span><span class="token punctuation">:</span>
+        user_perms <span class="token operator">=</span> self<span class="token punctuation">.</span>user_permissions<span class="token punctuation">.</span>get<span class="token punctuation">(</span>user_id<span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> required_permission<span class="token punctuation">.</span>value <span class="token keyword">in</span> <span class="token punctuation">[</span>p<span class="token punctuation">.</span>value <span class="token keyword">for</span> p <span class="token keyword">in</span> user_perms<span class="token punctuation">]</span>
+
+    <span class="token keyword">def</span> <span class="token function">can_access_document</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> user_id<span class="token punctuation">:</span> str<span class="token punctuation">,</span> doc_id<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token builtin">bool</span><span class="token punctuation">:</span>
+        <span class="token comment"># Check if user has access to document based on access levels</span>
+        doc_level <span class="token operator">=</span> self<span class="token punctuation">.</span>document_access_levels<span class="token punctuation">.</span>get<span class="token punctuation">(</span>doc_id<span class="token punctuation">,</span> <span class="token string">"public"</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> doc_level <span class="token operator">==</span> <span class="token string">"public"</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">True</span>
+        <span class="token keyword">elif</span> doc_level <span class="token operator">==</span> <span class="token string">"internal"</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> self<span class="token punctuation">.</span>has_permission<span class="token punctuation">(</span>user_id<span class="token punctuation">,</span> Permission<span class="token punctuation">.</span>READ<span class="token punctuation">)</span>
+        <span class="token keyword">elif</span> doc_level <span class="token operator">==</span> <span class="token string">"confidential"</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> self<span class="token punctuation">.</span>has_permission<span class="token punctuation">(</span>user_id<span class="token punctuation">,</span> Permission<span class="token punctuation">.</span>ADMIN<span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+    <span class="token keyword">def</span> <span class="token function">sanitize_response</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> response<span class="token punctuation">:</span> str<span class="token punctuation">,</span> user_id<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Sanitize response based on user permissions and sensitive data detection</span>
+        detected_categories <span class="token operator">=</span> self<span class="token punctuation">.</span>classifier<span class="token punctuation">.</span>classify_text<span class="token punctuation">(</span>response<span class="token punctuation">)</span>
+        
+        <span class="token comment"># If user doesn't have admin access, redact sensitive information</span>
+        <span class="token keyword">if</span> <span class="token operator">not</span> self<span class="token punctuation">.</span>has_permission<span class="token punctuation">(</span>user_id<span class="token punctuation">,</span> Permission<span class="token punctuation">.</span>ADMIN<span class="token punctuation">)</span> <span class="token keyword">and</span> detected_categories<span class="token punctuation">:</span>
+            <span class="token comment"># In a real implementation, this would perform actual redaction</span>
+            <span class="token keyword">import</span> re
+            <span class="token comment"># Redact email addresses</span>
+            response <span class="token operator">=</span> re<span class="token punctuation">.</span>sub<span class="token punctuation">(</span>r<span class="token string">"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"</span><span class="token punctuation">,</span> <span class="token string">"[EMAIL_REDACTED]"</span><span class="token punctuation">,</span> response<span class="token punctuation">,</span> flags<span class="token operator">=</span>re<span class="token punctuation">.</span>IGNORECASE<span class="token punctuation">)</span>
+            <span class="token comment"># Redact phone numbers</span>
+            response <span class="token operator">=</span> re<span class="token punctuation">.</span>sub<span class="token punctuation">(</span>r<span class="token string">"\b\d{3}-?\d{3}-?\d{4}\b"</span><span class="token punctuation">,</span> <span class="token string">"[PHONE_REDACTED]"</span><span class="token punctuation">,</span> response<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> response
+
+<span class="token comment"># Example usage</span>
+<span class="token comment"># access_control = RAGAccessControl("your-secret-key")</span>
+<span class="token comment"># token = access_control.create_token("user123", [Permission.READ])</span>
+<span class="token comment"># payload = access_control.verify_token(token)</span></code></pre>
+</div>
+</div>
+
+<h2 id="performance">Performance Optimization</h2>
+<p>
+Optimizing performance in production RAG systems involves multiple strategies including caching, pre-computation, and resource allocation.
+</p>
+
+<h3>Caching Strategies for RAG Systems</h3>
+<p>
+Implementing effective caching at multiple levels to reduce latency and improve throughput.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">caching.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> time
+<span class="token keyword">import</span> hashlib
+<span class="token keyword">from</span> collections <span class="token keyword">import</span> OrderedDict<span class="token punctuation">,</span> deque
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> Any<span class="token punctuation">,</span> Optional<span class="token punctuation">,</span> Dict
+<span class="token keyword">import</span> pickle
+<span class="token keyword">import</span> threading
+
+<span class="token keyword">class</span> <span class="token class-name">LRUCache</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> max_size<span class="token punctuation">:</span> int<span class="token punctuation">,</span> ttl<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">3600</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>max_size <span class="token operator">=</span> max_size
+        self<span class="token punctuation">.</span>ttl <span class="token operator">=</span> ttl
+        self<span class="token punctuation">.</span>cache <span class="token operator">=</span> OrderedDict<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>lock <span class="token operator">=</span> threading<span class="token punctuation">.</span>RLock<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">_is_expired</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> timestamp<span class="token punctuation">:</span> float<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token builtin">bool</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> timestamp <span class="token operator">></span> self<span class="token punctuation">.</span>ttl
+
+    <span class="token keyword">def</span> <span class="token function">get</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> key<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Optional<span class="token punctuation">[</span>Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">with</span> self<span class="token punctuation">.</span>lock<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> key <span class="token keyword">not</span> <span class="token keyword">in</span> self<span class="token punctuation">.</span>cache<span class="token punctuation">:</span>
+                <span class="token keyword">return</span> <span class="token boolean">None</span>
+            
+            timestamp<span class="token punctuation">,</span> value <span class="token operator">=</span> self<span class="token punctuation">.</span>cache<span class="token punctuation">[</span>key<span class="token punctuation">]</span>
+            
+            <span class="token keyword">if</span> self<span class="token punctuation">.</span>_is_expired<span class="token punctuation">(</span>timestamp<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token keyword">del</span> self<span class="token punctuation">.</span>cache<span class="token punctuation">[</span>key<span class="token punctuation">]</span>
+                <span class="token keyword">return</span> <span class="token boolean">None</span>
+            
+            <span class="token comment"># Move to end (most recently used)</span>
+            self<span class="token punctuation">.</span>cache<span class="token punctuation">.</span>move_to_end<span class="token punctuation">(</span>key<span class="token punctuation">)</span>
+            <span class="token keyword">return</span> value
+
+    <span class="token keyword">def</span> <span class="token function">put</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> key<span class="token punctuation">:</span> str<span class="token punctuation">,</span> value<span class="token punctuation">:</span> Any<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token builtin">None</span><span class="token punctuation">:</span>
+        <span class="token keyword">with</span> self<span class="token punctuation">.</span>lock<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> key <span class="token keyword">in</span> self<span class="token punctuation">.</span>cache<span class="token punctuation">:</span>
+                <span class="token comment"># Update existing key</span>
+                self<span class="token punctuation">.</span>cache<span class="token punctuation">[</span>key<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span>time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> value<span class="token punctuation">)</span>
+                self<span class="token punctuation">.</span>cache<span class="token punctuation">.</span>move_to_end<span class="token punctuation">(</span>key<span class="token punctuation">)</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                <span class="token comment"># Add new key</span>
+                <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>cache<span class="token punctuation">)</span> <span class="token operator">>=</span> self<span class="token punctuation">.</span>max_size<span class="token punctuation">:</span>
+                    <span class="token comment"># Remove least recently used item</span>
+                    self<span class="token punctuation">.</span>cache<span class="token punctuation">.</span>popitem<span class="token punctuation">(</span>last<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span>
+                
+                self<span class="token punctuation">.</span>cache<span class="token punctuation">[</span>key<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span>time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> value<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">delete</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> key<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token builtin">bool</span><span class="token punctuation">:</span>
+        <span class="token keyword">with</span> self<span class="token punctuation">.</span>lock<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> key <span class="token keyword">in</span> self<span class="token punctuation">.</span>cache<span class="token punctuation">:</span>
+                <span class="token keyword">del</span> self<span class="token punctuation">.</span>cache<span class="token punctuation">[</span>key<span class="token punctuation">]</span>
+                <span class="token keyword">return</span> <span class="token boolean">True</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+<span class="token keyword">class</span> <span class="token class-name">RAGCacheManager</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Different caches for different purposes</span>
+        self<span class="token punctuation">.</span>query_cache <span class="token operator">=</span> LRUCache<span class="token punctuation">(</span>max_size<span class="token operator">=</span><span class="token number">1000</span><span class="token punctuation">,</span> ttl<span class="token operator">=</span><span class="token number">1800</span><span class="token punctuation">)</span>  <span class="token comment"># 30 min TTL for query results</span>
+        self<span class="token punctuation">.</span>embedding_cache <span class="token operator">=</span> LRUCache<span class="token punctuation">(</span>max_size<span class="token operator">=</span><span class="token number">5000</span><span class="token punctuation">,</span> ttl<span class="token operator">=</span><span class="token number">3600</span><span class="token punctuation">)</span>  <span class="token comment"># 1 hour TTL for embeddings</span>
+        self<span class="token punctuation">.</span>document_cache <span class="token operator">=</span> LRUCache<span class="token punctuation">(</span>max_size<span class="token operator">=</span><span class="token number">500</span><span class="token punctuation">,</span> ttl<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">)</span>  <span class="token comment"># 10 min TTL for documents</span>
+        
+        <span class="token comment"># Cache statistics</span>
+        self<span class="token punctuation">.</span>cache_hits <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">"query"</span><span class="token punctuation">:</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token string">"embedding"</span><span class="token punctuation">:</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token string">"document"</span><span class="token punctuation">:</span> <span class="token number">0</span><span class="token punctuation">}</span>
+        self<span class="token punctuation">.</span>cache_misses <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">"query"</span><span class="token punctuation">:</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token string">"embedding"</span><span class="token punctuation">:</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token string">"document"</span><span class="token punctuation">:</span> <span class="token number">0</span><span class="token punctuation">}</span>
+
+    <span class="token keyword">def</span> <span class="token function">get_cached_query_result</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Optional<span class="token punctuation">[</span>Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Hash the query to use as cache key</span>
+        query_hash <span class="token operator">=</span> hashlib<span class="token punctuation">.</span>sha256<span class="token punctuation">(</span>query<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>hexdigest<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        result <span class="token operator">=</span> self<span class="token punctuation">.</span>query_cache<span class="token punctuation">.</span>get<span class="token punctuation">(</span>query_hash<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> result <span class="token keyword">is</span> <span class="token keyword">not</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>cache_hits<span class="token punctuation">[</span><span class="token string">"query"</span><span class="token punctuation">]</span> <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>cache_misses<span class="token punctuation">[</span><span class="token string">"query"</span><span class="token punctuation">]</span> <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+        
+        <span class="token keyword">return</span> result
+
+    <span class="token keyword">def</span> <span class="token function">cache_query_result</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> result<span class="token punctuation">:</span> Any<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token builtin">None</span><span class="token punctuation">:</span>
+        query_hash <span class="token operator">=</span> hashlib<span class="token punctuation">.</span>sha256<span class="token punctuation">(</span>query<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>hexdigest<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>query_cache<span class="token punctuation">.</span>put<span class="token punctuation">(</span>query_hash<span class="token punctuation">,</span> result<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">get_cached_embedding</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> text<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Optional<span class="token punctuation">[</span>Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        text_hash <span class="token operator">=</span> hashlib<span class="token punctuation">.</span>sha256<span class="token punctuation">(</span>text<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>hexdigest<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        result <span class="token operator">=</span> self<span class="token punctuation">.</span>embedding_cache<span class="token punctuation">.</span>get<span class="token punctuation">(</span>text_hash<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> result <span class="token keyword">is</span> <span class="token keyword">not</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>cache_hits<span class="token punctuation">[</span><span class="token string">"embedding"</span><span class="token punctuation">]</span> <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>cache_misses<span class="token punctuation">[</span><span class="token string">"embedding"</span><span class="token punctuation">]</span> <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+        
+        <span class="token keyword">return</span> result
+
+    <span class="token keyword">def</span> <span class="token function">cache_embedding</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> text<span class="token punctuation">:</span> str<span class="token punctuation">,</span> embedding<span class="token punctuation">:</span> Any<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token builtin">None</span><span class="token punctuation">:</span>
+        text_hash <span class="token operator">=</span> hashlib<span class="token punctuation">.</span>sha256<span class="token punctuation">(</span>text<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>hexdigest<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>embedding_cache<span class="token punctuation">.</span>put<span class="token punctuation">(</span>text_hash<span class="token punctuation">,</span> embedding<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">get_cached_document</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> doc_id<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Optional<span class="token punctuation">[</span>Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        result <span class="token operator">=</span> self<span class="token punctuation">.</span>document_cache<span class="token punctuation">.</span>get<span class="token punctuation">(</span>doc_id<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> result <span class="token keyword">is</span> <span class="token keyword">not</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>cache_hits<span class="token punctuation">[</span><span class="token string">"document"</span><span class="token punctuation">]</span> <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>cache_misses<span class="token punctuation">[</span><span class="token string">"document"</span><span class="token punctuation">]</span> <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+        
+        <span class="token keyword">return</span> result
+
+    <span class="token keyword">def</span> <span class="token function">cache_document</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> doc_id<span class="token punctuation">:</span> str<span class="token punctuation">,</span> content<span class="token punctuation">:</span> Any<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token builtin">None</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>document_cache<span class="token punctuation">.</span>put<span class="token punctuation">(</span>doc_id<span class="token punctuation">,</span> content<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">get_cache_stats</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        stats <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        <span class="token keyword">for</span> cache_type <span class="token keyword">in</span> <span class="token punctuation">[</span><span class="token string">"query"</span><span class="token punctuation">,</span> <span class="token string">"embedding"</span><span class="token punctuation">,</span> <span class="token string">"document"</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+            total <span class="token operator">=</span> self<span class="token punctuation">.</span>cache_hits<span class="token punctuation">[</span>cache_type<span class="token punctuation">]</span> <span class="token operator">+</span> self<span class="token punctuation">.</span>cache_misses<span class="token punctuation">[</span>cache_type<span class="token punctuation">]</span>
+            hit_rate <span class="token operator">=</span> self<span class="token punctuation">.</span>cache_hits<span class="token punctuation">[</span>cache_type<span class="token punctuation">]</span> <span class="token operator">/</span> total <span class="token keyword">if</span> total <span class="token operator">></span> <span class="token number">0</span> <span class="token keyword">else</span> <span class="token number">0</span>
+            stats<span class="token punctuation">[</span>f<span class="token string">"{cache_type}_hit_rate"</span><span class="token punctuation">]</span> <span class="token operator">=</span> hit_rate
+            stats<span class="token punctuation">[</span>f<span class="token string">"{cache_type}_total_requests"</span><span class="token punctuation">]</span> <span class="token operator">=</span> total
+        
+        <span class="token keyword">return</span> stats
+
+<span class="token comment"># Example usage</span>
+<span class="token comment"># cache_manager = RAGCacheManager()</span>
+<span class="token comment"># cache_manager.cache_query_result("What is RAG?", "RAG stands for Retrieval Augmented Generation...")</span>
+<span class="token comment"># cached_result = cache_manager.get_cached_query_result("What is RAG?")</span></code></pre>
+</div>
+</div>
+
+</div>
+<!-- Footer / Pagination -->
+<div class="mt-24 pt-10 border-t border-faded flex justify-between items-center group/footer">
+<a class="flex flex-col items-start gap-2 hover:bg-parchment/50 p-4 -ml-4 rounded transition-colors w-1/2" href="module_14_advanced_architectures.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Previous Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Advanced Architectures
+                        </span>
+</a>
+<div class="h-12 w-px bg-faded mx-4"></div>
+<a class="flex flex-col items-end gap-2 hover:bg-parchment/50 p-4 -mr-4 rounded transition-colors w-1/2" href="index.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Next Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+                            Syllabus
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</span>
+</a>
+</div>
+</article>
+<!-- Right Rail: Marginalia -->
+<aside class="hidden xl:block w-[240px] sticky top-14 h-[calc(100vh-3.5rem)] pt-32 pb-10 pr-10 pl-4 overflow-y-auto">
+<div class="flex flex-col gap-24 relative">
+<!-- Note 1: Aligned with introduction -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[1]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Production deployment</strong> requires special considerations.
+                        </p>
+</div>
+<!-- Note 2: Aligned with scalability -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-12">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[2]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Sharding strategies</strong> help distribute load effectively.
+                        </p>
+<a class="inline-flex items-center gap-1 mt-2 text-[10px] uppercase tracking-widest text-primary font-bold hover:underline" href="artifact_view.html" target="_blank">
+                            View Code <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+</a>
+</div>
+<!-- Note 3: Aligned with monitoring -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-24">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[3]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <code class="bg-parchment px-0.5 rounded-sm">P95 latency</code> is a key performance indicator.
+                        </p>
+</div>
+<!-- Additional marginalia for module-specific content -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[4]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Access control</strong> prevents unauthorized data access.
+                        </p>
+</div>
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[5]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Caching strategies</strong> significantly improve performance.
+                        </p>
+</div>
+</div>
+</aside>
+</div>
+</main>
+
+<script>
+    // Function to copy code to clipboard
+    function copyCode(button) {
+        const codeBlock = button.closest('.not-prose').querySelector('pre code');
+        navigator.clipboard.writeText(codeBlock.textContent.trim()).then(() => {
+            const originalIcon = button.querySelector('.material-symbols-outlined').textContent;
+            button.querySelector('.material-symbols-outlined').textContent = 'check';
+            setTimeout(() => {
+                button.querySelector('.material-symbols-outlined').textContent = originalIcon;
+            }, 2000);
+        });
+    }
+
+    // Calculate reading time based on content
+    document.addEventListener('DOMContentLoaded', function() {
+        const content = document.querySelector('.prose-academic').textContent;
+        const wordsPerMinute = 200; // Average reading speed
+        const wordCount = content.split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / wordsPerMinute);
+
+        document.getElementById('reading-time').textContent = `${readingTime} min read`;
+    });
+
+    // Search button functionality
+    document.getElementById('search-btn').addEventListener('click', function() {
+        window.location.href = 'search_index.html';
+    });
+</script>
+</body></html>

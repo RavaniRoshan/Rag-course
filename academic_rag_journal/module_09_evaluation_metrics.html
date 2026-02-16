@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic RAG Journal - Module 09: Evaluation Metrics</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;family=Geist+Mono:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#b80f12",
+                        "ink": "#2C2420",
+                        "paper": "#F9F7F1",
+                        "parchment": "#EBE6DA",
+                        "graphite": "#8A817C",
+                        "faded": "#D8D1C4",
+                        "library-green": "#4A5D44",
+                    },
+                    fontFamily: {
+                        "display": ["Newsreader", "serif"],
+                        "serif": ["Lora", "serif"],
+                        "mono": ["Geist Mono", "monospace"],
+                        "code": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.5rem"
+                    },
+                    backgroundImage: {
+                        'grain': "url('data:image.svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9F7F1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8D1C4;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8A817C;
+        }
+
+        /* Hide scrollbar for clean UI but allow scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Typography overrides */
+        .prose-academic p {
+            margin-top: 1.5em;
+            margin-bottom: 1.5em;
+            line-height: 1.8;
+            font-family: 'Lora', serif;
+            font-size: 19px;
+            color: #2C2420;
+        }
+        .prose-academic h2 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 2em;
+            font-size: 32px;
+            letter-spacing: -0.01em;
+        }
+        .prose-academic h3 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 1.5em;
+            font-size: 24px;
+        }
+
+        /* Sepia Code Theme */
+        .token.comment { color: #8A817C; font-style: italic; }
+        .token.function { color: #9E2A2B; }
+        .token.keyword { color: #b80f12; font-weight: bold; }
+        .token.string { color: #4A5D44; }
+        .token.number { color: #b80f12; }
+        
+        /* Marginalia hover effect */
+        .marginalia-item {
+            transition: transform 0.2s ease;
+        }
+        .marginalia-item:hover {
+            transform: translateX(-4px);
+        }
+        
+        /* Mermaid diagram styling */
+        .mermaid-diagram {
+            background: white;
+            border: 1px solid #D8D1C4;
+            border-radius: 4px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="bg-paper text-ink antialiased selection:bg-primary/20 selection:text-ink min-h-screen flex flex-col font-serif relative">
+<!-- Grain Texture Overlay -->
+<div class="fixed inset-0 pointer-events-none z-50 bg-grain mix-blend-multiply opacity-40"></div>
+<!-- Top Navigation (Minimal) -->
+<header class="sticky top-0 z-40 w-full border-b border-faded bg-paper/95 backdrop-blur-sm h-14 flex items-center justify-between px-6 lg:px-10">
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-2 text-ink hover:text-primary transition-colors group" href="index.html">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-display font-medium text-lg tracking-tight">Syllabus</span>
+</a>
+<div class="h-4 w-px bg-faded mx-2"></div>
+<span class="font-mono text-xs uppercase tracking-wider text-graphite">Module 09</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-2 text-graphite text-xs font-mono">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span id="reading-time">50 min read</span>
+</div>
+<div class="flex gap-3">
+<button id="search-btn" aria-label="Search" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<button aria-label="Settings" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">text_fields</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 flex justify-center w-full relative">
+<div class="w-full max-w-[1440px] flex flex-row">
+<!-- Left Rail: Table of Contents -->
+<aside class="hidden lg:flex w-[240px] flex-col sticky top-14 h-[calc(100vh-3.5rem)] border-r border-faded overflow-y-auto pt-12 pb-10 pl-10 pr-6">
+<nav class="flex flex-col gap-8">
+<div>
+<h4 class="font-mono text-xs uppercase tracking-widest text-graphite mb-4">Contents</h4>
+<ul class="flex flex-col gap-3 font-mono text-[13px] leading-relaxed">
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#introduction">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Introduction
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#retrieval-metrics">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Retrieval Metrics
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#generation-metrics">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Generation Metrics
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#rag-metrics">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    RAG-Specific Metrics
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#evaluation-frameworks">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Evaluation Frameworks
+                                </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-8 border-t border-faded">
+<div class="flex flex-col gap-2">
+<span class="font-mono text-[11px] uppercase tracking-widest text-graphite">Progress</span>
+<div class="w-full bg-parchment h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[35%]"></div>
+</div>
+<span class="font-mono text-xs text-ink text-right">35%</span>
+</div>
+</div>
+</nav>
+</aside>
+<!-- Center Stage: The Reader -->
+<article class="flex-1 max-w-[720px] mx-auto pt-16 pb-32 px-6 md:px-12 min-h-screen">
+<!-- Module Header -->
+<header class="mb-16 border-b border-faded pb-12">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-mono text-sm font-medium text-primary px-2 py-1 bg-primary/10 rounded">Module 09</span>
+<span class="font-mono text-sm text-graphite">Advanced RAG Architectures</span>
+</div>
+<h1 class="font-display text-[48px] md:text-[56px] leading-[1.1] font-semibold text-ink tracking-tight mb-6">
+                        Evaluation Metrics &amp; Benchmarks
+                    </h1>
+<p class="font-serif text-xl text-ink/80 leading-relaxed max-w-[90%]">
+                        Implementing RAGAS and TruLens to quantitatively measure faithfulness, answer relevance, and context precision.
+                    </p>
+</header>
+<!-- Content Body -->
+<div class="prose-academic">
+<h2 id="introduction">Introduction to RAG Evaluation</h2>
+<p>
+Evaluation in Retrieval-Augmented Generation (RAG) systems is a multifaceted challenge that requires assessing both the retrieval and generation components. Unlike traditional machine learning models, RAG systems involve multiple stages where errors can compound, making it essential to evaluate each component individually as well as the end-to-end system performance.
+</p>
+
+<div class="my-10 border border-faded bg-parchment/50 p-6 rounded-sm">
+<figure>
+<img alt="RAG Evaluation Process" class="w-full h-auto mix-blend-multiply mb-4 filter sepia-[0.3]" data-alt="Visualization showing the evaluation process for RAG systems with retrieval and generation components" src="https://placehold.co/600x300/f9f7f1/ebe6da?text=RAG+Evaluation+Metrics" />
+<figcaption class="font-mono text-xs text-graphite text-center mt-2">Figure 1: Components of RAG Evaluation</figcaption>
+</figure>
+</div>
+
+<h2 id="retrieval-metrics">Retrieval Metrics</h2>
+<p>
+Retrieval metrics assess how well the system retrieves relevant documents or passages for a given query. These metrics are foundational to RAG performance since poor retrieval quality directly impacts generation quality.
+</p>
+
+<h3>Precision and Recall</h3>
+<p>
+Precision and recall are fundamental information retrieval metrics that measure the quality of retrieved results:
+</p>
+<ul class="list-disc pl-6 my-6">
+<li><strong>Precision@K</strong>: The fraction of retrieved documents that are relevant among the top K results</li>
+<li><strong>Recall@K</strong>: The fraction of relevant documents that are retrieved among the top K results</li>
+</ul>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">retrieval_metrics.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Set
+<span class="token keyword">from</span> collections <span class="token keyword">import</span> Counter
+
+<span class="token keyword">def</span> <span class="token function">precision_at_k</span><span class="token punctuation">(</span>retrieved<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> relevant<span class="token punctuation">:</span> Set<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> k<span class="token punctuation">:</span> int<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    Calculate Precision@K metric
+    """</span>
+    <span class="token keyword">if</span> k <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">0.0</span>
+    
+    retrieved_top_k <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>retrieved<span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    relevant_retrieved <span class="token operator">=</span> retrieved_top_k<span class="token punctuation">.</span>intersection<span class="token punctuation">(</span>relevant<span class="token punctuation">)</span>
+    
+    <span class="token keyword">return</span> <span class="token builtin">len</span><span class="token punctuation">(</span>relevant_retrieved<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>retrieved_top_k<span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">recall_at_k</span><span class="token punctuation">(</span>retrieved<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> relevant<span class="token punctuation">:</span> Set<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> k<span class="token punctuation">:</span> int<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    Calculate Recall@K metric
+    """</span>
+    <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>relevant<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">1.0</span>  <span class="token comment"># Perfect recall if no relevant docs exist</span>
+    
+    retrieved_top_k <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>retrieved<span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    relevant_retrieved <span class="token operator">=</span> retrieved_top_k<span class="token punctuation">.</span>intersection<span class="token punctuation">(</span>relevant<span class="token punctuation">)</span>
+    
+    <span class="token keyword">return</span> <span class="token builtin">len</span><span class="token punctuation">(</span>relevant_retrieved<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>relevant<span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">mean_reciprocal_rank</span><span class="token punctuation">(</span>retrieved_lists<span class="token punctuation">:</span> List<span class="token punctuation">[</span>List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> relevant_lists<span class="token punctuation">:</span> List<span class="token punctuation">[</span>Set<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    Calculate Mean Reciprocal Rank (MRR)
+    """</span>
+    <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>retrieved_lists<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>relevant_lists<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> <span class="token builtin">ValueError</span><span class="token punctuation">(</span><span class="token string">"Lists must have the same length"</span><span class="token punctuation">)</span>
+    
+    rranks <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> retrieved<span class="token punctuation">,</span> relevant <span class="token keyword">in</span> <span class="token builtin">zip</span><span class="token punctuation">(</span>retrieved_lists<span class="token punctuation">,</span> relevant_lists<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Find the rank of the first relevant document</span>
+        first_relevant_rank <span class="token operator">=</span> <span class="token number">0</span>
+        <span class="token keyword">for</span> i<span class="token punctuation">,</span> doc <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>retrieved<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> doc <span class="token keyword">in</span> relevant<span class="token punctuation">:</span>
+                first_relevant_rank <span class="token operator">=</span> i
+                <span class="token keyword">break</span>
+        
+        <span class="token keyword">if</span> first_relevant_rank <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">:</span>
+            rranks<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token number">1.0</span> <span class="token operator">/</span> first_relevant_rank<span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            rranks<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token number">0.0</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">return</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>rranks<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>rranks<span class="token punctuation">)</span> <span class="token keyword">if</span> rranks <span class="token keyword">else</span> <span class="token number">0.0</span>
+
+<span class="token keyword">def</span> <span class="token function">normalized_discounted_cumulative_gain</span><span class="token punctuation">(</span>retrieved<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> relevant<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> k<span class="token punctuation">:</span> int<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    Calculate Normalized Discounted Cumulative Gain (NDCG@K)
+    """</span>
+    <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>retrieved<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">or</span> k <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">0.0</span>
+    
+    <span class="token comment"># Calculate relevance scores (binary relevance)</span>
+    relevance_scores <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span> <span class="token keyword">if</span> doc <span class="token keyword">in</span> relevant <span class="token keyword">else</span> <span class="token number">0</span> <span class="token keyword">for</span> doc <span class="token keyword">in</span> retrieved<span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span><span class="token punctuation">]</span>
+    
+    <span class="token comment"># Calculate DCG</span>
+    dcg <span class="token operator">=</span> <span class="token number">0.0</span>
+    <span class="token keyword">for</span> i<span class="token punctuation">,</span> rel_score <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>relevance_scores<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        dcg <span class="token operator">+</span><span class="token operator">=</span> rel_score <span class="token operator">/</span> <span class="token punctuation">(</span><span class="token builtin">math</span><span class="token punctuation">.</span>log2<span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    
+    <span class="token comment"># Calculate ideal DCG (best possible ranking)</span>
+    ideal_relevance_scores <span class="token operator">=</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>relevance_scores<span class="token punctuation">,</span> reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+    ideal_dcg <span class="token operator">=</span> <span class="token number">0.0</span>
+    <span class="token keyword">for</span> i<span class="token punctuation">,</span> rel_score <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>ideal_relevance_scores<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        ideal_dcg <span class="token operator">+</span><span class="token operator">=</span> rel_score <span class="token operator">/</span> <span class="token punctuation">(</span><span class="token builtin">math</span><span class="token punctuation">.</span>log2<span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">if</span> ideal_dcg <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">0.0</span>
+    
+    <span class="token keyword">return</span> dcg <span class="token operator">/</span> ideal_dcg</code></pre>
+</div>
+</div>
+
+<h3>Hit Rate and Mean Average Precision</h3>
+<p>
+Beyond basic precision and recall, more sophisticated metrics provide deeper insights into retrieval quality:
+</p>
+<ul class="list-disc pl-6 my-6">
+<li><strong>Hit Rate@K</strong>: The percentage of queries for which at least one relevant document appears in the top K results</li>
+<li><strong>Mean Average Precision (MAP)</strong>: The mean of average precision scores across all queries</li>
+</ul>
+
+<h2 id="generation-metrics">Generation Metrics</h2>
+<p>
+Generation metrics evaluate the quality of the final output produced by the LLM. These metrics assess aspects like fluency, coherence, and factual accuracy.
+</p>
+
+<h3>BLEU and ROUGE</h3>
+<p>
+Traditional metrics borrowed from machine translation and summarization:
+</p>
+<ul class="list-disc pl-6 my-6">
+<li><strong>BLEU</strong>: Measures n-gram overlap between generated and reference text</li>
+<li><strong>ROUGE</strong>: Measures recall of n-grams, word sequences, and word pairs between generated and reference text</li>
+</ul>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">generation_metrics.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> collections <span class="token keyword">import</span> Counter
+<span class="token keyword">import</span> math
+
+<span class="token keyword">def</span> <span class="token function">bleu_score</span><span class="token punctuation">(</span>candidate<span class="token punctuation">:</span> str<span class="token punctuation">,</span> references<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> n<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    Calculate BLEU score for a candidate sentence against multiple references
+    """</span>
+    candidate_tokens <span class="token operator">=</span> candidate<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    reference_tokens_list <span class="token operator">=</span> <span class="token punctuation">[</span>ref<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> ref <span class="token keyword">in</span> references<span class="token punctuation">]</span>
+    
+    <span class="token comment"># Calculate n-gram precisions</span>
+    precisions <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> n_gram_size <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        numerator <span class="token operator">=</span> <span class="token number">0</span>
+        denominator <span class="token operator">=</span> <span class="token number">0</span>
+        
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>candidate_tokens<span class="token punctuation">)</span> <span class="token operator">-</span> n_gram_size <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            candidate_ngram <span class="token operator">=</span> <span class="token builtin">tuple</span><span class="token punctuation">(</span>candidate_tokens<span class="token punctuation">[</span>i<span class="token punctuation">:</span>i <span class="token operator">+</span> n_gram_size<span class="token punctuation">]</span><span class="token punctuation">)</span>
+            denominator <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+            
+            <span class="token comment"># Find max matching reference n-gram</span>
+            max_ref_count <span class="token operator">=</span> <span class="token number">0</span>
+            <span class="token keyword">for</span> ref_tokens <span class="token keyword">in</span> reference_tokens_list<span class="token punctuation">:</span>
+                ref_ngrams <span class="token operator">=</span> Counter<span class="token punctuation">(</span>
+                    <span class="token builtin">tuple</span><span class="token punctuation">(</span>ref_tokens<span class="token punctuation">[</span>j<span class="token punctuation">:</span>j <span class="token operator">+</span> n_gram_size<span class="token punctuation">]</span><span class="token punctuation">)</span> 
+                    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>ref_tokens<span class="token punctuation">)</span> <span class="token operator">-</span> n_gram_size <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+                <span class="token punctuation">)</span>
+                max_ref_count <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>max_ref_count<span class="token punctuation">,</span> ref_ngrams<span class="token punctuation">.</span>get<span class="token punctuation">(</span>candidate_ngram<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            
+            numerator <span class="token operator">+</span><span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> max_ref_count<span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> denominator <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            precisions<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            precisions<span class="token punctuation">.</span>append<span class="token punctuation">(</span>numerator <span class="token operator">/</span> denominator<span class="token punctuation">)</span>
+    
+    <span class="token comment"># Calculate brevity penalty</span>
+    ref_lengths <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">len</span><span class="token punctuation">(</span>ref<span class="token punctuation">)</span> <span class="token keyword">for</span> ref <span class="token keyword">in</span> reference_tokens_list<span class="token punctuation">]</span>
+    candidate_len <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>candidate_tokens<span class="token punctuation">)</span>
+    
+    <span class="token comment"># Find reference length that minimizes |ref_len - candidate_len|</span>
+    best_ref_len <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>ref_lengths<span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> <span class="token builtin">abs</span><span class="token punctuation">(</span>x <span class="token operator">-</span> candidate_len<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">if</span> candidate_len <span class="token operator">&lt;</span> best_ref_len<span class="token punctuation">:</span>
+        bp <span class="token operator">=</span> math<span class="token punctuation">.</span>exp<span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">-</span> best_ref_len <span class="token operator">/</span> candidate_len<span class="token punctuation">)</span> <span class="token keyword">if</span> candidate_len <span class="token operator">></span> <span class="token number">0</span> <span class="token keyword">else</span> <span class="token number">0</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        bp <span class="token operator">=</span> <span class="token number">1.0</span>
+    
+    <span class="token comment"># Calculate geometric mean of precisions</span>
+    geom_mean <span class="token operator">=</span> <span class="token number">1.0</span>
+    <span class="token keyword">for</span> p <span class="token keyword">in</span> precisions<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> p <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">:</span>
+            geom_mean <span class="token operator">*</span><span class="token operator">=</span> p
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token number">0.0</span>  <span class="token comment"># If any precision is 0, BLEU is 0</span>
+    
+    bleu <span class="token operator">=</span> bp <span class="token operator">*</span> <span class="token punctuation">(</span>geom_mean <span class="token operator">**</span> <span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>precisions<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> bleu
+
+<span class="token keyword">def</span> <span class="token function">rouge_score</span><span class="token punctuation">(</span>candidate<span class="token punctuation">:</span> str<span class="token punctuation">,</span> reference<span class="token punctuation">:</span> str<span class="token punctuation">,</span> n<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    Calculate ROUGE-N score
+    """</span>
+    candidate_tokens <span class="token operator">=</span> candidate<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    reference_tokens <span class="token operator">=</span> reference<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">if</span> n <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">:</span>
+        <span class="token comment"># ROUGE-1: Unigram overlap</span>
+        candidate_unigrams <span class="token operator">=</span> Counter<span class="token punctuation">(</span>candidate_tokens<span class="token punctuation">)</span>
+        reference_unigrams <span class="token operator">=</span> Counter<span class="token punctuation">(</span>reference_tokens<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Count overlapping unigrams</span>
+        overlap <span class="token operator">=</span> <span class="token number">0</span>
+        <span class="token keyword">for</span> word<span class="token punctuation">,</span> count <span class="token keyword">in</span> candidate_unigrams<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            overlap <span class="token operator">+</span><span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>count<span class="token punctuation">,</span> reference_unigrams<span class="token punctuation">.</span>get<span class="token punctuation">(</span>word<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>reference_tokens<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token number">1.0</span> <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>candidate_tokens<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">else</span> <span class="token number">0.0</span>
+        
+        <span class="token keyword">return</span> overlap <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>reference_tokens<span class="token punctuation">)</span>  <span class="token comment"># ROUGE is recall-based</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token comment"># ROUGE-N for n-grams</span>
+        candidate_ngrams <span class="token operator">=</span> Counter<span class="token punctuation">(</span>
+            <span class="token builtin">tuple</span><span class="token punctuation">(</span>candidate_tokens<span class="token punctuation">[</span>i<span class="token punctuation">:</span>i <span class="token operator">+</span> n<span class="token punctuation">]</span><span class="token punctuation">)</span> 
+            <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>candidate_tokens<span class="token punctuation">)</span> <span class="token operator">-</span> n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+        <span class="token punctuation">)</span>
+        
+        reference_ngrams <span class="token operator">=</span> Counter<span class="token punctuation">(</span>
+            <span class="token builtin">tuple</span><span class="token punctuation">(</span>reference_tokens<span class="token punctuation">[</span>i<span class="token punctuation">:</span>i <span class="token operator">+</span> n<span class="token punctuation">]</span><span class="token punctuation">)</span> 
+            <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>reference_tokens<span class="token punctuation">)</span> <span class="token operator">-</span> n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+        <span class="token punctuation">)</span>
+        
+        <span class="token comment"># Count overlapping n-grams</span>
+        overlap <span class="token operator">=</span> <span class="token number">0</span>
+        <span class="token keyword">for</span> ngram<span class="token punctuation">,</span> count <span class="token keyword">in</span> candidate_ngrams<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            overlap <span class="token operator">+</span><span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>count<span class="token punctuation">,</span> reference_ngrams<span class="token punctuation">.</span>get<span class="token punctuation">(</span>ngram<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>list<span class="token punctuation">(</span>reference_ngrams<span class="token punctuation">.</span>elements<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token number">1.0</span> <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>list<span class="token punctuation">(</span>candidate_ngrams<span class="token punctuation">.</span>elements<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">else</span> <span class="token number">0.0</span>
+        
+        <span class="token keyword">return</span> overlap <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>list<span class="token punctuation">(</span>reference_ngrams<span class="token punctuation">.</span>elements<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+</div>
+</div>
+
+<h2 id="rag-metrics">RAG-Specific Metrics</h2>
+<p>
+RAG-specific metrics evaluate the unique challenges of RAG systems, including faithfulness to retrieved context, answer relevance, and context utility.
+</p>
+
+<h3>RAGAS Metrics</h3>
+<p>
+RAGAS (RAG Assessment) is a framework specifically designed for evaluating RAG systems. It includes metrics like:
+</p>
+<ul class="list-disc pl-6 my-6">
+<li><strong>Faithfulness</strong>: Measures whether the generated answer is factually consistent with the retrieved context</li>
+<li><strong>Answer Relevance</strong>: Evaluates how relevant the generated answer is to the query</li>
+<li><strong>Context Precision</strong>: Measures how much of the retrieved context is actually used in the answer</li>
+<li><strong>Context Recall</strong>: Measures how much of the relevant information in the context is captured in the answer</li>
+</ul>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">ragas_metrics.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Any
+<span class="token keyword">from</span> sentence_transformers <span class="token keyword">import</span> SentenceTransformer
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics<span class="token punctuation">.</span>pairwise <span class="token keyword">import</span> cosine_similarity
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+
+<span class="token keyword">class</span> <span class="token class-name">RagasEvaluator</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>embedder <span class="token operator">=</span> SentenceTransformer<span class="token punctuation">(</span><span class="token string">"all-MiniLM-L6-v2"</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">faithfulness_score</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> answer<span class="token punctuation">:</span> str<span class="token punctuation">,</span> context<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""
+        Evaluate faithfulness by checking if statements in the answer are supported by the context
+        """</span>
+        <span class="token comment"># Split answer into statements</span>
+        statements <span class="token operator">=</span> self<span class="token punctuation">.</span>_split_into_statements<span class="token punctuation">(</span>answer<span class="token punctuation">)</span>
+        context_text <span class="token operator">=</span> <span class="token string">" "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>context<span class="token punctuation">)</span>
+        
+        supported_statements <span class="token operator">=</span> <span class="token number">0</span>
+        <span class="token keyword">for</span> statement <span class="token keyword">in</span> statements<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> self<span class="token punctuation">.</span>_statement_supported_by_context<span class="token punctuation">(</span>statement<span class="token punctuation">,</span> context_text<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                supported_statements <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+        
+        <span class="token keyword">return</span> supported_statements <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>statements<span class="token punctuation">)</span> <span class="token keyword">if</span> statements <span class="token keyword">else</span> <span class="token number">0.0</span>
+    
+    <span class="token keyword">def</span> <span class="token function">answer_relevance_score</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> answer<span class="token punctuation">:</span> str<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""
+        Evaluate how relevant the answer is to the query
+        """</span>
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>answer<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token number">0.0</span>
+        
+        <span class="token comment"># Calculate semantic similarity between query and answer</span>
+        embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>embedder<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>query<span class="token punctuation">,</span> answer<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        similarity <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span><span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        
+        <span class="token keyword">return</span> <span class="token builtin">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> similarity<span class="token punctuation">)</span>  <span class="token comment"># Ensure non-negative</span>
+    
+    <span class="token keyword">def</span> <span class="token function">context_precision_score</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> answer<span class="token punctuation">:</span> str<span class="token punctuation">,</span> context<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> relevant_context<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""
+        Evaluate how much of the retrieved context that is relevant was actually used in the answer
+        """</span>
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>relevant_context<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token number">1.0</span>  <span class="token comment"># Perfect precision if no relevant context</span>
+        
+        used_context_parts <span class="token operator">=</span> <span class="token number">0</span>
+        <span class="token keyword">for</span> ctx <span class="token keyword">in</span> relevant_context<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> self<span class="token punctuation">.</span>_context_used_in_answer<span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> answer<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                used_context_parts <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+        
+        <span class="token keyword">return</span> used_context_parts <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>relevant_context<span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">context_recall_score</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> answer<span class="token punctuation">:</span> str<span class="token punctuation">,</span> context<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> ground_truth<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""
+        Evaluate how much of the relevant information in the context is captured in the answer
+        """</span>
+        <span class="token comment"># Find relevant information in context based on ground truth</span>
+        relevant_context_parts <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> ctx <span class="token keyword">in</span> context<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> self<span class="token punctuation">.</span>_context_relevant_to_ground_truth<span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> ground_truth<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                relevant_context_parts<span class="token punctuation">.</span>append<span class="token punctuation">(</span>ctx<span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>relevant_context_parts<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token number">1.0</span>  <span class="token comment"># Perfect recall if no relevant context</span>
+        
+        captured_parts <span class="token operator">=</span> <span class="token number">0</span>
+        <span class="token keyword">for</span> ctx <span class="token keyword">in</span> relevant_context_parts<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> self<span class="token punctuation">.</span>_context_captured_in_answer<span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> answer<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                captured_parts <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+        
+        <span class="token keyword">return</span> captured_parts <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>relevant_context_parts<span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_split_into_statements</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> text<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Simple sentence splitting</span>
+        <span class="token keyword">import</span> re
+        sentences <span class="token operator">=</span> re<span class="token punctuation">.</span>split<span class="token punctuation">(</span>r<span class="token string">'[.!?]+ '</span><span class="token punctuation">,</span> text<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> <span class="token punctuation">[</span>s<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> s <span class="token keyword">in</span> sentences <span class="token keyword">if</span> s<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_statement_supported_by_context</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> statement<span class="token punctuation">:</span> str<span class="token punctuation">,</span> context<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> bool<span class="token punctuation">:</span>
+        <span class="token comment"># Check if statement is supported by context using semantic similarity</span>
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>statement<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">3</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">True</span>  <span class="token comment"># Very short statements are considered supported</span>
+        
+        <span class="token comment"># Check for direct text overlap first</span>
+        <span class="token keyword">if</span> statement<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">in</span> context<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">True</span>
+        
+        <span class="token comment"># Check semantic similarity</span>
+        embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>embedder<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>statement<span class="token punctuation">,</span> context<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        similarity <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span><span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        
+        <span class="token keyword">return</span> similarity <span class="token operator">></span> <span class="token number">0.3</span>  <span class="token comment"># Threshold for semantic support</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_context_used_in_answer</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> context_part<span class="token punctuation">:</span> str<span class="token punctuation">,</span> answer<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> bool<span class="token punctuation">:</span>
+        <span class="token comment"># Check if context part is used in answer</span>
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>context_part<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">5</span><span class="token punctuation">:</span>
+            <span class="token comment"># For short context parts, check for phrase overlap</span>
+            context_words <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>context_part<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            answer_words <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>answer<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span> <span class="token builtin">len</span><span class="token punctuation">(</span>context_words<span class="token punctuation">.</span>intersection<span class="token punctuation">(</span>answer_words<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>context_words<span class="token punctuation">)</span> <span class="token operator">></span> <span class="token number">0.5</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># For longer context parts, check semantic similarity</span>
+            embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>embedder<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>context_part<span class="token punctuation">,</span> answer<span class="token punctuation">]</span><span class="token punctuation">)</span>
+            similarity <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span><span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+            <span class="token keyword">return</span> similarity <span class="token operator">></span> <span class="token number">0.4</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_context_relevant_to_ground_truth</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> context_part<span class="token punctuation">:</span> str<span class="token punctuation">,</span> ground_truth<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> bool<span class="token punctuation">:</span>
+        <span class="token comment"># Check if context part is relevant to ground truth</span>
+        embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>embedder<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>context_part<span class="token punctuation">,</span> ground_truth<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        similarity <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span><span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        <span class="token keyword">return</span> similarity <span class="token operator">></span> <span class="token number">0.3</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_context_captured_in_answer</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> context_part<span class="token punctuation">:</span> str<span class="token punctuation">,</span> answer<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> bool<span class="token punctuation">:</span>
+        <span class="token comment"># Check if information from context part is captured in answer</span>
+        embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>embedder<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>context_part<span class="token punctuation">,</span> answer<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        similarity <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span><span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        <span class="token keyword">return</span> similarity <span class="token operator">></span> <span class="token number">0.4</span></code></pre>
+</div>
+</div>
+
+<h2 id="evaluation-frameworks">Evaluation Frameworks</h2>
+<p>
+Comprehensive evaluation frameworks combine multiple metrics to provide a holistic assessment of RAG system performance.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">evaluation_framework.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">RAGEvaluator</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>ragas_evaluator <span class="token operator">=</span> RagasEvaluator<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">evaluate_single</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> retrieved_context<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> generated_answer<span class="token punctuation">:</span> str<span class="token punctuation">,</span> 
+                      ground_truth<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">,</span> relevant_context<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> float<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""
+        Evaluate a single RAG interaction
+        """</span>
+        results <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        
+        <span class="token comment"># RAGAS metrics</span>
+        results<span class="token punctuation">[</span><span class="token string">"faithfulness"</span><span class="token punctuation">]</span> <span class="token operator">=</span> self<span class="token punctuation">.</span>ragas_evaluator<span class="token punctuation">.</span>faithfulness_score<span class="token punctuation">(</span>generated_answer<span class="token punctuation">,</span> retrieved_context<span class="token punctuation">)</span>
+        results<span class="token punctuation">[</span><span class="token string">"answer_relevance"</span><span class="token punctuation">]</span> <span class="token operator">=</span> self<span class="token punctuation">.</span>ragas_evaluator<span class="token punctuation">.</span>answer_relevance_score<span class="token punctuation">(</span>generated_answer<span class="token punctuation">,</span> query<span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> relevant_context <span class="token keyword">is</span> <span class="token keyword">not</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            results<span class="token punctuation">[</span><span class="token string">"context_precision"</span><span class="token punctuation">]</span> <span class="token operator">=</span> self<span class="token punctuation">.</span>ragas_evaluator<span class="token punctuation">.</span>context_precision_score<span class="token punctuation">(</span>
+                generated_answer<span class="token punctuation">,</span> retrieved_context<span class="token punctuation">,</span> relevant_context
+            <span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> ground_truth <span class="token keyword">is</span> <span class="token keyword">not</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            results<span class="token punctuation">[</span><span class="token string">"context_recall"</span><span class="token punctuation">]</span> <span class="token operator">=</span> self<span class="token punctuation">.</span>ragas_evaluator<span class="token punctuation">.</span>context_recall_score<span class="token punctuation">(</span>
+                generated_answer<span class="token punctuation">,</span> retrieved_context<span class="token punctuation">,</span> ground_truth
+            <span class="token punctuation">)</span>
+        
+        <span class="token comment"># Additional metrics</span>
+        results<span class="token punctuation">[</span><span class="token string">"answer_length"</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>generated_answer<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        results<span class="token punctuation">[</span><span class="token string">"context_length"</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>ctx<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> ctx <span class="token keyword">in</span> retrieved_context<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> results
+    
+    <span class="token keyword">def</span> <span class="token function">evaluate_batch</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> queries<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> retrieved_contexts<span class="token punctuation">:</span> List<span class="token punctuation">[</span>List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> 
+                      generated_answers<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> ground_truths<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">,</span> 
+                      relevant_contexts<span class="token punctuation">:</span> List<span class="token punctuation">[</span>List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> float<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""
+        Evaluate a batch of RAG interactions
+        """</span>
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>queries<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>retrieved_contexts<span class="token punctuation">)</span> <span class="token keyword">or</span> <span class="token builtin">len</span><span class="token punctuation">(</span>queries<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>generated_answers<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">raise</span> <span class="token builtin">ValueError</span><span class="token punctuation">(</span><span class="token string">"Input lists must have the same length"</span><span class="token punctuation">)</span>
+        
+        all_results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>queries<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            relevant_ctx <span class="token operator">=</span> relevant_contexts<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token keyword">if</span> relevant_contexts <span class="token keyword">else</span> <span class="token boolean">None</span>
+            gt <span class="token operator">=</span> ground_truths<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token keyword">if</span> ground_truths <span class="token keyword">else</span> <span class="token boolean">None</span>
+            
+            result <span class="token operator">=</span> self<span class="token punctuation">.</span>evaluate_single<span class="token punctuation">(</span>
+                queries<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> 
+                retrieved_contexts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> 
+                generated_answers<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> 
+                gt<span class="token punctuation">,</span> 
+                relevant_ctx
+            <span class="token punctuation">)</span>
+            all_results<span class="token punctuation">.</span>append<span class="token punctuation">(</span>result<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Aggregate results</span>
+        aggregated <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        <span class="token keyword">for</span> key <span class="token keyword">in</span> all_results<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>keys<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            values <span class="token operator">=</span> <span class="token punctuation">[</span>result<span class="token punctuation">[</span>key<span class="token punctuation">]</span> <span class="token keyword">for</span> result <span class="token keyword">in</span> all_results <span class="token keyword">if</span> key <span class="token keyword">in</span> result<span class="token punctuation">]</span>
+            aggregated<span class="token punctuation">[</span>key<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>values<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>values<span class="token punctuation">)</span> <span class="token keyword">if</span> values <span class="token keyword">else</span> <span class="token number">0.0</span>
+        
+        <span class="token comment"># Add count metrics</span>
+        aggregated<span class="token punctuation">[</span><span class="token string">"total_samples"</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>all_results<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> aggregated
+    
+    <span class="token keyword">def</span> <span class="token function">generate_report</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> evaluation_results<span class="token punctuation">:</span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> float<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""
+        Generate a formatted evaluation report
+        """</span>
+        report <span class="token operator">=</span> <span class="token string">"RAG System Evaluation Report\n"</span>
+        report <span class="token operator">+</span><span class="token operator">=</span> <span class="token string">"=========================\n\n"</span>
+        
+        report <span class="token operator">+</span><span class="token operator">=</span> f<span class="token string">"Total Samples Evaluated: {evaluation_results.get('total_samples', 'N/A')}\n\n"</span>
+        
+        ragas_metrics <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">"faithfulness"</span><span class="token punctuation">,</span> <span class="token string">"answer_relevance"</span><span class="token punctuation">,</span> <span class="token string">"context_precision"</span><span class="token punctuation">,</span> <span class="token string">"context_recall"</span><span class="token punctuation">]</span>
+        
+        report <span class="token operator">+</span><span class="token operator">=</span> <span class="token string">"<span class="token escape">\\n</span>RAGAS Metrics:\n"</span>
+        report <span class="token operator">+</span><span class="token operator">=</span> <span class="token string">"- " * 20 + "\n"</span>
+        <span class="token keyword">for</span> metric <span class="token keyword">in</span> ragas_metrics<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> metric <span class="token keyword">in</span> evaluation_results<span class="token punctuation">:</span>
+                report <span class="token operator">+</span><span class="token operator">=</span> f<span class="token string">"{metric.replace('_', ' ').title()}: {evaluation_results[metric]:.3f}\n"</span>
+        
+        report <span class="token operator">+</span><span class="token operator">=</span> <span class="token string">"\nAdditional Metrics:\n"</span>
+        report <span class="token operator">+</span><span class="token operator">=</span> <span class="token string">"- " * 20 + "\n"</span>
+        <span class="token keyword">for</span> key<span class="token punctuation">,</span> value <span class="token keyword">in</span> evaluation_results<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> key <span class="token keyword">not</span> <span class="token keyword">in</span> ragas_metrics <span class="token keyword">and</span> key <span class="token keyword">not</span> <span class="token keyword">in</span> <span class="token punctuation">[</span><span class="token string">"total_samples"</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+                <span class="token keyword">if</span> isinstance<span class="token punctuation">(</span>value<span class="token punctuation">,</span> float<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                    report <span class="token operator">+</span><span class="token operator">=</span> f<span class="token string">"{key.replace('_', ' ').title()}: {value:.2f}\n"</span>
+                <span class="token keyword">else</span><span class="token punctuation">:</span>
+                    report <span class="token operator">+</span><span class="token operator">=</span> f<span class="token string">"{key.replace('_', ' ').title()}: {value}\n"</span>
+        
+        <span class="token keyword">return</span> report</code></pre>
+</div>
+</div>
+
+</div>
+<!-- Footer / Pagination -->
+<div class="mt-24 pt-10 border-t border-faded flex justify-between items-center group/footer">
+<a class="flex flex-col items-start gap-2 hover:bg-parchment/50 p-4 -ml-4 rounded transition-colors w-1/2" href="module_08_context_compression.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Previous Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Context Compression
+                        </span>
+</a>
+<div class="h-12 w-px bg-faded mx-4"></div>
+<a class="flex flex-col items-end gap-2 hover:bg-parchment/50 p-4 -mr-4 rounded transition-colors w-1/2" href="module_10_metadata_enhanced.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Next Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+                            Metadata Enhancement
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</span>
+</a>
+</div>
+</article>
+<!-- Right Rail: Marginalia -->
+<aside class="hidden xl:block w-[240px] sticky top-14 h-[calc(100vh-3.5rem)] pt-32 pb-10 pr-10 pl-4 overflow-y-auto">
+<div class="flex flex-col gap-24 relative">
+<!-- Note 1: Aligned with introduction -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[1]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">RAG evaluation</strong> requires metrics for both retrieval and generation components.
+                        </p>
+</div>
+<!-- Note 2: Aligned with RAGAS metrics -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-12">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[2]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">RAGAS metrics</strong> provide comprehensive evaluation of RAG system quality.
+                        </p>
+<a class="inline-flex items-center gap-1 mt-2 text-[10px] uppercase tracking-widest text-primary font-bold hover:underline" href="artifact_view.html" target="_blank">
+                            View Code <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+</a>
+</div>
+<!-- Note 3: Aligned with evaluation frameworks -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-24">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[3]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <code class="bg-parchment px-0.5 rounded-sm">Evaluation frameworks</code> aggregate multiple metrics for holistic assessment.
+                        </p>
+</div>
+<!-- Additional marginalia for module-specific content -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[4]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Faithfulness</strong> measures if answers are factually consistent with context.
+                        </p>
+</div>
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[5]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Context precision</strong> evaluates how well retrieved context is utilized.
+                        </p>
+</div>
+</div>
+</aside>
+</div>
+</main>
+
+<script>
+    // Function to copy code to clipboard
+    function copyCode(button) {
+        const codeBlock = button.closest('.not-prose').querySelector('pre code');
+        navigator.clipboard.writeText(codeBlock.textContent.trim()).then(() => {
+            const originalIcon = button.querySelector('.material-symbols-outlined').textContent;
+            button.querySelector('.material-symbols-outlined').textContent = 'check';
+            setTimeout(() => {
+                button.querySelector('.material-symbols-outlined').textContent = originalIcon;
+            }, 2000);
+        });
+    }
+
+    // Calculate reading time based on content
+    document.addEventListener('DOMContentLoaded', function() {
+        const content = document.querySelector('.prose-academic').textContent;
+        const wordsPerMinute = 200; // Average reading speed
+        const wordCount = content.split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / wordsPerMinute);
+        
+        document.getElementById('reading-time').textContent = `${readingTime} min read`;
+    });
+
+    // Search button functionality
+    document.getElementById('search-btn').addEventListener('click', function() {
+        window.location.href = 'search_index.html';
+    });
+</script>
+</body></html>

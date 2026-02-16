@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic RAG Journal - Module 11: Agentic Workflows</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;family=Geist+Mono:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#b80f12",
+                        "ink": "#2C2420",
+                        "paper": "#F9F7F1",
+                        "parchment": "#EBE6DA",
+                        "graphite": "#8A817C",
+                        "faded": "#D8D1C4",
+                        "library-green": "#4A5D44",
+                    },
+                    fontFamily: {
+                        "display": ["Newsreader", "serif"],
+                        "serif": ["Lora", "serif"],
+                        "mono": ["Geist Mono", "monospace"],
+                        "code": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.5rem"
+                    },
+                    backgroundImage: {
+                        'grain': "url('data:image.svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9F7F1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8D1C4;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8A817C;
+        }
+
+        /* Hide scrollbar for clean UI but allow scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Typography overrides */
+        .prose-academic p {
+            margin-top: 1.5em;
+            margin-bottom: 1.5em;
+            line-height: 1.8;
+            font-family: 'Lora', serif;
+            font-size: 19px;
+            color: #2C2420;
+        }
+        .prose-academic h2 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 2em;
+            font-size: 32px;
+            letter-spacing: -0.01em;
+        }
+        .prose-academic h3 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 1.5em;
+            font-size: 24px;
+        }
+
+        /* Sepia Code Theme */
+        .token.comment { color: #8A817C; font-style: italic; }
+        .token.function { color: #9E2A2B; }
+        .token.keyword { color: #b80f12; font-weight: bold; }
+        .token.string { color: #4A5D44; }
+        .token.number { color: #b80f12; }
+        
+        /* Marginalia hover effect */
+        .marginalia-item {
+            transition: transform 0.2s ease;
+        }
+        .marginalia-item:hover {
+            transform: translateX(-4px);
+        }
+        
+        /* Mermaid diagram styling */
+        .mermaid-diagram {
+            background: white;
+            border: 1px solid #D8D1C4;
+            border-radius: 4px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="bg-paper text-ink antialiased selection:bg-primary/20 selection:text-ink min-h-screen flex flex-col font-serif relative">
+<!-- Grain Texture Overlay -->
+<div class="fixed inset-0 pointer-events-none z-50 bg-grain mix-blend-multiply opacity-40"></div>
+<!-- Top Navigation (Minimal) -->
+<header class="sticky top-0 z-40 w-full border-b border-faded bg-paper/95 backdrop-blur-sm h-14 flex items-center justify-between px-6 lg:px-10">
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-2 text-ink hover:text-primary transition-colors group" href="index.html">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-display font-medium text-lg tracking-tight">Syllabus</span>
+</a>
+<div class="h-4 w-px bg-faded mx-2"></div>
+<span class="font-mono text-xs uppercase tracking-wider text-graphite">Module 11</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-2 text-graphite text-xs font-mono">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span id="reading-time">50 min read</span>
+</div>
+<div class="flex gap-3">
+<button id="search-btn" aria-label="Search" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<button aria-label="Settings" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">text_fields</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 flex justify-center w-full relative">
+<div class="w-full max-w-[1440px] flex flex-row">
+<!-- Left Rail: Table of Contents -->
+<aside class="hidden lg:flex w-[240px] flex-col sticky top-14 h-[calc(100vh-3.5rem)] border-r border-faded overflow-y-auto pt-12 pb-10 pl-10 pr-6">
+<nav class="flex flex-col gap-8">
+<div>
+<h4 class="font-mono text-xs uppercase tracking-widest text-graphite mb-4">Contents</h4>
+<ul class="flex flex-col gap-3 font-mono text-[13px] leading-relaxed">
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#introduction">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Introduction
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#agent-design-patterns">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Agent Design Patterns
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#planning-and-reasoning">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Planning & Reasoning
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#tool-integration">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Tool Integration
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#multi-agent-systems">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Multi-Agent Systems
+                                </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-8 border-t border-faded">
+<div class="flex flex-col gap-2">
+<span class="font-mono text-[11px] uppercase tracking-widest text-graphite">Progress</span>
+<div class="w-full bg-parchment h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[35%]"></div>
+</div>
+<span class="font-mono text-xs text-ink text-right">35%</span>
+</div>
+</div>
+</nav>
+</aside>
+<!-- Center Stage: The Reader -->
+<article class="flex-1 max-w-[720px] mx-auto pt-16 pb-32 px-6 md:px-12 min-h-screen">
+<!-- Module Header -->
+<header class="mb-16 border-b border-faded pb-12">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-mono text-sm font-medium text-primary px-2 py-1 bg-primary/10 rounded">Module 11</span>
+<span class="font-mono text-sm text-graphite">Advanced RAG Architectures</span>
+</div>
+<h1 class="font-display text-[48px] md:text-[56px] leading-[1.1] font-semibold text-ink tracking-tight mb-6">
+                        Agentic Workflows &amp; Tool Integration
+                    </h1>
+<p class="font-serif text-xl text-ink/80 leading-relaxed max-w-[90%]">
+                        Implementing autonomous agents that can plan, reason, and execute complex multi-step tasks with external tool integration.
+                    </p>
+</header>
+<!-- Content Body -->
+<div class="prose-academic">
+<h2 id="introduction">Introduction to Agentic Workflows</h2>
+<p>
+Agentic workflows represent a paradigm shift from passive RAG systems to active, autonomous agents that can plan, reason, and execute complex multi-step tasks. These agents go beyond simple question-answering by incorporating planning, tool usage, and iterative reasoning capabilities to solve complex problems.
+</p>
+
+<div class="my-10 border border-faded bg-parchment/50 p-6 rounded-sm">
+<figure>
+<img alt="Agentic Workflow Architecture" class="w-full h-auto mix-blend-multiply mb-4 filter sepia-[0.3]" data-alt="Visualization showing the architecture of an agentic workflow with planning, tool usage, and reasoning components" src="https://placehold.co/600x300/f9f7f1/ebe6da?text=Agentic+Workflow+Architecture" />
+<figcaption class="font-mono text-xs text-graphite text-center mt-2">Figure 1: Agentic Workflow Architecture</figcaption>
+</figure>
+</div>
+
+<h2 id="agent-design-patterns">Agent Design Patterns</h2>
+<p>
+Effective agent design follows established patterns that enable reliable and predictable behavior. These patterns provide a foundation for building robust agentic systems.
+</p>
+
+<h3>ReAct (Reasoning + Acting)</h3>
+<p>
+The ReAct pattern interleaves reasoning and acting steps, allowing agents to think through problems before taking actions and reflect on the outcomes of their actions.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">react_agent.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Any<span class="token punctuation">,</span> Optional
+<span class="token keyword">from</span> abc <span class="token keyword">import</span> ABC<span class="token punctuation">,</span> abstractmethod
+<span class="token keyword">from</span> dataclasses <span class="token keyword">import</span> dataclass<span class="token punctuation">,</span> field
+
+<span class="token decorator">@dataclass</span>
+<span class="token keyword">class</span> <span class="token class-name">Action</span><span class="token punctuation">:</span>
+    <span class="token comment"># Represents an action that an agent can take</span>
+    name<span class="token punctuation">:</span> str
+    args<span class="token punctuation">:</span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span>
+    result<span class="token punctuation">:</span> Optional<span class="token punctuation">[</span>Any<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span>
+
+<span class="token decorator">@dataclass</span>
+<span class="token keyword">class</span> <span class="token class-name">Thought</span><span class="token punctuation">:</span>
+    <span class="token comment"># Represents the agent's reasoning</span>
+    content<span class="token punctuation">:</span> str
+    step<span class="token punctuation">:</span> int
+
+<span class="token decorator">@dataclass</span>
+<span class="token keyword">class</span> <span class="token class-name">ReActStep</span><span class="token punctuation">:</span>
+    <span class="token comment"># Represents a single step in the ReAct loop</span>
+    thought<span class="token punctuation">:</span> Optional<span class="token punctuation">[</span>Thought<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span>
+    action<span class="token punctuation">:</span> Optional<span class="token punctuation">[</span>Action<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span>
+    observation<span class="token punctuation">:</span> Optional<span class="token punctuation">[</span>str<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span>
+
+<span class="token keyword">class</span> <span class="token class-name">ReActAgent</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> llm<span class="token punctuation">,</span> tools<span class="token punctuation">:</span> List<span class="token punctuation">[</span>Any<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>llm <span class="token operator">=</span> llm
+        self<span class="token punctuation">.</span>tools <span class="token operator">=</span> <span class="token punctuation">{</span>tool<span class="token punctuation">.</span>name<span class="token punctuation">:</span> tool <span class="token keyword">for</span> tool <span class="token keyword">in</span> tools<span class="token punctuation">}</span>
+    
+    <span class="token keyword">def</span> <span class="token function">run</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> task<span class="token punctuation">:</span> str<span class="token punctuation">,</span> max_steps<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">10</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Execute the ReAct loop</span>
+        history <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        current_task <span class="token operator">=</span> task
+        
+        <span class="token keyword">for</span> step_num <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>max_steps<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># Generate thought</span>
+            thought_prompt <span class="token operator">=</span> f<span class="token string">"Task: {current_task}\n\nHistory:\n{self._format_history(history)}\n\nThink step by step about what to do next:"</span>
+            thought <span class="token operator">=</span> self<span class="token punctuation">.</span>llm<span class="token punctuation">.</span>generate<span class="token punctuation">(</span>thought_prompt<span class="token punctuation">)</span>
+            
+            <span class="token comment"># Extract action from thought</span>
+            action <span class="token operator">=</span> self<span class="token punctuation">.</span>_extract_action<span class="token punctuation">(</span>thought<span class="token punctuation">)</span>
+            
+            <span class="token comment"># Execute action if present</span>
+            observation <span class="token operator">=</span> <span class="token boolean">None</span>
+            <span class="token keyword">if</span> action<span class="token punctuation">:</span>
+                observation <span class="token operator">=</span> self<span class="token punctuation">.</span>_execute_action<span class="token punctuation">(</span>action<span class="token punctuation">)</span>
+            
+            <span class="token comment"># Create ReAct step</span>
+            react_step <span class="token operator">=</span> ReActStep<span class="token punctuation">(</span>
+                thought<span class="token operator">=</span>Thought<span class="token punctuation">(</span>content<span class="token operator">=</span>thought<span class="token punctuation">,</span> step<span class="token operator">=</span>step_num<span class="token punctuation">)</span><span class="token punctuation">,</span>
+                action<span class="token operator">=</span>action<span class="token punctuation">,</span>
+                observation<span class="token operator">=</span>observation
+            <span class="token punctuation">)</span>
+            
+            history<span class="token punctuation">.</span>append<span class="token punctuation">(</span>react_step<span class="token punctuation">)</span>
+            
+            <span class="token comment"># Check if task is completed</span>
+            <span class="token keyword">if</span> self<span class="token punctuation">.</span>_is_task_completed<span class="token punctuation">(</span>thought<span class="token punctuation">,</span> observation<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token keyword">break</span>
+        
+        <span class="token keyword">return</span> <span class="token punctuation">{</span>
+            <span class="token string">'result'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>_synthesize_result<span class="token punctuation">(</span>history<span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">'steps'</span><span class="token punctuation">:</span> history<span class="token punctuation">,</span>
+            <span class="token string">'completed'</span><span class="token punctuation">:</span> step_num <span class="token operator">&lt;</span> max_steps <span class="token operator">-</span> <span class="token number">1</span>
+        <span class="token punctuation">}</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_extract_action</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> thought<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Optional<span class="token punctuation">[</span>Action<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Extract action from thought using pattern matching or LLM parsing</span>
+        <span class="token keyword">import</span> re
+        
+        <span class="token comment"># Look for action pattern: Action: [name](&lt;args&gt;)</span>
+        action_pattern <span class="token operator">=</span> r<span class="token string">"Action:\s*(\w+)\((.*?)\)"</span>
+        match <span class="token operator">=</span> re<span class="token punctuation">.</span>search<span class="token punctuation">(</span>action_pattern<span class="token punctuation">,</span> thought<span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> match<span class="token punctuation">:</span>
+            action_name<span class="token punctuation">,</span> args_str <span class="token operator">=</span> match<span class="token punctuation">.</span>groups<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            
+            <span class="token comment"># Parse arguments (simplified)</span>
+            <span class="token keyword">try</span><span class="token punctuation">:</span>
+                <span class="token comment"># This is a simplified argument parser - in practice, use proper JSON parsing</span>
+                args <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+                <span class="token keyword">if</span> args_str<span class="token punctuation">:</span>
+                    <span class="token keyword">for</span> arg_pair <span class="token keyword">in</span> args_str<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                        <span class="token keyword">if</span> <span class="token string">"="</span> <span class="token keyword">in</span> arg_pair<span class="token punctuation">:</span>
+                            key<span class="token punctuation">,</span> value <span class="token operator">=</span> arg_pair<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">"="</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+                            args<span class="token punctuation">[</span>key<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> value<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token string">'"'\span><span class="token punctuation">)</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token string">"'"</span><span class="token punctuation">)</span>
+                
+                <span class="token keyword">return</span> Action<span class="token punctuation">(</span>name<span class="token operator">=</span>action_name<span class="token punctuation">,</span> args<span class="token operator">=</span>args<span class="token punctuation">)</span>
+            <span class="token keyword">except</span><span class="token punctuation">:</span>
+                <span class="token keyword">pass</span>
+        
+        <span class="token keyword">return</span> <span class="token boolean">None</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_execute_action</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> action<span class="token punctuation">:</span> Action<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Execute the action using the appropriate tool</span>
+        <span class="token keyword">if</span> action<span class="token punctuation">.</span>name <span class="token keyword">in</span> self<span class="token punctuation">.</span>tools<span class="token punctuation">:</span>
+            tool <span class="token operator">=</span> self<span class="token punctuation">.</span>tools<span class="token punctuation">[</span>action<span class="token punctuation">.</span>name<span class="token punctuation">]</span>
+            <span class="token keyword">try</span><span class="token punctuation">:</span>
+                result <span class="token operator">=</span> tool<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token operator">**</span>action<span class="token punctuation">.</span>args<span class="token punctuation">)</span>
+                <span class="token keyword">return</span> <span class="token builtin">str</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span>
+            <span class="token keyword">except</span> <span class="token builtin">Exception</span> <span class="token keyword">as</span> e<span class="token punctuation">:</span>
+                <span class="token keyword">return</span> f<span class="token string">"Error executing action {action.name}: {str(e)}"</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> f<span class="token string">"Unknown action: {action.name}"</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_format_history</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> history<span class="token punctuation">:</span> List<span class="token punctuation">[</span>ReActStep<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Format the history for inclusion in prompts</span>
+        formatted <span class="token operator">=</span> <span class="token string">""</span>
+        <span class="token keyword">for</span> i<span class="token punctuation">,</span> step <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>history<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            formatted <span class="token operator">+</span><span class="token operator">=</span> f<span class="token string">"Step {i+1}:\n"</span>
+            <span class="token keyword">if</span> step<span class="token punctuation">.</span>thought<span class="token punctuation">:</span>
+                formatted <span class="token operator">+</span><span class="token operator">=</span> f<span class="token string">"Thought: {step.thought.content}\n"</span>
+            <span class="token keyword">if</span> step<span class="token punctuation">.</span>action<span class="token punctuation">:</span>
+                formatted <span class="token operator">+</span><span class="token operator">=</span> f<span class="token string">"Action: {step.action.name}({step.action.args})\n"</span>
+            <span class="token keyword">if</span> step<span class="token punctuation">.</span>observation<span class="token punctuation">:</span>
+                formatted <span class="token operator">+</span><span class="token operator">=</span> f<span class="token string">"Observation: {step.observation}\n"</span>
+            formatted <span class="token operator">+</span><span class="token operator">=</span> <span class="token string">"\n"</span>
+        
+        <span class="token keyword">return</span> formatted<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_is_task_completed</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> thought<span class="token punctuation">:</span> str<span class="token punctuation">,</span> observation<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> bool<span class="token punctuation">:</span>
+        <span class="token comment"># Determine if the task is completed based on thought and observation</span>
+        <span class="token keyword">return</span> <span class="token string">"final answer"</span> <span class="token keyword">in</span> thought<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">or</span> <span class="token string">"task completed"</span> <span class="token keyword">in</span> thought<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_synthesize_result</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> history<span class="token punctuation">:</span> List<span class="token punctuation">[</span>ReActStep<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Synthesize the final result from the history</span>
+        <span class="token keyword">for</span> step <span class="token keyword">in</span> <span class="token builtin">reversed</span><span class="token punctuation">(</span>history<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> step<span class="token punctuation">.</span>observation <span class="token keyword">and</span> <span class="token string">"final answer"</span> <span class="token keyword">in</span> step<span class="token punctuation">.</span>observation<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token keyword">return</span> step<span class="token punctuation">.</span>observation
+        
+        <span class="token comment"># If no explicit final answer, return the last observation</span>
+        <span class="token keyword">if</span> history <span class="token keyword">and</span> history<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>observation<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> history<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>observation
+        
+        <span class="token keyword">return</span> <span class="token string">"Task could not be completed within the given steps."</span></code></pre>
+</div>
+</div>
+
+<h3>Reflection Pattern</h3>
+<p>
+The reflection pattern enables agents to evaluate their own performance and adjust their approach based on past experiences.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">reflection_agent.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">ReflectionAgent</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> base_agent<span class="token punctuation">,</span> reflection_model<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>base_agent <span class="token operator">=</span> base_agent
+        self<span class="token punctuation">.</span>reflection_model <span class="token operator">=</span> reflection_model
+        self<span class="token punctuation">.</span>experience_log <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    
+    <span class="token keyword">def</span> <span class="token function">run_with_reflection</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> task<span class="token punctuation">:</span> str<span class="token punctuation">,</span> max_attempts<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> attempt <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>max_attempts<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># Run the base agent</span>
+            result <span class="token operator">=</span> self<span class="token punctuation">.</span>base_agent<span class="token punctuation">.</span>run<span class="token punctuation">(</span>task<span class="token punctuation">)</span>
+            
+            <span class="token comment"># Evaluate the result</span>
+            evaluation <span class="token operator">=</span> self<span class="token punctuation">.</span>evaluate_result<span class="token punctuation">(</span>result<span class="token punctuation">,</span> task<span class="token punctuation">)</span>
+            
+            <span class="token comment"># Log the experience</span>
+            self<span class="token punctuation">.</span>experience_log<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">{</span>
+                <span class="token string">'task'</span><span class="token punctuation">:</span> task<span class="token punctuation">,</span>
+                <span class="token string">'attempt'</span><span class="token punctuation">:</span> attempt<span class="token punctuation">,</span>
+                <span class="token string">'result'</span><span class="token punctuation">:</span> result<span class="token punctuation">,</span>
+                <span class="token string">'evaluation'</span><span class="token punctuation">:</span> evaluation<span class="token punctuation">,</span>
+                <span class="token string">'success'</span><span class="token punctuation">:</span> evaluation<span class="token punctuation">[</span><span class="token string">'is_successful'</span><span class="token punctuation">]</span>
+            <span class="token punctuation">}</span><span class="token punctuation">)</span>
+            
+            <span class="token keyword">if</span> evaluation<span class="token punctuation">[</span><span class="token string">'is_successful'</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+                <span class="token keyword">return</span> result
+            
+            <span class="token comment"># Reflect on the failure and adjust approach</span>
+            reflection <span class="token operator">=</span> self<span class="token punctuation">.</span>reflect<span class="token punctuation">(</span>result<span class="token punctuation">,</span> evaluation<span class="token punctuation">,</span> task<span class="token punctuation">)</span>
+            
+            <span class="token comment"># Modify the task or approach based on reflection</span>
+            task <span class="token operator">=</span> self<span class="token punctuation">.</span>adjust_task<span class="token punctuation">(</span>task<span class="token punctuation">,</span> reflection<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> <span class="token punctuation">{</span>
+            <span class="token string">'result'</span><span class="token punctuation">:</span> <span class="token string">"Failed after {max_attempts} attempts"</span><span class="token punctuation">,</span>
+            <span class="token string">'attempts_made'</span><span class="token punctuation">:</span> max_attempts<span class="token punctuation">,</span>
+            <span class="token string">'experience_log'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>experience_log
+        <span class="token punctuation">}</span>
+    
+    <span class="token keyword">def</span> <span class="token function">evaluate_result</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> result<span class="token punctuation">:</span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">,</span> original_task<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Evaluate if the result successfully addresses the original task</span>
+        evaluation_prompt <span class="token operator">=</span> f<span class="token string">"""Evaluate if the following result successfully addresses the original task.\n\nOriginal Task: {original_task}\n\nResult: {result.get('result', '')}\n\nSteps taken: {len(result.get('steps', []))}\n\nProvide your evaluation in the following format:\n- is_successful: true/false\n- confidence: 0-1\n- explanation: brief explanation\n- suggestions: any suggestions for improvement"""</span>
+        
+        evaluation_response <span class="token operator">=</span> self<span class="token punctuation">.</span>reflection_model<span class="token punctuation">.</span>generate<span class="token punctuation">(</span>evaluation_prompt<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Parse the evaluation response (simplified)</span>
+        <span class="token keyword">return</span> <span class="token punctuation">{</span>
+            <span class="token string">'is_successful'</span><span class="token punctuation">:</span> <span class="token string">"true"</span> <span class="token keyword">in</span> evaluation_response<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">'confidence'</span><span class="token punctuation">:</span> <span class="token number">0.8</span><span class="token punctuation">,</span>  <span class="token comment"># Placeholder</span>
+            <span class="token string">'explanation'</span><span class="token punctuation">:</span> evaluation_response<span class="token punctuation">,</span>
+            <span class="token string">'suggestions'</span><span class="token punctuation">:</span> <span class="token string">""</span>  <span class="token comment"># Placeholder</span>
+        <span class="token punctuation">}</span>
+    
+    <span class="token keyword">def</span> <span class="token function">reflect</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> result<span class="token punctuation">:</span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">,</span> evaluation<span class="token punctuation">:</span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">,</span> task<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Generate reflection on what went wrong and how to improve</span>
+        reflection_prompt <span class="token operator">=</span> f<span class="token string">"""Reflect on the following failed attempt to complete a task:\n\nTask: {task}\n\nResult: {result.get('result', '')}\n\nEvaluation: {evaluation['explanation']}\n\nSteps taken: {len(result.get('steps', []))}\n\nWhat went wrong? What could be done differently?"""</span>
+        
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>reflection_model<span class="token punctuation">.</span>generate<span class="token punctuation">(</span>reflection_prompt<span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">adjust_task</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> original_task<span class="token punctuation">:</span> str<span class="token punctuation">,</span> reflection<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Adjust the task based on reflection</span>
+        adjustment_prompt <span class="token operator">=</span> f<span class="token string">"""Based on the reflection, reformulate the task to improve chances of success:\n\nOriginal Task: {original_task}\n\nReflection: {reflection}\n\nReformulated Task:"""</span>
+        
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>reflection_model<span class="token punctuation">.</span>generate<span class="token punctuation">(</span>adjustment_prompt<span class="token punctuation">)</span></code></pre>
+</div>
+</div>
+
+<h2 id="planning-and-reasoning">Planning and Reasoning</h2>
+<p>
+Advanced agentic workflows incorporate sophisticated planning and reasoning capabilities to tackle complex, multi-step problems.
+</p>
+
+<h3>Hierarchical Task Planning</h3>
+<p>
+Hierarchical task planning decomposes complex tasks into manageable subtasks organized in a tree structure.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">hierarchical_planner.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> enum <span class="token keyword">import</span> Enum
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> Union<span class="token punctuation">,</span> List<span class="token punctuation">,</span> Optional
+
+<span class="token keyword">class</span> <span class="token class-name">TaskStatus</span><span class="token punctuation">:</span>
+    PENDING <span class="token operator">=</span> <span class="token string">"pending"</span>
+    IN_PROGRESS <span class="token operator">=</span> <span class="token string">"in_progress"</span>
+    COMPLETED <span class="token operator">=</span> <span class="token string">"completed"</span>
+    FAILED <span class="token operator">=</span> <span class="token string">"failed"</span>
+
+<span class="token decorator">@dataclass</span>
+<span class="token keyword">class</span> <span class="token class-name">Task</span><span class="token punctuation">:</span>
+    <span class="token comment"># Represents a single task in the hierarchy</span>
+    id<span class="token punctuation">:</span> str
+    description<span class="token punctuation">:</span> str
+    dependencies<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span> <span class="token operator">=</span> field<span class="token punctuation">(</span>default_factory<span class="token operator">=</span><span class="token builtin">list</span><span class="token punctuation">)</span>
+    subtasks<span class="token punctuation">:</span> List<span class="token punctuation">[</span><span class="token string">"Task"</span><span class="token punctuation">]</span> <span class="token operator">=</span> field<span class="token punctuation">(</span>default_factory<span class="token operator">=</span><span class="token builtin">list</span><span class="token punctuation">)</span>
+    status<span class="token punctuation">:</span> str <span class="token operator">=</span> TaskStatus<span class="token punctuation">.</span>PENDING
+    result<span class="token punctuation">:</span> Optional<span class="token punctuation">[</span>Any<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span>
+    error<span class="token punctuation">:</span> Optional<span class="token punctuation">[</span>str<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span>
+
+<span class="token keyword">class</span> <span class="token class-name">HierarchicalPlanner</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> llm<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>llm <span class="token operator">=</span> llm
+        self<span class="token punctuation">.</span>tasks <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+    
+    <span class="token keyword">def</span> <span class="token function">create_plan</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> goal<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Task<span class="token punctuation">:</span>
+        <span class="token comment"># Generate a hierarchical plan for achieving the goal</span>
+        planning_prompt <span class="token operator">=</span> f<span class="token string">"""Create a hierarchical plan to achieve the following goal:\n\nGoal: {goal}\n\nBreak it down into subtasks. Each subtask should be:\n- Specific and actionable\n- Independent when possible\n- Ordered correctly based on dependencies\n\nReturn the plan as a hierarchical structure."""</span>
+        
+        plan_response <span class="token operator">=</span> self<span class="token punctuation">.</span>llm<span class="token punctuation">.</span>generate<span class="token punctuation">(</span>planning_prompt<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Parse the plan response into Task objects (simplified)</span>
+        root_task <span class="token operator">=</span> self<span class="token punctuation">.</span>_parse_plan_to_tasks<span class="token punctuation">(</span>plan_response<span class="token punctuation">,</span> goal<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> root_task
+    
+    <span class="token keyword">def</span> <span class="token function">_parse_plan_to_tasks</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> plan_text<span class="token punctuation">:</span> str<span class="token punctuation">,</span> root_goal<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Task<span class="token punctuation">:</span>
+        <span class="token comment"># Simplified plan parsing - in practice, use structured output parsing</span>
+        root_task <span class="token operator">=</span> Task<span class="token punctuation">(</span>
+            id<span class="token operator">=</span><span class="token string">"root"</span><span class="token punctuation">,</span>
+            description<span class="token operator">=</span>root_goal
+        <span class="token punctuation">)</span>
+        
+        <span class="token comment"># For demonstration, create a simple hierarchy</span>
+        <span class="token comment"># In practice, parse the actual plan structure from the LLM response</span>
+        subtasks <span class="token operator">=</span> <span class="token punctuation">[</span>
+            Task<span class="token punctuation">(</span>id<span class="token operator">=</span><span class="token string">"research"</span><span class="token punctuation">,</span> description<span class="token operator">=</span><span class="token string">"Research the topic"</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            Task<span class="token punctuation">(</span>id<span class="token operator">=</span><span class="token string">"analyze"</span><span class="token punctuation">,</span> description<span class="token operator">=</span><span class="token string">"Analyze findings"</span><span class="token punctuation">,</span> dependencies<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">"research"</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            Task<span class="token punctuation">(</span>id<span class="token operator">=</span><span class="token string">"synthesize"</span><span class="token punctuation">,</span> description<span class="token operator">=</span><span class="token string">"Synthesize results"</span><span class="token punctuation">,</span> dependencies<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">"analyze"</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token punctuation">]</span>
+        
+        root_task<span class="token punctuation">.</span>subtasks <span class="token operator">=</span> subtasks
+        
+        <span class="token comment"># Register tasks</span>
+        <span class="token keyword">for</span> task <span class="token keyword">in</span> subtasks<span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>tasks<span class="token punctuation">[</span>task<span class="token punctuation">.</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> task
+        
+        <span class="token keyword">return</span> root_task
+    
+    <span class="token keyword">def</span> <span class="token function">execute_plan</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> root_task<span class="token punctuation">:</span> Task<span class="token punctuation">,</span> executor<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Execute the plan in dependency order</span>
+        completed_tasks <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        failed_tasks <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        
+        <span class="token keyword">while</span> <span class="token builtin">len</span><span class="token punctuation">(</span>completed_tasks<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token builtin">len</span><span class="token punctuation">(</span>failed_tasks<span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token builtin">len</span><span class="token punctuation">(</span>root_task<span class="token punctuation">.</span>subtasks<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># Find tasks that can be executed (dependencies met)</span>
+            executable_tasks <span class="token operator">=</span> <span class="token punctuation">[</span>
+                task <span class="token keyword">for</span> task <span class="token keyword">in</span> root_task<span class="token punctuation">.</span>subtasks
+                <span class="token keyword">if</span> task<span class="token punctuation">.</span>status <span class="token operator">==</span> TaskStatus<span class="token punctuation">.</span>PENDING
+                <span class="token keyword">and</span> <span class="token builtin">all</span><span class="token punctuation">(</span>
+                    dep_id <span class="token keyword">in</span> <span class="token punctuation">[</span>t<span class="token punctuation">.</span>id <span class="token keyword">for</span> t <span class="token keyword">in</span> completed_tasks<span class="token punctuation">]</span>
+                    <span class="token keyword">for</span> dep_id <span class="token keyword">in</span> task<span class="token punctuation">.</span>dependencies
+                <span class="token punctuation">)</span>
+            <span class="token punctuation">]</span>
+            
+            <span class="token keyword">if</span> <span class="token keyword">not</span> executable_tasks<span class="token punctuation">:</span>
+                <span class="token comment"># No tasks can be executed, likely due to circular dependencies</span>
+                <span class="token keyword">break</span>
+            
+            <span class="token comment"># Execute each executable task</span>
+            <span class="token keyword">for</span> task <span class="token keyword">in</span> executable_tasks<span class="token punctuation">:</span>
+                <span class="token keyword">try</span><span class="token punctuation">:</span>
+                    task<span class="token punctuation">.</span>status <span class="token operator">=</span> TaskStatus<span class="token punctuation">.</span>IN_PROGRESS
+                    task<span class="token punctuation">.</span>result <span class="token operator">=</span> executor<span class="token punctuation">.</span>execute_task<span class="token punctuation">(</span>task<span class="token punctuation">)</span>
+                    task<span class="token punctuation">.</span>status <span class="token operator">=</span> TaskStatus<span class="token punctuation">.</span>COMPLETED
+                    completed_tasks<span class="token punctuation">.</span>append<span class="token punctuation">(</span>task<span class="token punctuation">)</span>
+                <span class="token keyword">except</span> <span class="token builtin">Exception</span> <span class="token keyword">as</span> e<span class="token punctuation">:</span>
+                    task<span class="token punctuation">.</span>error <span class="token operator">=</span> <span class="token builtin">str</span><span class="token punctuation">(</span>e<span class="token punctuation">)</span>
+                    task<span class="token punctuation">.</span>status <span class="token operator">=</span> TaskStatus<span class="token punctuation">.</span>FAILED
+                    failed_tasks<span class="token punctuation">.</span>append<span class="token punctuation">(</span>task<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> <span class="token punctuation">{</span>
+            <span class="token string">'completed_tasks'</span><span class="token punctuation">:</span> completed_tasks<span class="token punctuation">,</span>
+            <span class="token string">'failed_tasks'</span><span class="token punctuation">:</span> failed_tasks<span class="token punctuation">,</span>
+            <span class="token string">'overall_success'</span><span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>failed_tasks<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span>
+        <span class="token punctuation">}</span></code></pre>
+</div>
+</div>
+
+<h2 id="tool-integration">Tool Integration</h2>
+<p>
+Effective agentic workflows seamlessly integrate with external tools and APIs to extend their capabilities beyond pure language processing.
+</p>
+
+<h3>Dynamic Tool Selection</h3>
+<p>
+Dynamic tool selection allows agents to choose the most appropriate tool for each situation based on the task requirements.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">tool_selector.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> abc <span class="token keyword">import</span> ABC<span class="token punctuation">,</span> abstractmethod
+
+<span class="token keyword">class</span> <span class="token class-name">BaseTool</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> name<span class="token punctuation">:</span> str<span class="token punctuation">,</span> description<span class="token punctuation">:</span> str<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>name <span class="token operator">=</span> name
+        self<span class="token punctuation">.</span>description <span class="token operator">=</span> description
+    
+    <span class="token decorator">@abstractmethod</span>
+    <span class="token keyword">def</span> <span class="token function">run</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> <span class="token operator">**</span>kwargs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">pass</span>
+
+<span class="token keyword">class</span> <span class="token class-name">CalculatorTool</span><span class="token punctuation">(</span>BaseTool<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>
+            name<span class="token operator">=</span><span class="token string">"calculator"</span><span class="token punctuation">,</span>
+            description<span class="token operator">=</span><span class="token string">"Performs basic arithmetic operations"</span>
+        <span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">run</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> operation<span class="token punctuation">:</span> str<span class="token punctuation">,</span> a<span class="token punctuation">:</span> float<span class="token punctuation">,</span> b<span class="token punctuation">:</span> float<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> operation <span class="token operator">==</span> <span class="token string">"add"</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> a <span class="token operator">+</span> b
+        <span class="token keyword">elif</span> operation <span class="token operator">==</span> <span class="token string">"subtract"</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> a <span class="token operator">-</span> b
+        <span class="token keyword">elif</span> operation <span class="token operator">==</span> <span class="token string">"multiply"</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> a <span class="token operator">*</span> b
+        <span class="token keyword">elif</span> operation <span class="token operator">==</span> <span class="token string">"divide"</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> b <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+                <span class="token keyword">raise</span> <span class="token builtin">ValueError</span><span class="token punctuation">(</span><span class="token string">"Cannot divide by zero"</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span> a <span class="token operator">/</span> b
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">raise</span> <span class="token builtin">ValueError</span><span class="token punctuation">(</span><span class="token string">f"Unknown operation: {operation}"</span><span class="token punctuation">)</span>
+
+<span class="token keyword">class</span> <span class="token class-name">SearchTool</span><span class="token punctuation">(</span>BaseTool<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>
+            name<span class="token operator">=</span><span class="token string">"search"</span><span class="token punctuation">,</span>
+            description<span class="token operator">=</span><span class="token string">"Searches the web for information"</span>
+        <span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">run</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> num_results<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Simulate search results</span>
+        <span class="token keyword">return</span> <span class="token punctuation">[</span>
+            <span class="token punctuation">{</span><span class="token string">'title'</span><span class="token punctuation">:</span> f<span class="token string">"Result {i} for '{query}'"</span><span class="token punctuation">,</span> <span class="token string">'snippet'</span><span class="token punctuation">:</span> f<span class="token string">"This is a snippet for result {i}"</span><span class="token punctuation">}</span>
+            <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> num_results <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+        <span class="token punctuation">]</span>
+
+<span class="token keyword">class</span> <span class="token class-name">ToolSelector</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> tools<span class="token punctuation">:</span> List<span class="token punctuation">[</span>BaseTool<span class="token punctuation">]</span><span class="token punctuation">,</span> llm<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>tools <span class="token operator">=</span> <span class="token punctuation">{</span>tool<span class="token punctuation">.</span>name<span class="token punctuation">:</span> tool <span class="token keyword">for</span> tool <span class="token keyword">in</span> tools<span class="token punctuation">}</span>
+        self<span class="token punctuation">.</span>llm <span class="token operator">=</span> llm
+    
+    <span class="token keyword">def</span> <span class="token function">select_tool</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> task<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> BaseTool<span class="token punctuation">:</span>
+        <span class="token comment"># Select the most appropriate tool for the task</span>
+        tool_descriptions <span class="token operator">=</span> <span class="token string">"\n"</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>
+            <span class="token punctuation">[</span>f<span class="token string">"{name}: {tool.description}"</span> <span class="token keyword">for</span> name<span class="token punctuation">,</span> tool <span class="token keyword">in</span> self<span class="token punctuation">.</span>tools<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+        <span class="token punctuation">)</span>
+        
+        selection_prompt <span class="token operator">=</span> f<span class="token string">"""Select the most appropriate tool for the following task:\n\nTask: {task}\n\nAvailable tools:\n{tool_descriptions}\n\nWhich tool should be used and why?"""</span>
+        
+        selection_response <span class="token operator">=</span> self<span class="token punctuation">.</span>llm<span class="token punctuation">.</span>generate<span class="token punctuation">(</span>selection_prompt<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Extract tool name from response (simplified)</span>
+        <span class="token keyword">for</span> tool_name <span class="token keyword">in</span> self<span class="token punctuation">.</span>tools<span class="token punctuation">.</span>keys<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> tool_name <span class="token keyword">in</span> selection_response<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token keyword">return</span> self<span class="token punctuation">.</span>tools<span class="token punctuation">[</span>tool_name<span class="token punctuation">]</span>
+        
+        <span class="token comment"># Default to first tool if none found</span>
+        <span class="token keyword">return</span> <span class="token builtin">list</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>tools<span class="token punctuation">.</span>values<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    
+    <span class="token keyword">def</span> <span class="token function">get_tool_args</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> tool<span class="token punctuation">:</span> BaseTool<span class="token punctuation">,</span> task<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Generate appropriate arguments for the selected tool</span>
+        args_prompt <span class="token operator">=</span> f<span class="token string">"""For the task "{task}", generate the appropriate arguments for the {tool.name} tool.\n\nTool description: {tool.description}\n\nReturn the arguments as a JSON object."""</span>
+        
+        args_response <span class="token operator">=</span> self<span class="token punctuation">.</span>llm<span class="token punctuation">.</span>generate<span class="token punctuation">(</span>args_prompt<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Parse arguments (simplified)</span>
+        <span class="token keyword">import</span> json
+        <span class="token keyword">try</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> json<span class="token punctuation">.</span>loads<span class="token punctuation">(</span>args_response<span class="token punctuation">)</span>
+        <span class="token keyword">except</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token punctuation">{</span><span class="token punctuation">}</span></code></pre>
+</div>
+</div>
+
+</div>
+<!-- Footer / Pagination -->
+<div class="mt-24 pt-10 border-t border-faded flex justify-between items-center group/footer">
+<a class="flex flex-col items-start gap-2 hover:bg-parchment/50 p-4 -ml-4 rounded transition-colors w-1/2" href="module_10_metadata_enhanced.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Previous Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Metadata Enhancement
+                        </span>
+</a>
+<div class="h-12 w-px bg-faded mx-4"></div>
+<a class="flex flex-col items-end gap-2 hover:bg-parchment/50 p-4 -mr-4 rounded transition-colors w-1/2" href="module_12_optimization_techniques.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Next Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+                            Optimization Techniques
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</span>
+</a>
+</div>
+</article>
+<!-- Right Rail: Marginalia -->
+<aside class="hidden xl:block w-[240px] sticky top-14 h-[calc(100vh-3.5rem)] pt-32 pb-10 pr-10 pl-4 overflow-y-auto">
+<div class="flex flex-col gap-24 relative">
+<!-- Note 1: Aligned with introduction -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[1]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Agentic workflows</strong> enable autonomous problem-solving beyond simple Q&A.
+                        </p>
+</div>
+<!-- Note 2: Aligned with agent design patterns -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-12">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[2]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">ReAct pattern</strong> interleaves reasoning and acting for effective problem solving.
+                        </p>
+<a class="inline-flex items-center gap-1 mt-2 text-[10px] uppercase tracking-widest text-primary font-bold hover:underline" href="artifact_view.html" target="_blank">
+                            View Code <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+</a>
+</div>
+<!-- Note 3: Aligned with planning and reasoning -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-24">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[3]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <code class="bg-parchment px-0.5 rounded-sm">Hierarchical planning</code> decomposes complex tasks into manageable subtasks.
+                        </p>
+</div>
+<!-- Additional marginalia for module-specific content -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[4]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Tool integration</strong> extends agent capabilities beyond language processing.
+                        </p>
+</div>
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[5]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Reflection mechanisms</strong> enable agents to learn from experience.
+                        </p>
+</div>
+</div>
+</aside>
+</div>
+</main>
+
+<script>
+    // Function to copy code to clipboard
+    function copyCode(button) {
+        const codeBlock = button.closest('.not-prose').querySelector('pre code');
+        navigator.clipboard.writeText(codeBlock.textContent.trim()).then(() => {
+            const originalIcon = button.querySelector('.material-symbols-outlined').textContent;
+            button.querySelector('.material-symbols-outlined').textContent = 'check';
+            setTimeout(() => {
+                button.querySelector('.material-symbols-outlined').textContent = originalIcon;
+            }, 2000);
+        });
+    }
+
+    // Calculate reading time based on content
+    document.addEventListener('DOMContentLoaded', function() {
+        const content = document.querySelector('.prose-academic').textContent;
+        const wordsPerMinute = 200; // Average reading speed
+        const wordCount = content.split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / wordsPerMinute);
+        
+        document.getElementById('reading-time').textContent = `${readingTime} min read`;
+    });
+
+    // Search button functionality
+    document.getElementById('search-btn').addEventListener('click', function() {
+        window.location.href = 'search_index.html';
+    });
+</script>
+</body></html>

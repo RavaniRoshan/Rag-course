@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic RAG Journal - Module 13: Domain Adaptation</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;family=Geist+Mono:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#b80f12",
+                        "ink": "#2C2420",
+                        "paper": "#F9F7F1",
+                        "parchment": "#EBE6DA",
+                        "graphite": "#8A817C",
+                        "faded": "#D8D1C4",
+                        "library-green": "#4A5D44",
+                    },
+                    fontFamily: {
+                        "display": ["Newsreader", "serif"],
+                        "serif": ["Lora", "serif"],
+                        "mono": ["Geist Mono", "monospace"],
+                        "code": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.5rem"
+                    },
+                    backgroundImage: {
+                        'grain': "url('data:image.svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9F7F1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8D1C4;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8A817C;
+        }
+
+        /* Hide scrollbar for clean UI but allow scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Typography overrides */
+        .prose-academic p {
+            margin-top: 1.5em;
+            margin-bottom: 1.5em;
+            line-height: 1.8;
+            font-family: 'Lora', serif;
+            font-size: 19px;
+            color: #2C2420;
+        }
+        .prose-academic h2 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 2em;
+            font-size: 32px;
+            letter-spacing: -0.01em;
+        }
+        .prose-academic h3 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 1.5em;
+            font-size: 24px;
+        }
+
+        /* Sepia Code Theme */
+        .token.comment { color: #8A817C; font-style: italic; }
+        .token.function { color: #9E2A2B; }
+        .token.keyword { color: #b80f12; font-weight: bold; }
+        .token.string { color: #4A5D44; }
+        .token.number { color: #b80f12; }
+        
+        /* Marginalia hover effect */
+        .marginalia-item {
+            transition: transform 0.2s ease;
+        }
+        .marginalia-item:hover {
+            transform: translateX(-4px);
+        }
+        
+        /* Mermaid diagram styling */
+        .mermaid-diagram {
+            background: white;
+            border: 1px solid #D8D1C4;
+            border-radius: 4px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="bg-paper text-ink antialiased selection:bg-primary/20 selection:text-ink min-h-screen flex flex-col font-serif relative">
+<!-- Grain Texture Overlay -->
+<div class="fixed inset-0 pointer-events-none z-50 bg-grain mix-blend-multiply opacity-40"></div>
+<!-- Top Navigation (Minimal) -->
+<header class="sticky top-0 z-40 w-full border-b border-faded bg-paper/95 backdrop-blur-sm h-14 flex items-center justify-between px-6 lg:px-10">
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-2 text-ink hover:text-primary transition-colors group" href="index.html">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-display font-medium text-lg tracking-tight">Syllabus</span>
+</a>
+<div class="h-4 w-px bg-faded mx-2"></div>
+<span class="font-mono text-xs uppercase tracking-wider text-graphite">Module 13</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-2 text-graphite text-xs font-mono">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span id="reading-time">50 min read</span>
+</div>
+<div class="flex gap-3">
+<button id="search-btn" aria-label="Search" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<button aria-label="Settings" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">text_fields</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 flex justify-center w-full relative">
+<div class="w-full max-w-[1440px] flex flex-row">
+<!-- Left Rail: Table of Contents -->
+<aside class="hidden lg:flex w-[240px] flex-col sticky top-14 h-[calc(100vh-3.5rem)] border-r border-faded overflow-y-auto pt-12 pb-10 pl-10 pr-6">
+<nav class="flex flex-col gap-8">
+<div>
+<h4 class="font-mono text-xs uppercase tracking-widest text-graphite mb-4">Contents</h4>
+<ul class="flex flex-col gap-3 font-mono text-[13px] leading-relaxed">
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#introduction">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Introduction
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#domain-specific-models">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Domain-Specific Models
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#fine-tuning-approaches">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Fine-Tuning Approaches
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#retrieval-adaptation">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Retrieval Adaptation
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#domain-evaluation">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Domain Evaluation
+                                </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-8 border-t border-faded">
+<div class="flex flex-col gap-2">
+<span class="font-mono text-[11px] uppercase tracking-widest text-graphite">Progress</span>
+<div class="w-full bg-parchment h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[35%]"></div>
+</div>
+<span class="font-mono text-xs text-ink text-right">35%</span>
+</div>
+</div>
+</nav>
+</aside>
+<!-- Center Stage: The Reader -->
+<article class="flex-1 max-w-[720px] mx-auto pt-16 pb-32 px-6 md:px-12 min-h-screen">
+<!-- Module Header -->
+<header class="mb-16 border-b border-faded pb-12">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-mono text-sm font-medium text-primary px-2 py-1 bg-primary/10 rounded">Module 13</span>
+<span class="font-mono text-sm text-graphite">Advanced RAG Architectures</span>
+</div>
+<h1 class="font-display text-[48px] md:text-[56px] leading-[1.1] font-semibold text-ink tracking-tight mb-6">
+                        Domain Adaptation &amp; Specialization
+                    </h1>
+<p class="font-serif text-xl text-ink/80 leading-relaxed max-w-[90%]">
+                        Techniques for adapting RAG systems to specific domains through model fine-tuning, retrieval specialization, and domain-specific evaluation.
+                    </p>
+</header>
+<!-- Content Body -->
+<div class="prose-academic">
+<h2 id="introduction">Introduction to Domain Adaptation</h2>
+<p>
+Domain adaptation is a critical aspect of RAG systems that enables them to perform effectively in specialized fields such as legal, medical, financial, or scientific domains. General-purpose models often struggle with domain-specific terminology, concepts, and reasoning patterns, necessitating targeted adaptation strategies.
+</p>
+
+<div class="my-10 border border-faded bg-parchment/50 p-6 rounded-sm">
+<figure>
+<img alt="Domain Adaptation Process" class="w-full h-auto mix-blend-multiply mb-4 filter sepia-[0.3]" data-alt="Visualization showing how a general RAG system is adapted to a specific domain" src="https://placehold.co/600x300/f9f7f1/ebe6da?text=Domain+Adaptation+Process" />
+<figcaption class="font-mono text-xs text-graphite text-center mt-2">Figure 1: Domain Adaptation Process</figcaption>
+</figure>
+</div>
+
+<h2 id="domain-specific-models">Domain-Specific Models</h2>
+<h3>Specialized Embedding Models</h3>
+<p>
+Creating domain-specific embedding models can significantly improve retrieval performance by better capturing domain-specific semantics and terminology.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">domain_embeddings.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> transformers <span class="token keyword">import</span> AutoTokenizer<span class="token punctuation">,</span> AutoModel
+<span class="token keyword">from</span> sentence_transformers <span class="token keyword">import</span> SentenceTransformer
+<span class="token keyword">import</span> torch
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Any<span class="token punctuation">,</span> Optional
+
+<span class="token keyword">class</span> <span class="token class-name">DomainSpecificEmbedder</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> base_model_name<span class="token punctuation">:</span> str<span class="token punctuation">,</span> domain_vocabulary<span class="token punctuation">:</span> Optional<span class="token punctuation">[</span>List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Initialize base model</span>
+        self<span class="token punctuation">.</span>base_model_name <span class="token operator">=</span> base_model_name
+        self<span class="token punctuation">.</span>tokenizer <span class="token operator">=</span> AutoTokenizer<span class="token punctuation">.</span>from_pretrained<span class="token punctuation">(</span>base_model_name<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>model <span class="token operator">=</span> AutoModel<span class="token punctuation">.</span>from_pretrained<span class="token punctuation">(</span>base_model_name<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Add domain-specific vocabulary if provided</span>
+        <span class="token keyword">if</span> domain_vocabulary<span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>_extend_vocabulary<span class="token punctuation">(</span>domain_vocab<span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_extend_vocabulary</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> domain_vocab<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Add new tokens to tokenizer</span>
+        new_tokens <span class="token operator">=</span> <span class="token punctuation">[</span>token <span class="token keyword">for</span> token <span class="token keyword">in</span> domain_vocab <span class="token keyword">if</span> token <span class="token keyword">not</span> <span class="token keyword">in</span> self<span class="token punctuation">.</span>tokenizer<span class="token punctuation">.</span>get_vocab<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+        
+        <span class="token keyword">if</span> new_tokens<span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>tokenizer<span class="token punctuation">.</span>add_tokens<span class="token punctuation">(</span>new_tokens<span class="token punctuation">)</span>
+            
+            <span class="token comment"># Resize model embeddings to accommodate new tokens</span>
+            self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>resize_token_embeddings<span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>tokenizer<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">encode</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> texts<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> batch_size<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">16</span><span class="token punctuation">,</span> normalize<span class="token punctuation">:</span> bool <span class="token operator">=</span> <span class="token boolean">True</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> np<span class="token punctuation">.</span>ndarray<span class="token punctuation">:</span>
+        <span class="token comment"># Encode texts using the domain-adapted model</span>
+        all_embeddings <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>texts<span class="token punctuation">)</span><span class="token punctuation">,</span> batch_size<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            batch <span class="token operator">=</span> texts<span class="token punctuation">[</span>i<span class="token punctuation">:</span>i<span class="token operator">+</span>batch_size<span class="token punctuation">]</span>
+            
+            <span class="token comment"># Tokenize batch</span>
+            encoded <span class="token operator">=</span> self<span class="token punctuation">.</span>tokenizer<span class="token punctuation">(</span>
+                batch<span class="token punctuation">,</span>
+                padding<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span>
+                truncation<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span>
+                <span class="token builtin">max</span>_length<span class="token operator">=</span><span class="token number">512</span><span class="token punctuation">,</span>
+                <span class="token keyword">return</span>_tensors<span class="token operator">=</span><span class="token string">'pt'</span>
+            <span class="token punctuation">)</span>
+            
+            <span class="token comment"># Generate embeddings</span>
+            <span class="token keyword">with</span> torch<span class="token punctuation">.</span>no_grad<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                outputs <span class="token operator">=</span> self<span class="token punctuation">.</span>model<span class="token punctuation">(</span>**encoded<span class="token punctuation">)</span>
+                
+                <span class="token comment"># Use mean pooling to get sentence embeddings</span>
+                embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>_mean_pooling<span class="token punctuation">(</span>
+                    outputs<span class="token punctuation">.</span>last_hidden_state<span class="token punctuation">,</span> 
+                    encoded<span class="token punctuation">[</span><span class="token string">'attention_mask'</span><span class="token punctuation">]</span>
+                <span class="token punctuation">)</span>
+                
+                <span class="token comment"># Normalize embeddings if requested</span>
+                <span class="token keyword">if</span> normalize<span class="token punctuation">:</span>
+                    embeddings <span class="token operator">=</span> torch<span class="token punctuation">.</span>nn<span class="token punctuation">.</span>functional<span class="token punctuation">.</span>normalize<span class="token punctuation">(</span>embeddings<span class="token punctuation">,</span> p<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> dim<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>
+                
+                all_embeddings<span class="token punctuation">.</span>append<span class="token punctuation">(</span>embeddings<span class="token punctuation">.</span>cpu<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>numpy<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> np<span class="token punctuation">.</span>vstack<span class="token punctuation">(</span>all_embeddings<span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_mean_pooling</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> token_embeddings<span class="token punctuation">,</span> attention_mask<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Mean pooling to get sentence embeddings</span>
+        input_mask_expanded <span class="token operator">=</span> attention_mask<span class="token punctuation">.</span>unsqueeze<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span>expand<span class="token punctuation">(</span>token_embeddings<span class="token punctuation">.</span>size<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>float<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> torch<span class="token punctuation">.</span>sum<span class="token punctuation">(</span>token_embeddings <span class="token operator">*</span> input_mask_expanded<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> torch<span class="token punctuation">.</span>clamp<span class="token punctuation">(</span>input_mask_expanded<span class="token punctuation">.</span>sum<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> min<span class="token operator">=</span><span class="token number">1e-9</span><span class="token punctuation">)</span>
+
+<span class="token keyword">class</span> <span class="token class-name">LegalDomainEmbedder</span><span class="token punctuation">(</span>DomainSpecificEmbedder<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Legal-specific vocabulary</span>
+        legal_vocab <span class="token operator">=</span> <span class="token punctuation">[</span>
+            <span class="token string">"plaintiff"</span><span class="token punctuation">,</span> <span class="token string">"defendant"</span><span class="token punctuation">,</span> <span class="token string">"jurisdiction"</span><span class="token punctuation">,</span> <span class="token string">"precedent"</span><span class="token punctuation">,</span> <span class="token string">"statute"</span><span class="token punctuation">,</span>
+            <span class="token string">"case law"</span><span class="token punctuation">,</span> <span class="token string">"brief"</span><span class="token punctuation">,</span> <span class="token string">"motion"</span><span class="token punctuation">,</span> <span class="token string">"discovery"</span><span class="token punctuation">,</span> <span class="token string">"deposition"</span><span class="token punctuation">,</span>
+            <span class="token string">"subpoena"</span><span class="token punctuation">,</span> <span class="token string">"verdict"</span><span class="token punctuation">,</span> <span class="token string">"appeal"</span><span class="token punctuation">,</span> <span class="token string">"affidavit"</span><span class="token punctuation">,</span> <span class="token string">"litigation"</span>
+        <span class="token punctuation">]</span>
+        
+        <span class="token comment"># Initialize with a legal-domain base model if available, otherwise use general</span>
+        super<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>
+            base_model_name<span class="token operator">=</span><span class="token string">"sentence-transformers/all-MiniLM-L6-v2"</span><span class="token punctuation">,</span>  <span class="token comment"># Could use a legal-specific model</span>
+            domain_vocabulary<span class="token operator">=</span>legal_vocab
+        <span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">encode_legal_documents</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> legal_texts<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> np<span class="token punctuation">.</span>ndarray<span class="token punctuation">:</span>
+        <span class="token comment"># Specialized encoding for legal documents</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>encode<span class="token punctuation">(</span>legal_texts<span class="token punctuation">)</span>
+
+<span class="token comment"># Example usage</span>
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    legal_embedder <span class="token operator">=</span> LegalDomainEmbedder<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    
+    legal_sentences <span class="token operator">=</span> <span class="token punctuation">[</span>
+        <span class="token string">"The plaintiff filed a motion for summary judgment"</span><span class="token punctuation">,</span>
+        <span class="token string">"The defendant contested the jurisdiction of the court"</span><span class="token punctuation">,</span>
+        <span class="token string">"According to precedent, the statute of limitations has expired"</span>
+    <span class="token punctuation">]</span>
+    
+    embeddings <span class="token operator">=</span> legal_embedder<span class="token punctuation">.</span>encode_legal_documents<span class="token punctuation">(</span>legal_sentences<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>f<span class="token string">"Generated {embeddings.shape[0]} embeddings of dimension {embeddings.shape[1]}"</span><span class="token punctuation">)</span></code></pre>
+</div>
+</div>
+
+<h3>Domain-Specific Retrieval Models</h3>
+<p>
+Beyond embeddings, domain-specific retrieval models can be developed to better understand domain-specific query patterns and document structures.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">domain_retriever.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> abc <span class="token keyword">import</span> ABC<span class="token punctuation">,</span> abstractmethod
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Any<span class="token punctuation">,</span> Tuple
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>feature_extraction<span class="token punctuation">.</span>text <span class="token keyword">import</span> TfidfVectorizer
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics<span class="token punctuation">.</span>pairwise <span class="token keyword">import</span> cosine_similarity
+
+<span class="token keyword">class</span> <span class="token class-name">BaseDomainRetriever</span><span class="token punctuation">(</span>ABC<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token decorator">@abstractmethod</span>
+    <span class="token keyword">def</span> <span class="token function">retrieve</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> top_k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">pass</span>
+
+<span class="token keyword">class</span> <span class="token class-name">HybridDomainRetriever</span><span class="token punctuation">(</span>BaseDomainRetriever<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> dense_retriever<span class="token punctuation">,</span> sparse_retriever<span class="token punctuation">,</span> 
+                 dense_weight<span class="token punctuation">:</span> float <span class="token operator">=</span> <span class="token number">0.7</span><span class="token punctuation">,</span> sparse_weight<span class="token punctuation">:</span> float <span class="token operator">=</span> <span class="token number">0.3</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>dense_retriever <span class="token operator">=</span> dense_retriever
+        self<span class="token punctuation">.</span>sparse_retriever <span class="token operator">=</span> sparse_retriever
+        self<span class="token punctuation">.</span>dense_weight <span class="token operator">=</span> dense_weight
+        self<span class="token punctuation">.</span>sparse_weight <span class="token operator">=</span> sparse_weight
+    
+    <span class="token keyword">def</span> <span class="token function">retrieve</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> top_k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Retrieve from both dense and sparse retrievers</span>
+        dense_results <span class="token operator">=</span> self<span class="token punctuation">.</span>dense_retriever<span class="token punctuation">.</span>retrieve<span class="token punctuation">(</span>query<span class="token punctuation">,</span> top_k<span class="token operator">*</span><span class="token number">2</span><span class="token punctuation">)</span>  <span class="token comment"># Get more results for fusion</span>
+        sparse_results <span class="token operator">=</span> self<span class="token punctuation">.</span>sparse_retriever<span class="token punctuation">.</span>retrieve<span class="token punctuation">(</span>query<span class="token punctuation">,</span> top_k<span class="token operator">*</span><span class="token number">2</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Normalize scores for both result sets</span>
+        dense_scores <span class="token operator">=</span> <span class="token punctuation">[</span>res<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'score'</span><span class="token punctuation">,</span> <span class="token number">0.0</span><span class="token punctuation">)</span> <span class="token keyword">for</span> res <span class="token keyword">in</span> dense_results<span class="token punctuation">]</span>
+        sparse_scores <span class="token operator">=</span> <span class="token punctuation">[</span>res<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'score'</span><span class="token punctuation">,</span> <span class="token number">0.0</span><span class="token punctuation">)</span> <span class="token keyword">for</span> res <span class="token keyword">in</span> sparse_results<span class="token punctuation">]</span>
+        
+        <span class="token comment"># Normalize scores to [0, 1]</span>
+        <span class="token keyword">if</span> dense_scores<span class="token punctuation">:</span>
+            max_dense <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>dense_scores<span class="token punctuation">)</span>
+            min_dense <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>dense_scores<span class="token punctuation">)</span>
+            <span class="token keyword">if</span> max_dense <span class="token operator">!=</span> min_dense<span class="token punctuation">:</span>
+                normalized_dense_scores <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">(</span>s <span class="token operator">-</span> min_dense<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token punctuation">(</span>max_dense <span class="token operator">-</span> min_dense<span class="token punctuation">)</span> <span class="token keyword">for</span> s <span class="token keyword">in</span> dense_scores<span class="token punctuation">]</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                normalized_dense_scores <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0.0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token builtin">len</span><span class="token punctuation">(</span>dense_scores<span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            normalized_dense_scores <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        
+        <span class="token keyword">if</span> sparse_scores<span class="token punctuation">:</span>
+            max_sparse <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>sparse_scores<span class="token punctuation">)</span>
+            min_sparse <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>sparse_scores<span class="token punctuation">)</span>
+            <span class="token keyword">if</span> max_sparse <span class="token operator">!=</span> min_sparse<span class="token punctuation">:</span>
+                normalized_sparse_scores <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">(</span>s <span class="token operator">-</span> min_sparse<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token punctuation">(</span>max_sparse <span class="token operator">-</span> min_sparse<span class="token punctuation">)</span> <span class="token keyword">for</span> s <span class="token keyword">in</span> sparse_scores<span class="token punctuation">]</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                normalized_sparse_scores <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0.0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token builtin">len</span><span class="token punctuation">(</span>sparse_scores<span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            normalized_sparse_scores <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Create a mapping of document IDs to their combined scores</span>
+        doc_scores <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        
+        <span class="token comment"># Add dense scores weighted</span>
+        <span class="token keyword">for</span> i<span class="token punctuation">,</span> result <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>dense_results<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            doc_id <span class="token operator">=</span> result<span class="token punctuation">[</span><span class="token string">'id'</span><span class="token punctuation">]</span>
+            score <span class="token operator">=</span> normalized_dense_scores<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> self<span class="token punctuation">.</span>dense_weight
+            doc_scores<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span> <span class="token operator">=</span> score
+        
+        <span class="token comment"># Add sparse scores weighted</span>
+        <span class="token keyword">for</span> i<span class="token punctuation">,</span> result <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>sparse_results<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            doc_id <span class="token operator">=</span> result<span class="token punctuation">[</span><span class="token string">'id'</span><span class="token punctuation">]</span>
+            score <span class="token operator">=</span> normalized_sparse_scores<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> self<span class="token punctuation">.</span>sparse_weight
+            
+            <span class="token keyword">if</span> doc_id <span class="token keyword">in</span> doc_scores<span class="token punctuation">:</span>
+                <span class="token comment"># Combine scores if document appears in both results</span>
+                doc_scores<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span> <span class="token operator">+</span><span class="token operator">=</span> score
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                doc_scores<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span> <span class="token operator">=</span> score
+        
+        <span class="token comment"># Sort by combined score and return top-k results</span>
+        sorted_docs <span class="token operator">=</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>doc_scores<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Map back to original result format</span>
+        final_results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> doc_id<span class="token punctuation">,</span> combined_score <span class="token keyword">in</span> sorted_docs<span class="token punctuation">[</span><span class="token punctuation">:</span>top_k<span class="token punctuation">]</span><span class="token punctuation">:</span>
+            <span class="token comment"># Find the original result from either dense or sparse results</span>
+            original_result <span class="token operator">=</span> <span class="token boolean">None</span>
+            
+            <span class="token comment"># Look in dense results first</span>
+            <span class="token keyword">for</span> res <span class="token keyword">in</span> dense_results<span class="token punctuation">:</span>
+                <span class="token keyword">if</span> res<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'id'</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span> <span class="token operator">==</span> doc_id<span class="token punctuation">:</span>
+                    original_result <span class="token operator">=</span> res<span class="token punctuation">.</span>copy<span class="token punctuation">(</span><span class="token punctuation">)</span>
+                    <span class="token keyword">break</span>
+            
+            <span class="token comment"># If not found in dense results, look in sparse results</span>
+            <span class="token keyword">if</span> original_result <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+                <span class="token keyword">for</span> res <span class="token keyword">in</span> sparse_results<span class="token punctuation">:</span>
+                    <span class="token keyword">if</span> res<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'id'</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span> <span class="token operator">==</span> doc_id<span class="token punctuation">:</span>
+                        original_result <span class="token operator">=</span> res<span class="token punctuation">.</span>copy<span class="token punctuation">(</span><span class="token punctuation">)</span>
+                        <span class="token keyword">break</span>
+            
+            <span class="token keyword">if</span> original_result<span class="token punctuation">:</span>
+                original_result<span class="token punctuation">[</span><span class="token string">'score'</span><span class="token punctuation">]</span> <span class="token operator">=</span> combined_score
+                final_results<span class="token punctuation">.</span>append<span class="token punctuation">(</span>original_result<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> final_results
+
+<span class="token keyword">class</span> <span class="token class-name">LegalRetriever</span><span class="token punctuation">(</span>HybridDomainRetriever<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> vector_store<span class="token punctuation">,</span> bm25_corpus<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Initialize with domain-specific retrievers</span>
+        dense_retriever <span class="token operator">=</span> VectorStoreRetriever<span class="token punctuation">(</span>vector_store<span class="token punctuation">)</span>
+        sparse_retriever <span class="token operator">=</span> BM25Retriever<span class="token punctuation">(</span>corpus<span class="token operator">=</span>bm25_corpus<span class="token punctuation">,</span> 
+                                      analyzer<span class="token operator">=</span>self<span class="token punctuation">.</span>_legal_analyzer<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Legal domain typically benefits from higher sparse weight for exact term matching</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>
+            dense_retriever<span class="token operator">=</span>dense_retriever<span class="token punctuation">,</span>
+            sparse_retriever<span class="token operator">=</span>sparse_retriever<span class="token punctuation">,</span>
+            dense_weight<span class="token operator">=</span><span class="token number">0.6</span><span class="token punctuation">,</span>  <span class="token comment"># Lower weight for dense (semantic) matching</span>
+            sparse_weight<span class="token operator">=</span><span class="token number">0.4</span>   <span class="token comment"># Higher weight for sparse (keyword) matching</span>
+        <span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_legal_analyzer</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> text<span class="token punctuation">:</span> str<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Custom analyzer for legal text with domain-specific preprocessing</span>
+        <span class="token comment"># This would include legal-specific tokenization, normalization, etc.</span>
+        <span class="token keyword">import</span> re
+        <span class="token comment"># Normalize case variations of legal terms</span>
+        text <span class="token operator">=</span> re<span class="token punctuation">.</span>sub<span class="token punctuation">(</span>r<span class="token string">'\b(PLAINTIFF|Plaintiff)\b'</span><span class="token punctuation">,</span> <span class="token string">'plaintiff'</span><span class="token punctuation">,</span> text<span class="token punctuation">)</span>
+        text <span class="token operator">=</span> re<span class="token punctuation">.</span>sub<span class="token punctuation">(</span>r<span class="token string">'\b(DEFENDANT|Defendant)\b'</span><span class="token punctuation">,</span> <span class="token string">'defendant'</span><span class="token punctuation">,</span> text<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Tokenize (simplified)</span>
+        tokens <span class="token operator">=</span> text<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Remove common legal stopwords</span>
+        legal_stopwords <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'the'</span><span class="token punctuation">,</span> <span class="token string">'of'</span><span class="token punctuation">,</span> <span class="token string">'and'</span><span class="token punctuation">,</span> <span class="token string">'in'</span><span class="token punctuation">,</span> <span class="token string">'to'</span><span class="token punctuation">,</span> <span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'is'</span><span class="token punctuation">,</span> <span class="token string">'that'</span><span class="token punctuation">,</span> 
+                           <span class="token string">'case'</span><span class="token punctuation">,</span> <span class="token string">'cases'</span><span class="token punctuation">,</span> <span class="token string">'court'</span><span class="token punctuation">,</span> <span class="token string">'courts'</span><span class="token punctuation">,</span> <span class="token string">'law'</span><span class="token punctuation">,</span> <span class="token string">'laws'</span><span class="token punctuation">,</span> <span class="token string">'section'</span><span class="token punctuation">,</span> <span class="token string">'sections'</span><span class="token punctuation">}</span>
+        
+        <span class="token keyword">return</span> <span class="token punctuation">[</span>token <span class="token keyword">for</span> token <span class="token keyword">in</span> tokens <span class="token keyword">if</span> token <span class="token keyword">not</span> <span class="token keyword">in</span> legal_stopwords<span class="token punctuation">]</span></code></pre>
+</div>
+</div>
+
+<h2 id="fine-tuning-approaches">Fine-Tuning Approaches</h2>
+<h3>Continual Learning for Domain Adaptation</h3>
+<p>
+Continual learning enables models to adapt to new domains without forgetting previous knowledge, which is crucial for evolving RAG systems.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">continual_learning.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> torch
+<span class="token keyword">import</span> torch<span class="token punctuation">.</span>nn <span class="token keyword">as</span> nn
+<span class="token keyword">from</span> transformers <span class="token keyword">import</span> AutoModel<span class="token punctuation">,</span> AutoTokenizer<span class="token punctuation">,</span> get_linear_schedule_with_warmup
+<span class="token keyword">from</span> torch<span class="token punctuation">.</span>utils<span class="token punctuation">.</span>data <span class="token keyword">import</span> DataLoader<span class="token punctuation">,</span> TensorDataset
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Any<span class="token punctuation">,</span> Optional
+
+<span class="token keyword">class</span> <span class="token class-name">ElasticWeightConsolidation</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> model<span class="token punctuation">,</span> importance<span class="token punctuation">:</span> float <span class="token operator">=</span> <span class="token number">1000</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>model <span class="token operator">=</span> model
+        self<span class="token punctuation">.</span>importance <span class="token operator">=</span> importance
+        self<span class="token punctuation">.</span>original_params <span class="token operator">=</span> <span class="token punctuation">{</span>name<span class="token punctuation">:</span> param<span class="token punctuation">.</span>clone<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> name<span class="token punctuation">,</span> param <span class="token keyword">in</span> model<span class="token punctuation">.</span>named_parameters<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span>
+        self<span class="token punctuation">.</span>fisher_matrices <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+    
+    <span class="token keyword">def</span> <span class="token function">compute_fisher_matrix</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> dataloader<span class="token punctuation">,</span> criterion<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Compute Fisher Information Matrix for each parameter</span>
+        fisher <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        
+        <span class="token keyword">for</span> name<span class="token punctuation">,</span> param <span class="token keyword">in</span> self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>named_parameters<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            fisher<span class="token punctuation">[</span>name<span class="token punctuation">]</span> <span class="token operator">=</span> torch<span class="token punctuation">.</span>zeros_like<span class="token punctuation">(</span>param<span class="token punctuation">)</span>
+        
+        <span class="token keyword">for</span> batch <span class="token keyword">in</span> dataloader<span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>zero_grad<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            outputs <span class="token operator">=</span> self<span class="token punctuation">.</span>model<span class="token punctuation">(</span>batch<span class="token punctuation">[</span><span class="token string">'input_ids'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> attention_mask<span class="token operator">=</span>batch<span class="token punctuation">[</span><span class="token string">'attention_mask'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+            
+            <span class="token comment"># Calculate log probabilities</span>
+            log_probs <span class="token operator">=</span> torch<span class="token punctuation">.</span>log_softmax<span class="token punctuation">(</span>outputs<span class="token punctuation">.</span>logits<span class="token punctuation">,</span> dim<span class="token operator">=</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+            
+            <span class="token comment"># Calculate Fisher matrix (diagonal approximation)</span>
+            probs <span class="token operator">=</span> torch<span class="token punctuation">.</span>softmax<span class="token punctuation">(</span>outputs<span class="token punctuation">.</span>logits<span class="token punctuation">,</span> dim<span class="token operator">=</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+            
+            <span class="token comment"># Calculate gradients squared (Fisher matrix diagonal approximation)</span>
+            grad_log_probs <span class="token operator">=</span> torch<span class="token punctuation">.</span>autograd<span class="token punctuation">.</span>grad<span class="token punctuation">(</span>
+                <span class="token builtin">sum</span><span class="token punctuation">(</span>torch<span class="token punctuation">.</span>diag_embed<span class="token punctuation">(</span>probs<span class="token punctuation">)</span> <span class="token operator">*</span> log_probs<span class="token punctuation">)</span><span class="token punctuation">,</span>
+                self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>parameters<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                retain_graph<span class="token operator">=</span><span class="token boolean">True</span>
+            <span class="token punctuation">)</span>
+            
+            <span class="token keyword">for</span> i<span class="token punctuation">,</span> <span class="token punctuation">(</span>name<span class="token punctuation">,</span> param<span class="token punctuation">)</span> <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>named_parameters<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                fisher<span class="token punctuation">[</span>name<span class="token punctuation">]</span> <span class="token operator">+</span><span class="token operator">=</span> grad_log_probs<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">**</span> <span class="token number">2</span>
+        
+        <span class="token comment"># Average over dataset</span>
+        <span class="token keyword">for</span> name <span class="token keyword">in</span> fisher<span class="token punctuation">:</span>
+            fisher<span class="token punctuation">[</span>name<span class="token punctuation">]</span> <span class="token operator">/=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>dataloader<span class="token punctuation">)</span>
+        
+        self<span class="token punctuation">.</span>fisher_matrices <span class="token operator">=</span> fisher
+    
+    <span class="token keyword">def</span> <span class="token function">penalty_loss</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Calculate penalty loss to prevent catastrophic forgetting</span>
+        penalty <span class="token operator">=</span> <span class="token number">0</span>
+        
+        <span class="token keyword">for</span> name<span class="token punctuation">,</span> param <span class="token keyword">in</span> self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>named_parameters<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> name <span class="token keyword">in</span> self<span class="token punctuation">.</span>fisher_matrices<span class="token punctuation">:</span>
+                penalty <span class="token operator">+</span><span class="token operator">=</span> <span class="token punctuation">(</span>self<span class="token punctuation">.</span>fisher_matrices<span class="token punctuation">[</span>name<span class="token punctuation">]</span> <span class="token operator">*</span> 
+                             <span class="token punctuation">(</span>param <span class="token operator">-</span> self<span class="token punctuation">.</span>original_params<span class="token punctuation">[</span>name<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">.</span>sum<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>importance <span class="token operator">*</span> penalty
+
+<span class="token keyword">class</span> <span class="token class-name">DomainAdapter</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> base_model_name<span class="token punctuation">:</span> str<span class="token punctuation">,</span> device<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"cuda"</span> <span class="token keyword">if</span> torch<span class="token punctuation">.</span>cuda<span class="token punctuation">.</span>is_available<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">else</span> <span class="token string">"cpu"</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>device <span class="token operator">=</span> device
+        self<span class="token punctuation">.</span>tokenizer <span class="token operator">=</span> AutoTokenizer<span class="token punctuation">.</span>from_pretrained<span class="token punctuation">(</span>base_model_name<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>model <span class="token operator">=</span> AutoModel<span class="token punctuation">.</span>from_pretrained<span class="token punctuation">(</span>base_model_name<span class="token punctuation">)</span><span class="token punctuation">.</span>to<span class="token punctuation">(</span>device<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Add special tokens if tokenizer doesn't have them</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>tokenizer<span class="token punctuation">.</span>pad_token <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>tokenizer<span class="token punctuation">.</span>pad_token <span class="token operator">=</span> self<span class="token punctuation">.</span>tokenizer<span class="token punctuation">.</span>eos_token
+    
+    <span class="token keyword">def</span> <span class="token function">prepare_dataset</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> texts<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> labels<span class="token punctuation">:</span> Optional<span class="token punctuation">[</span>List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Tokenize texts for training</span>
+        encodings <span class="token operator">=</span> self<span class="token punctuation">.</span>tokenizer<span class="token punctuation">(</span>
+            texts<span class="token punctuation">,</span>
+            truncation<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span>
+            padding<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span>
+            <span class="token builtin">max</span>_length<span class="token operator">=</span><span class="token number">512</span><span class="token punctuation">,</span>
+            <span class="token keyword">return</span>_tensors<span class="token operator">=</span><span class="token string">'pt'</span>
+        <span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> labels <span class="token keyword">is</span> <span class="token boolean">not</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            label_encodings <span class="token operator">=</span> self<span class="token punctuation">.</span>tokenizer<span class="token punctuation">(</span>
+                labels<span class="token punctuation">,</span>
+                truncation<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span>
+                padding<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span>
+                <span class="token builtin">max</span>_length<span class="token operator">=</span><span class="token number">512</span><span class="token punctuation">,</span>
+                <span class="token keyword">return</span>_tensors<span class="token operator">=</span><span class="token string">'pt'</span>
+            <span class="token punctuation">)</span>
+            <span class="token keyword">return</span> TensorDataset<span class="token punctuation">(</span>
+                encodings<span class="token punctuation">[</span><span class="token string">'input_ids'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+                encodings<span class="token punctuation">[</span><span class="token string">'attention_mask'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+                label_encodings<span class="token punctuation">[</span><span class="token string">'input_ids'</span><span class="token punctuation">]</span>
+            <span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> TensorDataset<span class="token punctuation">(</span>
+                encodings<span class="token punctuation">[</span><span class="token string">'input_ids'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+                encodings<span class="token punctuation">[</span><span class="token string">'attention_mask'</span><span class="token punctuation">]</span>
+            <span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">fine_tune</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> train_texts<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> train_labels<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">,</span> 
+                   epochs<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">,</span> batch_size<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">16</span><span class="token punctuation">,</span> learning_rate<span class="token punctuation">:</span> float <span class="token operator">=</span> <span class="token number">2e-5</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Prepare training data</span>
+        train_dataset <span class="token operator">=</span> self<span class="token punctuation">.</span>prepare_dataset<span class="token punctuation">(</span>train_texts<span class="token punctuation">,</span> train_labels<span class="token punctuation">)</span>
+        train_loader <span class="token operator">=</span> DataLoader<span class="token punctuation">(</span>train_dataset<span class="token punctuation">,</span> batch_size<span class="token operator">=</span>batch_size<span class="token punctuation">,</span> shuffle<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Setup optimizer and scheduler</span>
+        optimizer <span class="token operator">=</span> torch<span class="token punctuation">.</span>optim<span class="token punctuation">.</span>AdamW<span class="token punctuation">(</span>self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>parameters<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> lr<span class="token operator">=</span>learning_rate<span class="token punctuation">)</span>
+        
+        total_steps <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>train_loader<span class="token punctuation">)</span> <span class="token operator">*</span> epochs
+        scheduler <span class="token operator">=</span> get_linear_schedule_with_warmup<span class="token punctuation">(</span>
+            optimizer<span class="token punctuation">,</span>
+            num_warmup_steps<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">,</span>
+            num_training_steps<span class="token operator">=</span>total_steps
+        <span class="token punctuation">)</span>
+        
+        <span class="token comment"># Training loop</span>
+        self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>train<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">for</span> epoch <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>epochs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            total_loss <span class="token operator">=</span> <span class="token number">0</span>
+            
+            <span class="token keyword">for</span> batch <span class="token keyword">in</span> train_loader<span class="token punctuation">:</span>
+                optimizer<span class="token punctuation">.</span>zero_grad<span class="token punctuation">(</span><span class="token punctuation">)</span>
+                
+                input_ids<span class="token punctuation">,</span> attention_mask <span class="token operator">=</span> batch<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span>
+                input_ids <span class="token operator">=</span> input_ids<span class="token punctuation">.</span>to<span class="token punctuation">(</span>self<span class="token punctuation">.</span>device<span class="token punctuation">)</span>
+                attention_mask <span class="token operator">=</span> attention_mask<span class="token punctuation">.</span>to<span class="token punctuation">(</span>self<span class="token punctuation">.</span>device<span class="token punctuation">)</span>
+                
+                <span class="token comment"># Forward pass</span>
+                outputs <span class="token operator">=</span> self<span class="token punctuation">.</span>model<span class="token punctuation">(</span>
+                    input_ids<span class="token operator">=</span>input_ids<span class="token punctuation">,</span>
+                    attention_mask<span class="token operator">=</span>attention_mask<span class="token punctuation">,</span>
+                    output_hidden_states<span class="token operator">=</span><span class="token boolean">True</span>
+                <span class="token punctuation">)</span>
+                
+                <span class="token comment"># Calculate loss (simplified - would depend on specific task)</span>
+                <span class="token comment"># For domain adaptation, we might use contrastive learning or MLM objective</span>
+                hidden_states <span class="token operator">=</span> outputs<span class="token punctuation">.</span>hidden_states<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span>  <span class="token comment"># Last layer</span>
+                
+                <span class="token comment"># Example: use mean of hidden states as embedding for contrastive learning</span>
+                embeddings <span class="token operator">=</span> torch<span class="token punctuation">.</span>mean<span class="token punctuation">(</span>hidden_states<span class="token punctuation">,</span> dim<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>  <span class="token comment"># Mean pooling</span>
+                
+                <span class="token comment"># Contrastive loss calculation would go here</span>
+                <span class="token comment"># For now, using a simplified loss</span>
+                loss <span class="token operator">=</span> self<span class="token punctuation">.</span>_compute_contrastive_loss<span class="token punctuation">(</span>embeddings<span class="token punctuation">)</span>
+                
+                <span class="token comment"># Backward pass</span>
+                loss<span class="token punctuation">.</span>backward<span class="token punctuation">(</span><span class="token punctuation">)</span>
+                optimizer<span class="token punctuation">.</span>step<span class="token punctuation">(</span><span class="token punctuation">)</span>
+                scheduler<span class="token punctuation">.</span>step<span class="token punctuation">(</span><span class="token punctuation">)</span>
+                
+                total_loss <span class="token operator">+</span><span class="token operator">=</span> loss<span class="token punctuation">.</span>item<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            
+            avg_loss <span class="token operator">=</span> total_loss <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>train_loader<span class="token punctuation">)</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span>f<span class="token string">"Epoch {epoch + 1}/{epochs}, Average Loss: {avg_loss:.4f}"</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_compute_contrastive_loss</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> embeddings<span class="token punctuation">:</span> torch<span class="token punctuation">.</span>Tensor<span class="token punctuation">,</span> temperature<span class="token punctuation">:</span> float <span class="token operator">=</span> <span class="token number">0.07</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Simplified contrastive loss calculation</span>
+        batch_size <span class="token operator">=</span> embeddings<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Normalize embeddings</span>
+        embeddings <span class="token operator">=</span> torch<span class="token punctuation">.</span>nn<span class="token punctuation">.</span>functional<span class="token punctuation">.</span>normalize<span class="token punctuation">(</span>embeddings<span class="token punctuation">,</span> p<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> dim<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Compute similarity matrix</span>
+        similarity_matrix <span class="token operator">=</span> torch<span class="token punctuation">.</span>mm<span class="token punctuation">(</span>embeddings<span class="token punctuation">,</span> embeddings<span class="token punctuation">.</span>t<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">/</span> temperature
+        
+        <span class="token comment"># Create labels for contrastive learning (assuming each sample is its own class)</span>
+        labels <span class="token operator">=</span> torch<span class="token punctuation">.</span>arange<span class="token punctuation">(</span>batch_size<span class="token punctuation">,</span> device<span class="token operator">=</span>embeddings<span class="token punctuation">.</span>device<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Compute cross entropy loss</span>
+        criterion <span class="token operator">=</span> torch<span class="token punctuation">.</span>nn<span class="token punctuation">.</span>CrossEntropyLoss<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        loss <span class="token operator">=</span> criterion<span class="token punctuation">(</span>similarity_matrix<span class="token punctuation">,</span> labels<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> loss
+    
+    <span class="token keyword">def</span> <span class="token function">save_adapted_model</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> save_path<span class="token punctuation">:</span> str<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Save the adapted model and tokenizer</span>
+        self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>save_pretrained<span class="token punctuation">(</span>save_path<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>tokenizer<span class="token punctuation">.</span>save_pretrained<span class="token punctuation">(</span>save_path<span class="token punctuation">)</span></code></pre>
+</div>
+</div>
+
+<h2 id="domain-evaluation">Domain-Specific Evaluation</h2>
+<p>
+Evaluating domain-adapted RAG systems requires specialized metrics and benchmarks that reflect the unique requirements of the target domain.
+</p>
+
+<h3>Evaluation Framework</h3>
+<p>
+A comprehensive evaluation framework for domain adaptation should include both general and domain-specific metrics.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">domain_evaluation.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Any<span class="token punctuation">,</span> Tuple
+<span class="token keyword">from</span> dataclasses <span class="token keyword">import</span> dataclass<span class="token punctuation">,</span> field
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics <span class="token keyword">import</span> ndcg_score<span class="token punctuation">,</span> precision_at_k<span class="token punctuation">,</span> recall_at_k
+
+<span class="token decorator">@dataclass</span>
+<span class="token keyword">class</span> <span class="token class-name">EvaluationResult</span><span class="token punctuation">:</span>
+    query<span class="token punctuation">:</span> str
+    retrieved_docs<span class="token punctuation">:</span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span>
+    relevant_docs<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span>
+    metrics<span class="token punctuation">:</span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> float<span class="token punctuation">]</span>
+    domain_specific_metrics<span class="token punctuation">:</span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> float<span class="token punctuation">]</span> <span class="token operator">=</span> field<span class="token punctuation">(</span>default_factory<span class="token operator">=</span><span class="token builtin">dict</span><span class="token punctuation">)</span>
+
+<span class="token keyword">class</span> <span class="token class-name">DomainEvaluator</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> domain<span class="token punctuation">:</span> str<span class="token punctuation">,</span> ground_truth<span class="token punctuation">:</span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>domain <span class="token operator">=</span> domain
+        self<span class="token punctuation">.</span>ground_truth <span class="token operator">=</span> ground_truth
+        self<span class="token punctuation">.</span>domain_metrics <span class="token operator">=</span> self<span class="token punctuation">.</span>_get_domain_metrics<span class="token punctuation">(</span>domain<span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">_get_domain_metrics</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> domain<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Define domain-specific metrics</span>
+        domain_metric_map <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">"legal"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+                <span class="token string">"precedent_accuracy"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>evaluate_precedent_accuracy<span class="token punctuation">,</span>
+                <span class="token string">"statutory_compliance"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>evaluate_statutory_compliance<span class="token punctuation">,</span>
+                <span class="token string">"jurisdiction_relevance"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>evaluate_jurisdiction_relevance
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token string">"medical"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+                <span class="token string">"clinical_accuracy"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>evaluate_clinical_accuracy<span class="token punctuation">,</span>
+                <span class="token string">"evidence_level"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>evaluate_evidence_level<span class="token punctuation">,</span>
+                <span class="token string">"safety_compliance"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>evaluate_safety_compliance
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token string">"financial"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+                <span class="token string">"regulatory_compliance"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>evaluate_regulatory_compliance<span class="token punctuation">,</span>
+                <span class="token string">"risk_assessment_accuracy"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>evaluate_risk_accuracy<span class="token punctuation">,</span>
+                <span class="token string">"market_relevance"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>evaluate_market_relevance
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> domain_metric_map<span class="token punctuation">.</span>get<span class="token punctuation">(</span>domain<span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">evaluate_retrieval</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> queries<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> retrieved_results<span class="token punctuation">:</span> List<span class="token punctuation">[</span>List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>EvaluationResult<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        
+        <span class="token keyword">for</span> query<span class="token punctuation">,</span> retrieved <span class="token keyword">in</span> <span class="token builtin">zip</span><span class="token punctuation">(</span>queries<span class="token punctuation">,</span> retrieved_results<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            relevant_docs <span class="token operator">=</span> self<span class="token punctuation">.</span>ground_truth<span class="token punctuation">.</span>get<span class="token punctuation">(</span>query<span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+            
+            <span class="token comment"># Calculate standard metrics</span>
+            standard_metrics <span class="token operator">=</span> self<span class="token punctuation">.</span>calculate_standard_metrics<span class="token punctuation">(</span>retrieved<span class="token punctuation">,</span> relevant_docs<span class="token punctuation">)</span>
+            
+            <span class="token comment"># Calculate domain-specific metrics</span>
+            domain_metrics <span class="token operator">=</span> self<span class="token punctuation">.</span>calculate_domain_metrics<span class="token punctuation">(</span>query<span class="token punctuation">,</span> retrieved<span class="token punctuation">,</span> relevant_docs<span class="token punctuation">)</span>
+            
+            result <span class="token operator">=</span> EvaluationResult<span class="token punctuation">(</span>
+                query<span class="token operator">=</span>query<span class="token punctuation">,</span>
+                retrieved_docs<span class="token operator">=</span>retrieved<span class="token punctuation">,</span>
+                relevant_docs<span class="token operator">=</span>relevant_docs<span class="token punctuation">,</span>
+                metrics<span class="token operator">=</span>standard_metrics<span class="token punctuation">,</span>
+                domain_specific_metrics<span class="token operator">=</span>domain_metrics
+            <span class="token punctuation">)</span>
+            
+            results<span class="token punctuation">.</span>append<span class="token punctuation">(</span>result<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> results
+    
+    <span class="token keyword">def</span> <span class="token function">calculate_standard_metrics</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> retrieved<span class="token punctuation">:</span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> relevant<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> float<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Extract document IDs from retrieved results</span>
+        retrieved_ids <span class="token operator">=</span> <span class="token punctuation">[</span>doc<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'id'</span><span class="token punctuation">,</span> doc<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'doc_id'</span><span class="token punctuation">,</span> <span class="token builtin">str</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> idx<span class="token punctuation">,</span> doc <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>retrieved<span class="token punctuation">)</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Calculate standard IR metrics</span>
+        relevant_set <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>relevant<span class="token punctuation">)</span>
+        retrieved_set <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>retrieved_ids<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Precision, Recall, F1</span>
+        intersection <span class="token operator">=</span> relevant_set<span class="token punctuation">.</span>intersection<span class="token punctuation">(</span>retrieved_set<span class="token punctuation">)</span>
+        precision <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>intersection<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>retrieved_set<span class="token punctuation">)</span> <span class="token keyword">if</span> retrieved_set <span class="token keyword">else</span> <span class="token number">0</span>
+        recall <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>intersection<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>relevant_set<span class="token punctuation">)</span> <span class="token keyword">if</span> relevant_set <span class="token keyword">else</span> <span class="token number">0</span>
+        f1 <span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> precision <span class="token operator">*</span> recall <span class="token operator">/</span> <span class="token punctuation">(</span>precision <span class="token operator">+</span> recall<span class="token punctuation">)</span> <span class="token keyword">if</span> precision <span class="token operator">+</span> recall <span class="token operator">></span> <span class="token number">0</span> <span class="token keyword">else</span> <span class="token number">0</span>
+        
+        <span class="token comment"># Mean Reciprocal Rank (MRR)</span>
+        mrr <span class="token operator">=</span> <span class="token number">0</span>
+        <span class="token keyword">for</span> i<span class="token punctuation">,</span> doc_id <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>retrieved_ids<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> doc_id <span class="token keyword">in</span> relevant_set<span class="token punctuation">:</span>
+                mrr <span class="token operator">=</span> <span class="token number">1</span> <span class="token operator">/</span> <span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+                <span class="token keyword">break</span>  <span class="token comment"># MRR considers only the first relevant document</span>
+        
+        <span class="token comment"># NDCG@K</span>
+        k_values <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">]</span>
+        ndcg_scores <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        <span class="token keyword">for</span> k <span class="token keyword">in</span> k_values<span class="token punctuation">:</span>
+            <span class="token comment"># Create relevance scores (1 for relevant, 0 for irrelevant)</span>
+            relevance_scores <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span> <span class="token keyword">if</span> doc_id <span class="token keyword">in</span> relevant_set <span class="token keyword">else</span> <span class="token number">0</span> <span class="token keyword">for</span> doc_id <span class="token keyword">in</span> retrieved_ids<span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span><span class="token punctuation">]</span>
+            
+            <span class="token comment"># Create ideal relevance scores (all relevant docs first)</span>
+            ideal_scores <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token builtin">min</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>relevant_set<span class="token punctuation">)</span><span class="token punctuation">,</span> k<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token builtin">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> k <span class="token operator">-</span> <span class="token builtin">len</span><span class="token punctuation">(</span>relevant_set<span class="token punctuation">)</span><span class="token punctuation">)</span>
+            
+            <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>relevance_scores<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token builtin">len</span><span class="token punctuation">(</span>ideal_scores<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                ndcg_at_k <span class="token operator">=</span> ndcg_score<span class="token punctuation">(</span><span class="token punctuation">[</span>ideal_scores<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>relevance_scores<span class="token punctuation">]</span><span class="token punctuation">)</span>
+                ndcg_scores<span class="token punctuation">[</span>f<span class="token string">"ndcg@{k}"</span><span class="token punctuation">]</span> <span class="token operator">=</span> ndcg_at_k
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                ndcg_scores<span class="token punctuation">[</span>f<span class="token string">"ndcg@{k}"</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0.0</span>
+        
+        <span class="token keyword">return</span> <span class="token punctuation">{</span>
+            <span class="token string">"precision"</span><span class="token punctuation">:</span> precision<span class="token punctuation">,</span>
+            <span class="token string">"recall"</span><span class="token punctuation">:</span> recall<span class="token punctuation">,</span>
+            <span class="token string">"f1"</span><span class="token punctuation">:</span> f1<span class="token punctuation">,</span>
+            <span class="token string">"mrr"</span><span class="token punctuation">:</span> mrr<span class="token punctuation">,</span>
+            <span class="token operator">*</span><span class="token operator">*</span>ndcg_scores
+        <span class="token punctuation">}</span>
+    
+    <span class="token keyword">def</span> <span class="token function">calculate_domain_metrics</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> retrieved<span class="token punctuation">:</span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> relevant<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> float<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Calculate domain-specific metrics</span>
+        domain_scores <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        
+        <span class="token keyword">for</span> metric_name<span class="token punctuation">,</span> metric_fn <span class="token keyword">in</span> self<span class="token punctuation">.</span>domain_metrics<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            score <span class="token operator">=</span> metric_fn<span class="token punctuation">(</span>query<span class="token punctuation">,</span> retrieved<span class="token punctuation">,</span> relevant<span class="token punctuation">)</span>
+            domain_scores<span class="token punctuation">[</span>metric_name<span class="token punctuation">]</span> <span class="token operator">=</span> score
+        
+        <span class="token keyword">return</span> domain_scores
+    
+    <span class="token keyword">def</span> <span class="token function">evaluate_precedent_accuracy</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> retrieved<span class="token punctuation">:</span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> relevant<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+        <span class="token comment"># Evaluate how well retrieved documents match legal precedents</span>
+        <span class="token keyword">if</span> <span class="token string">"legal"</span> <span class="token operator">!=</span> self<span class="token punctuation">.</span>domain<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token number">0.0</span>
+        
+        <span class="token comment"># Count how many retrieved docs are actual precedents (court cases)</span>
+        precedent_count <span class="token operator">=</span> <span class="token number">0</span>
+        <span class="token keyword">for</span> doc <span class="token keyword">in</span> retrieved<span class="token punctuation">:</span>
+            <span class="token comment"># This is a simplified check - in practice, would use more sophisticated classification</span>
+            content <span class="token operator">=</span> doc<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'text'</span><span class="token punctuation">,</span> doc<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'content'</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token keyword">if</span> any<span class="token punctuation">(</span>term <span class="token keyword">in</span> content<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> term <span class="token keyword">in</span> <span class="token punctuation">[</span><span class="token string">'v.'</span><span class="token punctuation">,</span> <span class="token string">'court'</span><span class="token punctuation">,</span> <span class="token string">'case'</span><span class="token punctuation">,</span> <span class="token string">'decision'</span><span class="token punctuation">,</span> <span class="token string">'ruling'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                precedent_count <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+        
+        <span class="token keyword">return</span> precedent_count <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>retrieved<span class="token punctuation">)</span> <span class="token keyword">if</span> retrieved <span class="token keyword">else</span> <span class="token number">0.0</span>
+
+    <span class="token keyword">def</span> <span class="token function">evaluate_clinical_accuracy</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> retrieved<span class="token punctuation">:</span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> relevant<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+        <span class="token comment"># Evaluate clinical accuracy of retrieved medical information</span>
+        <span class="token keyword">if</span> <span class="token string">"medical"</span> <span class="token operator">!=</span> self<span class="token punctuation">.</span>domain<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token number">0.0</span>
+        
+        <span class="token comment"># This would involve comparing medical entities and relationships</span>
+        <span class="token comment"># For simplicity, we'll check for medical terminology</span>
+        medical_term_count <span class="token operator">=</span> <span class="token number">0</span>
+        medical_terms <span class="token operator">=</span> <span class="token punctuation">[</span>
+            <span class="token string">'patient'</span><span class="token punctuation">,</span> <span class="token string">'treatment'</span><span class="token punctuation">,</span> <span class="token string">'diagnosis'</span><span class="token punctuation">,</span> <span class="token string">'symptom'</span><span class="token punctuation">,</span> <span class="token string">'therapy'</span><span class="token punctuation">,</span>
+            <span class="token string">'drug'</span><span class="token punctuation">,</span> <span class="token string">'medication'</span><span class="token punctuation">,</span> <span class="token string">'clinical'</span><span class="token punctuation">,</span> <span class="token string">'study'</span><span class="token punctuation">,</span> <span class="token string">'trial'</span>
+        <span class="token punctuation">]</span>
+        
+        <span class="token keyword">for</span> doc <span class="token keyword">in</span> retrieved<span class="token punctuation">:</span>
+            content <span class="token operator">=</span> doc<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'text'</span><span class="token punctuation">,</span> doc<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'content'</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token keyword">if</span> any<span class="token punctuation">(</span>term <span class="token keyword">in</span> content<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> term <span class="token keyword">in</span> medical_terms<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                medical_term_count <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span>
+        
+        <span class="token keyword">return</span> medical_term_count <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>retrieved<span class="token punctuation">)</span> <span class="token keyword">if</span> retrieved <span class="token keyword">else</span> <span class="token number">0.0</span>
+    
+    <span class="token keyword">def</span> <span class="token function">aggregate_results</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> results<span class="token punctuation">:</span> List<span class="token punctuation">[</span>EvaluationResult<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Aggregate evaluation results across all queries</span>
+        <span class="token keyword">if</span> <span class="token keyword">not</span> results<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        
+        <span class="token comment"># Aggregate standard metrics</span>
+        aggregated_metrics <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        <span class="token keyword">for</span> metric <span class="token keyword">in</span> results<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>metrics<span class="token punctuation">.</span>keys<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            values <span class="token operator">=</span> <span class="token punctuation">[</span>result<span class="token punctuation">.</span>metrics<span class="token punctuation">[</span>metric<span class="token punctuation">]</span> <span class="token keyword">for</span> result <span class="token keyword">in</span> results <span class="token keyword">if</span> metric <span class="token keyword">in</span> result<span class="token punctuation">.</span>metrics<span class="token punctuation">]</span>
+            aggregated_metrics<span class="token punctuation">[</span>metric<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>values<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>values<span class="token punctuation">)</span> <span class="token keyword">if</span> values <span class="token keyword">else</span> <span class="token number">0.0</span>
+        
+        <span class="token comment"># Aggregate domain-specific metrics</span>
+        aggregated_domain_metrics <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        <span class="token keyword">if</span> results<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>domain_specific_metrics<span class="token punctuation">:</span>
+            <span class="token keyword">for</span> metric <span class="token keyword">in</span> results<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>domain_specific_metrics<span class="token punctuation">.</span>keys<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                values <span class="token operator">=</span> <span class="token punctuation">[</span>result<span class="token punctuation">.</span>domain_specific_metrics<span class="token punctuation">[</span>metric<span class="token punctuation">]</span> 
+                          <span class="token keyword">for</span> result <span class="token keyword">in</span> results 
+                          <span class="token keyword">if</span> metric <span class="token keyword">in</span> result<span class="token punctuation">.</span>domain_specific_metrics<span class="token punctuation">]</span>
+                aggregated_domain_metrics<span class="token punctuation">[</span>metric<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>values<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>values<span class="token punctuation">)</span> <span class="token keyword">if</span> values <span class="token keyword">else</span> <span class="token number">0.0</span>
+        
+        <span class="token keyword">return</span> <span class="token punctuation">{</span>
+            <span class="token string">"standard_metrics"</span><span class="token punctuation">:</span> aggregated_metrics<span class="token punctuation">,</span>
+            <span class="token string">"domain_metrics"</span><span class="token punctuation">:</span> aggregated_domain_metrics<span class="token punctuation">,</span>
+            <span class="token string">"total_queries"</span><span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>results<span class="token punctuation">)</span>
+        <span class="token punctuation">}</span></code></pre>
+</div>
+</div>
+
+</div>
+<!-- Footer / Pagination -->
+<div class="mt-24 pt-10 border-t border-faded flex justify-between items-center group/footer">
+<a class="flex flex-col items-start gap-2 hover:bg-parchment/50 p-4 -ml-4 rounded transition-colors w-1/2" href="module_04_vector_databases.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Previous Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Vector Databases
+                        </span>
+</a>
+<div class="h-12 w-px bg-faded mx-4"></div>
+<a class="flex flex-col items-end gap-2 hover:bg-parchment/50 p-4 -mr-4 rounded transition-colors w-1/2" href="module_14_advanced_architectures.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Next Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+                            Advanced Architectures
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</span>
+</a>
+</div>
+</article>
+<!-- Right Rail: Marginalia -->
+<aside class="hidden xl:block w-[240px] sticky top-14 h-[calc(100vh-3.5rem)] pt-32 pb-10 pr-10 pl-4 overflow-y-auto">
+<div class="flex flex-col gap-24 relative">
+<!-- Note 1: Aligned with introduction -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[1]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Domain adaptation</strong> significantly improves RAG performance in specialized fields.
+                        </p>
+</div>
+<!-- Note 2: Aligned with domain-specific models -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-12">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[2]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Specialized embeddings</strong> capture domain-specific semantics more effectively.
+                        </p>
+<a class="inline-flex items-center gap-1 mt-2 text-[10px] uppercase tracking-widest text-primary font-bold hover:underline" href="artifact_view.html" target="_blank">
+                            View Code <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+</a>
+</div>
+<!-- Note 3: Aligned with fine-tuning approaches -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-24">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[3]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            Continual learning prevents <code class="bg-parchment px-0.5 rounded-sm">catastrophic forgetting</code> during adaptation.
+                        </p>
+</div>
+<!-- Additional marginalia for module-specific content -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[4]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Domain evaluation</strong> requires specialized metrics beyond standard IR measures.
+                        </p>
+</div>
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[5]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Hierarchical planning</strong> breaks complex tasks into manageable subtasks.
+                        </p>
+</div>
+</div>
+</aside>
+</div>
+</main>
+
+<script>
+    // Function to copy code to clipboard
+    function copyCode(button) {
+        const codeBlock = button.closest('.not-prose').querySelector('pre code');
+        navigator.clipboard.writeText(codeBlock.textContent.trim()).then(() => {
+            const originalIcon = button.querySelector('.material-symbols-outlined').textContent;
+            button.querySelector('.material-symbols-outlined').textContent = 'check';
+            setTimeout(() => {
+                button.querySelector('.material-symbols-outlined').textContent = originalIcon;
+            }, 2000);
+        });
+    }
+
+    // Calculate reading time based on content
+    document.addEventListener('DOMContentLoaded', function() {
+        const content = document.querySelector('.prose-academic').textContent;
+        const wordsPerMinute = 200; // Average reading speed
+        const wordCount = content.split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / wordsPerMinute);
+        
+        document.getElementById('reading-time').textContent = `${readingTime} min read`;
+    });
+
+    // Search button functionality
+    document.getElementById('search-btn').addEventListener('click', function() {
+        window.location.href = 'search_index.html';
+    });
+</script>
+</body></html>

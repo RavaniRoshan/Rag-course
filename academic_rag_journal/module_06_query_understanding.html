@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic RAG Journal - Module 06: Query Understanding</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;family=Geist+Mono:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#b80f12",
+                        "ink": "#2C2420",
+                        "paper": "#F9F7F1",
+                        "parchment": "#EBE6DA",
+                        "graphite": "#8A817C",
+                        "faded": "#D8D1C4",
+                        "library-green": "#4A5D44",
+                    },
+                    fontFamily: {
+                        "display": ["Newsreader", "serif"],
+                        "serif": ["Lora", "serif"],
+                        "mono": ["Geist Mono", "monospace"],
+                        "code": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.5rem"
+                    },
+                    backgroundImage: {
+                        'grain': "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9F7F1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8D1C4;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8A817C;
+        }
+
+        /* Hide scrollbar for clean UI but allow scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Typography overrides */
+        .prose-academic p {
+            margin-top: 1.5em;
+            margin-bottom: 1.5em;
+            line-height: 1.8;
+            font-family: 'Lora', serif;
+            font-size: 19px;
+            color: #2C2420;
+        }
+        .prose-academic h2 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 2em;
+            font-size: 32px;
+            letter-spacing: -0.01em;
+        }
+        .prose-academic h3 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 1.5em;
+            font-size: 24px;
+        }
+
+        /* Sepia Code Theme */
+        .token.comment { color: #8A817C; font-style: italic; }
+        .token.function { color: #9E2A2B; }
+        .token.keyword { color: #b80f12; font-weight: bold; }
+        .token.string { color: #4A5D44; }
+        .token.number { color: #b80f12; }
+        
+        /* Marginalia hover effect */
+        .marginalia-item {
+            transition: transform 0.2s ease;
+        }
+        .marginalia-item:hover {
+            transform: translateX(-4px);
+        }
+        
+        /* Mermaid diagram styling */
+        .mermaid-diagram {
+            background: white;
+            border: 1px solid #D8D1C4;
+            border-radius: 4px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="bg-paper text-ink antialiased selection:bg-primary/20 selection:text-ink min-h-screen flex flex-col font-serif relative">
+<!-- Grain Texture Overlay -->
+<div class="fixed inset-0 pointer-events-none z-50 bg-grain mix-blend-multiply opacity-40"></div>
+<!-- Top Navigation (Minimal) -->
+<header class="sticky top-0 z-40 w-full border-b border-faded bg-paper/95 backdrop-blur-sm h-14 flex items-center justify-between px-6 lg:px-10">
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-2 text-ink hover:text-primary transition-colors group" href="index.html">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-display font-medium text-lg tracking-tight">Syllabus</span>
+</a>
+<div class="h-4 w-px bg-faded mx-2"></div>
+<span class="font-mono text-xs uppercase tracking-wider text-graphite">Module 06</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-2 text-graphite text-xs font-mono">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span id="reading-time">45 min read</span>
+</div>
+<div class="flex gap-3">
+<button id="search-btn" aria-label="Search" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<button aria-label="Settings" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">text_fields</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 flex justify-center w-full relative">
+<div class="w-full max-w-[1440px] flex flex-row">
+<!-- Left Rail: Table of Contents -->
+<aside class="hidden lg:flex w-[240px] flex-col sticky top-14 h-[calc(100vh-3.5rem)] border-r border-faded overflow-y-auto pt-12 pb-10 pl-10 pr-6">
+<nav class="flex flex-col gap-8">
+<div>
+<h4 class="font-mono text-xs uppercase tracking-widest text-graphite mb-4">Contents</h4>
+<ul class="flex flex-col gap-3 font-mono text-[13px] leading-relaxed">
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#introduction">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Introduction
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#query-classification">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Query Classification
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#entity-recognition">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Entity Recognition
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#query-intent-analysis">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Intent Analysis
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#query-expansion">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Query Expansion
+                                </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-8 border-t border-faded">
+<div class="flex flex-col gap-2">
+<span class="font-mono text-[11px] uppercase tracking-widest text-graphite">Progress</span>
+<div class="w-full bg-parchment h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[35%]"></div>
+</div>
+<span class="font-mono text-xs text-ink text-right">35%</span>
+</div>
+</div>
+</nav>
+</aside>
+<!-- Center Stage: The Reader -->
+<article class="flex-1 max-w-[720px] mx-auto pt-16 pb-32 px-6 md:px-12 min-h-screen">
+<!-- Module Header -->
+<header class="mb-16 border-b border-faded pb-12">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-mono text-sm font-medium text-primary px-2 py-1 bg-primary/10 rounded">Module 06</span>
+<span class="font-mono text-sm text-graphite">Advanced RAG Architectures</span>
+</div>
+<h1 class="font-display text-[48px] md:text-[56px] leading-[1.1] font-semibold text-ink tracking-tight mb-6">
+                        Query Understanding &amp; Intent Analysis
+                    </h1>
+<p class="font-serif text-xl text-ink/80 leading-relaxed max-w-[90%]">
+                        Techniques for parsing, classifying, and expanding user queries to improve retrieval accuracy.
+                    </p>
+</header>
+<!-- Content Body -->
+<div class="prose-academic">
+<h2 id="introduction">Introduction to Query Understanding</h2>
+<p>
+Query understanding is a critical component of effective RAG systems. It involves analyzing user queries to extract meaning, identify intent, recognize entities, and determine the appropriate retrieval strategy. Well-understood queries lead to more relevant results and improved user satisfaction.
+</p>
+
+<p>
+Modern query understanding systems leverage natural language processing techniques to:
+</p>
+<ul class="list-disc pl-6 my-6">
+<li>Parse syntactic structure</li>
+<li>Identify named entities</li>
+<li>Classify query intent</li>
+<li>Expand queries with relevant terms</li>
+<li>Handle ambiguity and disambiguation</li>
+</ul>
+
+<h2 id="query-classification">Query Classification</h2>
+<p>
+Query classification determines the type of information the user is seeking. Different query types require different retrieval strategies and may benefit from specialized models or techniques.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">query_classifier.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> transformers <span class="token keyword">import</span> pipeline<span class="token punctuation">,</span> AutoTokenizer<span class="token punctuation">,</span> AutoModelForSequenceClassification
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Any
+<span class="token keyword">import</span> re
+
+<span class="token keyword">class</span> <span class="token class-name">QueryClassifier</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> model_name<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"microsoft/DialoGPT-medium"</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Using a pre-trained model for sequence classification</span>
+        <span class="token comment"># In practice, you'd fine-tune a model on query classification data</span>
+        self<span class="token punctuation">.</span>classifier <span class="token operator">=</span> pipeline<span class="token punctuation">(</span>
+            <span class="token string">"text-classification"</span><span class="token punctuation">,</span>
+            model<span class="token operator">=</span>model_name<span class="token punctuation">,</span>
+            tokenizer<span class="token operator">=</span>model_name
+        <span class="token punctuation">)</span>
+        
+        <span class="token comment"># Define query categories</span>
+        self<span class="token punctuation">.</span>categories <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">"factual"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"what"</span><span class="token punctuation">,</span> <span class="token string">"when"</span><span class="token punctuation">,</span> <span class="token string">"where"</span><span class="token punctuation">,</span> <span class="token string">"who"</span><span class="token punctuation">,</span> <span class="token string">"how much"</span><span class="token punctuation">,</span> <span class="token string">"how many"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token string">"opinion"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"best"</span><span class="token punctuation">,</span> <span class="token string">"worst"</span><span class="token punctuation">,</span> <span class="token string">"should"</span><span class="token punctuation">,</span> <span class="token string">"recommend"</span><span class="token punctuation">,</span> <span class="token string">"think"</span><span class="token punctuation">,</span> <span class="token string">"believe"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token string">"instructional"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"how to"</span><span class="token punctuation">,</span> <span class="token string">"steps to"</span><span class="token punctuation">,</span> <span class="token string">"process"</span><span class="token punctuation">,</span> <span class="token string">"guide"</span><span class="token punctuation">,</span> <span class="token string">"tutorial"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token string">"comparative"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"compare"</span><span class="token punctuation">,</span> <span class="token string">"vs"</span><span class="token punctuation">,</span> <span class="token string">"versus"</span><span class="token punctuation">,</span> <span class="token string">"difference"</span><span class="token punctuation">,</span> <span class="token string">"better"</span><span class="token punctuation">,</span> <span class="token string">"between"</span><span class="token punctuation">]</span>
+        <span class="token punctuation">}</span>
+
+    <span class="token keyword">def</span> <span class="token function">classify</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Heuristic-based classification</span>
+        query_lower <span class="token operator">=</span> query<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        scores <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        
+        <span class="token keyword">for</span> category<span class="token punctuation">,</span> keywords <span class="token keyword">in</span> self<span class="token punctuation">.</span>categories<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            score <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span><span class="token number">1</span> <span class="token keyword">for</span> keyword <span class="token keyword">in</span> keywords <span class="token keyword">if</span> keyword <span class="token keyword">in</span> query_lower<span class="token punctuation">)</span>
+            scores<span class="token punctuation">[</span>category<span class="token punctuation">]</span> <span class="token operator">=</span> score
+        
+        <span class="token comment"># Return the category with highest score</span>
+        dominant_category <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>scores<span class="token punctuation">,</span> key<span class="token operator">=</span>scores<span class="token punctuation">.</span>get<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> <span class="token punctuation">{</span>
+            <span class="token string">'category'</span><span class="token punctuation">:</span> dominant_category<span class="token punctuation">,</span>
+            <span class="token string">'confidence'</span><span class="token punctuation">:</span> scores<span class="token punctuation">[</span>dominant_category<span class="token punctuation">]</span> <span class="token operator">/</span> <span class="token builtin">max</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>scores<span class="token punctuation">.</span>values<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">'scores'</span><span class="token punctuation">:</span> scores
+        <span class="token punctuation">}</span>
+
+    <span class="token keyword">def</span> <span class="token function">get_classification_strategy</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Return the appropriate retrieval strategy based on classification</span>
+        classification <span class="token operator">=</span> self<span class="token punctuation">.</span>classify<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> classification<span class="token punctuation">[</span><span class="token string">'category'</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'factual'</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token string">"precise_keyword_matching"</span>
+        <span class="token keyword">elif</span> classification<span class="token punctuation">[</span><span class="token string">'category'</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'opinion'</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token string">"semantic_similarity_with_sentiment"</span>
+        <span class="token keyword">elif</span> classification<span class="token punctuation">[</span><span class="token string">'category'</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'instructional'</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token string">"step_by_step_procedure_matching"</span>
+        <span class="token keyword">elif</span> classification<span class="token punctuation">[</span><span class="token string">'category'</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'comparative'</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token string">"multi_aspect_comparison_retrieval"</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token string">"general_semantic_retrieval"</span></code></pre>
+</div>
+</div>
+
+<h2 id="entity-recognition">Named Entity Recognition</h2>
+<p>
+Named Entity Recognition (NER) identifies and classifies entities in queries such as people, organizations, locations, dates, and domain-specific terms. These entities can be used to enhance retrieval by focusing on relevant document sections or applying metadata filters.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">ner_extractor.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> spacy
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Any
+
+<span class="token keyword">class</span> <span class="token class-name">EntityExtractor</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> model_name<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"en_core_web_sm"</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">try</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>nlp <span class="token operator">=</span> spacy<span class="token punctuation">.</span>load<span class="token punctuation">(</span>model_name<span class="token punctuation">)</span>
+        <span class="token keyword">except</span> OSError<span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">f"Model {model_name} not found. Install with: python -m spacy download {model_name}"</span><span class="token punctuation">)</span>
+            <span class="token keyword">raise</span>
+    
+    <span class="token keyword">def</span> <span class="token function">extract_entities</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Process the query with spaCy</span>
+        doc <span class="token operator">=</span> self<span class="token punctuation">.</span>nlp<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+        
+        entities <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> ent <span class="token keyword">in</span> doc<span class="token punctuation">.</span>ents<span class="token punctuation">:</span>
+            entities<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">{</span>
+                <span class="token string">'text'</span><span class="token punctuation">:</span> ent<span class="token punctuation">.</span>text<span class="token punctuation">,</span>
+                <span class="token string">'label'</span><span class="token punctuation">:</span> ent<span class="token punctuation">.</span>label_<span class="token punctuation">,</span>
+                <span class="token string">'start'</span><span class="token punctuation">:</span> ent<span class="token punctuation">.</span>start_char<span class="token punctuation">,</span>
+                <span class="token string">'end'</span><span class="token punctuation">:</span> ent<span class="token punctuation">.</span>end_char<span class="token punctuation">,</span>
+                <span class="token string">'description'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>_get_entity_description<span class="token punctuation">(</span>ent<span class="token punctuation">.</span>label_<span class="token punctuation">)</span>
+            <span class="token punctuation">}</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> entities
+    
+    <span class="token keyword">def</span> <span class="token function">_get_entity_description</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> label<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        descriptions <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">"PERSON"</span><span class="token punctuation">:</span> <span class="token string">"People, including fictional"</span><span class="token punctuation">,</span>
+            <span class="token string">"NORP"</span><span class="token punctuation">:</span> <span class="token string">"Nationalities or religious or political groups"</span><span class="token punctuation">,</span>
+            <span class="token string">"FAC"</span><span class="token punctuation">:</span> <span class="token string">"Buildings, airports, highways, bridges, etc."</span><span class="token punctuation">,</span>
+            <span class="token string">"ORG"</span><span class="token punctuation">:</span> <span class="token string">"Companies, agencies, institutions, etc."</span><span class="token punctuation">,</span>
+            <span class="token string">"GPE"</span><span class="token punctuation">:</span> <span class="token string">"Countries, cities, states"</span><span class="token punctuation">,</span>
+            <span class="token string">"LOC"</span><span class="token punctuation">:</span> <span class="token string">"Non-GPE locations, mountain ranges, bodies of water"</span><span class="token punctuation">,</span>
+            <span class="token string">"PRODUCT"</span><span class="token punctuation">:</span> <span class="token string">"Objects, vehicles, foods, etc. (not services)"</span><span class="token punctuation">,</span>
+            <span class="token string">"EVENT"</span><span class="token punctuation">:</span> <span class="token string">"Named hurricanes, battles, wars, sports events, etc."</span><span class="token punctuation">,</span>
+            <span class="token string">"WORK_OF_ART"</span><span class="token punctuation">:</span> <span class="token string">"Titles of books, songs, etc."</span><span class="token punctuation">,</span>
+            <span class="token string">"LAW"</span><span class="token punctuation">:</span> <span class="token string">"Named documents made into laws"</span><span class="token punctuation">,</span>
+            <span class="token string">"LANGUAGE"</span><span class="token punctuation">:</span> <span class="token string">"Any named language"</span><span class="token punctuation">,</span>
+            <span class="token string">"DATE"</span><span class="token punctuation">:</span> <span class="token string">"Absolute or relative dates or periods"</span><span class="token punctuation">,</span>
+            <span class="token string">"TIME"</span><span class="token punctuation">:</span> <span class="token string">"Times smaller than a day"</span><span class="token punctuation">,</span>
+            <span class="token string">"PERCENT"</span><span class="token punctuation">:</span> <span class="token string">"Percentage, including %"</span><span class="token punctuation">,</span>
+            <span class="token string">"MONEY"</span><span class="token punctuation">:</span> <span class="token string">"Monetary values, including unit"</span><span class="token punctuation">,</span>
+            <span class="token string">"QUANTITY"</span><span class="token punctuation">:</span> <span class="token string">"Measurements, as of weight or distance"</span><span class="token punctuation">,</span>
+            <span class="token string">"ORDINAL"</span><span class="token punctuation">:</span> <span class="token string">"First, second, etc."</span><span class="token punctuation">,</span>
+            <span class="token string">"CARDINAL"</span><span class="token punctuation">:</span> <span class="token string">"Numerals that do not fall under another type"</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> descriptions<span class="token punctuation">.</span>get<span class="token punctuation">(</span>label<span class="token punctuation">,</span> <span class="token string">"Unknown entity type"</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">extract_domain_entities</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> domain_keywords<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Extract domain-specific entities that may not be recognized by general NER</span>
+        found_entities <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        query_lower <span class="token operator">=</span> query<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">for</span> keyword <span class="token keyword">in</span> domain_keywords<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> keyword<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">in</span> query_lower<span class="token punctuation">:</span>
+                found_entities<span class="token punctuation">.</span>append<span class="token punctuation">(</span>keyword<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> found_entities</code></pre>
+</div>
+</div>
+
+<h2 id="query-intent-analysis">Intent Analysis</h2>
+<p>
+Intent analysis goes beyond query classification to understand the user's underlying goal. This deeper understanding enables more sophisticated query processing and retrieval strategies.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">intent_analyzer.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> typing <span class="token keyword">import</span> Dict<span class="token punctuation">,</span> Any<span class="token punctuation">,</span> List
+<span class="token keyword">import</span> re
+
+<span class="token keyword">class</span> <span class="token class-name">IntentAnalyzer</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Define intent patterns</span>
+        self<span class="token punctuation">.</span>intent_patterns <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">"comparison"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+                r<span class="token string">'\b(compare|versus|vs\.?|difference between|better than|worse than)\b'</span><span class="token punctuation">,</span>
+                r<span class="token string">'\band\b.*\bvs\.?\b|\bor\b.*\bvs\.?\b'</span>
+            <span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token string">"definition"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+                r<span class="token string">'\b(what is|define|meaning of|explain)\b'</span><span class="token punctuation">,</span>
+                r<span class="token string">'\bwhat does \w+ mean\b'</span>
+            <span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token string">"procedure"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+                r<span class="token string">'\b(how to|steps to|process|procedure|guide|tutorial)\b'</span><span class="token punctuation">,</span>
+                r<span class="token string">'\bhow do i\b|\bhow can i\b'</span>
+            <span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token string">"evaluation"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+                r<span class="token string">'\b(best|worst|top|bottom|recommended|suggest)\b'</span><span class="token punctuation">,</span>
+                r<span class="token string">'\bshould i\b|\bwhich one\b'</span>
+            <span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token string">"causal"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+                r<span class="token string">'\b(why|because|due to|caused by|reason for)\b'</span><span class="token punctuation">,</span>
+                r<span class="token string">'\bwhy is\b|\bwhy did\b|\bwhy does\b'</span>
+            <span class="token punctuation">]</span>
+        <span class="token punctuation">}</span>
+        
+        <span class="token comment"># Define intent-specific actions</span>
+        self<span class="token punctuation">.</span>intent_actions <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">"comparison"</span><span class="token punctuation">:</span> <span class="token string">"retrieve_multiple_documents_for_comparison"</span><span class="token punctuation">,</span>
+            <span class="token string">"definition"</span><span class="token punctuation">:</span> <span class="token string">"focus_on_explanatory_content"</span><span class="token punctuation">,</span>
+            <span class="token string">"procedure"</span><span class="token punctuation">:</span> <span class="token string">"retrieve_step_by_step_guides"</span><span class="token punctuation">,</span>
+            <span class="token string">"evaluation"</span><span class="token punctuation">:</span> <span class="token string">"retrieve_opinion_and_review_content"</span><span class="token punctuation">,</span>
+            <span class="token string">"causal"</span><span class="token punctuation">:</span> <span class="token string">"retrieve_explanatory_and_reasoning_content"</span>
+        <span class="token punctuation">}</span>
+
+    <span class="token keyword">def</span> <span class="token function">analyze_intent</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Score each intent based on pattern matches</span>
+        intent_scores <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        
+        <span class="token keyword">for</span> intent<span class="token punctuation">,</span> patterns <span class="token keyword">in</span> self<span class="token punctuation">.</span>intent_patterns<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            score <span class="token operator">=</span> <span class="token number">0</span>
+            <span class="token keyword">for</span> pattern <span class="token keyword">in</span> patterns<span class="token punctuation">:</span>
+                matches <span class="token operator">=</span> re<span class="token punctuation">.</span>findall<span class="token punctuation">(</span>pattern<span class="token punctuation">,</span> query<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> re<span class="token punctuation">.</span>I<span class="token punctuation">)</span>
+                score <span class="token operator">+</span><span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>matches<span class="token punctuation">)</span>
+            intent_scores<span class="token punctuation">[</span>intent<span class="token punctuation">]</span> <span class="token operator">=</span> score
+        
+        <span class="token comment"># Determine dominant intent</span>
+        dominant_intent <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>intent_scores<span class="token punctuation">,</span> key<span class="token operator">=</span>intent_scores<span class="token punctuation">.</span>get<span class="token punctuation">)</span>
+        confidence <span class="token operator">=</span> intent_scores<span class="token punctuation">[</span>dominant_intent<span class="token punctuation">]</span> <span class="token operator">/</span> <span class="token builtin">max</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>intent_scores<span class="token punctuation">.</span>values<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> <span class="token punctuation">{</span>
+            <span class="token string">'intent'</span><span class="token punctuation">:</span> dominant_intent<span class="token punctuation">,</span>
+            <span class="token string">'confidence'</span><span class="token punctuation">:</span> confidence<span class="token punctuation">,</span>
+            <span class="token string">'scores'</span><span class="token punctuation">:</span> intent_scores<span class="token punctuation">,</span>
+            <span class="token string">'action'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>intent_actions<span class="token punctuation">.</span>get<span class="token punctuation">(</span>dominant_intent<span class="token punctuation">,</span> <span class="token string">"general_retrieval"</span><span class="token punctuation">)</span>
+        <span class="token punctuation">}</span>
+
+    <span class="token keyword">def</span> <span class="token function">get_retrieval_strategy</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        intent_analysis <span class="token operator">=</span> self<span class="token punctuation">.</span>analyze_intent<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Define retrieval strategies based on intent</span>
+        strategies <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">"comparison"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+                <span class="token string">"strategy"</span><span class="token punctuation">:</span> <span class="token string">"multi_document_comparison"</span><span class="token punctuation">,</span>
+                <span class="token string">"params"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span><span class="token string">"include_multiple_perspectives"</span><span class="token punctuation">:</span> <span class="token boolean">True</span><span class="token punctuation">,</span> <span class="token string">"highlight_differences"</span><span class="token punctuation">:</span> <span class="token boolean">True</span><span class="token punctuation">}</span>
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token string">"definition"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+                <span class="token string">"strategy"</span><span class="token punctuation">:</span> <span class="token string">"explanatory_content_focus"</span><span class="token punctuation">,</span>
+                <span class="token string">"params"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span><span class="token string">"prioritize_definitions"</span><span class="token punctuation">:</span> <span class="token boolean">True</span><span class="token punctuation">,</span> <span class="token string">"include_examples"</span><span class="token punctuation">:</span> <span class="token boolean">True</span><span class="token punctuation">}</span>
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token string">"procedure"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+                <span class="token string">"strategy"</span><span class="token punctuation">:</span> <span class="token string">"step_by_step_retrieval"</span><span class="token punctuation">,</span>
+                <span class="token string">"params"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span><span class="token string">"ordered_steps"</span><span class="token punctuation">:</span> <span class="token boolean">True</span><span class="token punctuation">,</span> <span class="token string">"sequential_logic"</span><span class="token punctuation">:</span> <span class="token boolean">True</span><span class="token punctuation">}</span>
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token string">"evaluation"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+                <span class="token string">"strategy"</span><span class="token punctuation">:</span> <span class="token string">"opinion_based_retrieval"</span><span class="token punctuation">,</span>
+                <span class="token string">"params"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span><span class="token string">"sentiment_aware"</span><span class="token punctuation">:</span> <span class="token boolean">True</span><span class="token punctuation">,</span> <span class="token string">"pro_con_detection"</span><span class="token punctuation">:</span> <span class="token boolean">True</span><span class="token punctuation">}</span>
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token string">"causal"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+                <span class="token string">"strategy"</span><span class="token punctuation">:</span> <span class="token string">"reasoning_based_retrieval"</span><span class="token punctuation">,</span>
+                <span class="token string">"params"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span><span class="token string">"cause_effect_relationships"</span><span class="token punctuation">:</span> <span class="token boolean">True</span><span class="token punctuation">,</span> <span class="token string">"explanatory_depth"</span><span class="token punctuation">:</span> <span class="token boolean">True</span><span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        
+        <span class="token keyword">return</span> strategies<span class="token punctuation">.</span>get<span class="token punctuation">(</span>intent_analysis<span class="token punctuation">[</span><span class="token string">'intent'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> 
+                       <span class="token punctuation">{</span><span class="token string">"strategy"</span><span class="token punctuation">:</span> <span class="token string">"general_semantic_retrieval"</span><span class="token punctuation">,</span> <span class="token string">"params"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token punctuation">)</span></code></pre>
+</div>
+</div>
+
+<h2 id="query-expansion">Query Expansion Techniques</h2>
+<p>
+Query expansion enhances the original query with related terms to improve retrieval coverage. This is particularly important in RAG systems where expanded queries can help retrieve more relevant documents.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">query_expander.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> sentence_transformers <span class="token keyword">import</span> SentenceTransformer
+<span class="token keyword">from</span> transformers <span class="token keyword">import</span> pipeline
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>feature_extraction<span class="token punctuation">.</span>text <span class="token keyword">import</span> TfidfVectorizer
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics<span class="token punctuation">.</span>pairwise <span class="token keyword">import</span> cosine_similarity
+
+<span class="token keyword">class</span> <span class="token class-name">QueryExpander</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> model_name<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"all-MiniLM-L6-v2"</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>model <span class="token operator">=</span> SentenceTransformer<span class="token punctuation">(</span>model_name<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>keyword_extractor <span class="token operator">=</span> pipeline<span class="token punctuation">(</span>
+            <span class="token string">"token-classification"</span><span class="token punctuation">,</span> 
+            model<span class="token operator">=</span><span class="token string">"shahrukhx01/bert-mini-finetuned-squad"</span><span class="token punctuation">,</span>
+            grouped_entities<span class="token operator">=</span><span class="token boolean">True</span>
+        <span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">expand_with_synonyms</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> top_k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># This is a simplified approach - in practice, use WordNet or a dedicated thesaurus</span>
+        <span class="token comment"># For demonstration, we'll use semantic similarity to find related terms</span>
+        
+        <span class="token comment"># Encode the original query</span>
+        query_embedding <span class="token operator">=</span> self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>query<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Generate potential expansions (this would come from a thesaurus in practice)</span>
+        potential_expansions <span class="token operator">=</span> <span class="token punctuation">[</span>
+            <span class="token string">"algorithm"</span><span class="token punctuation">,</span> <span class="token string">"method"</span><span class="token punctuation">,</span> <span class="token string">"approach"</span><span class="token punctuation">,</span> <span class="token string">"technique"</span><span class="token punctuation">,</span> <span class="token string">"procedure"</span><span class="token punctuation">,</span>
+            <span class="token string">"model"</span><span class="token punctuation">,</span> <span class="token string">"framework"</span><span class="token punctuation">,</span> <span class="token string">"system"</span><span class="token punctuation">,</span> <span class="token string">"architecture"</span><span class="token punctuation">,</span> <span class="token string">"design"</span><span class="token punctuation">,</span>
+            <span class="token string">"data"</span><span class="token punctuation">,</span> <span class="token string">"information"</span><span class="token punctuation">,</span> <span class="token string">"knowledge"</span><span class="token punctuation">,</span> <span class="token string">"content"</span><span class="token punctuation">,</span> <span class="token string">"facts"</span>
+        <span class="token punctuation">]</span>
+        
+        <span class="token comment"># Encode potential expansions</span>
+        expansion_embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span>potential_expansions<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Calculate similarities</span>
+        similarities <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span>query_embedding<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> expansion_embeddings<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Get top-k most similar expansions</span>
+        top_indices <span class="token operator">=</span> np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>similarities<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">:</span>top_k<span class="token punctuation">]</span>
+        
+        <span class="token keyword">return</span> <span class="token punctuation">[</span>potential_expansions<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> top_indices <span class="token keyword">if</span> similarities<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">></span> <span class="token number">0.1</span><span class="token punctuation">]</span>  <span class="token comment"># Threshold for relevance</span>
+    
+    <span class="token keyword">def</span> <span class="token function">expand_with_context</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> context_docs<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> top_k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Expand query based on terms that appear in relevant context documents</span>
+        <span class="token keyword">if</span> <span class="token keyword">not</span> context_docs<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Combine all context documents</span>
+        all_text <span class="token operator">=</span> <span class="token string">" "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>context_docs<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Use TF-IDF to find important terms in context that are not in the query</span>
+        vectorizer <span class="token operator">=</span> TfidfVectorizer<span class="token punctuation">(</span>stop_words<span class="token operator">=</span><span class="token string">'english'</span><span class="token punctuation">,</span> max_features<span class="token operator">=</span><span class="token number">100</span><span class="token punctuation">)</span>
+        tfidf_matrix <span class="token operator">=</span> vectorizer<span class="token punctuation">.</span>fit_transform<span class="token punctuation">(</span><span class="token punctuation">[</span>query<span class="token punctuation">,</span> all_text<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Get feature names</span>
+        feature_names <span class="token operator">=</span> vectorizer<span class="token punctuation">.</span>get_feature_names_out<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Get TF-IDF scores for context (second document)</span>
+        context_scores <span class="token operator">=</span> tfidf_matrix<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>toarray<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Get query terms</span>
+        query_terms <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>query<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Find terms in context that are not in query, sorted by TF-IDF score</span>
+        expansion_candidates <span class="token operator">=</span> <span class="token punctuation">[</span>
+            <span class="token punctuation">(</span>feature_names<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> context_scores<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> 
+            <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>feature_names<span class="token punctuation">)</span><span class="token punctuation">)</span> 
+            <span class="token keyword">if</span> feature_names<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token keyword">not</span> <span class="token keyword">in</span> query_terms <span class="token keyword">and</span> context_scores<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">></span> <span class="token number">0</span>
+        <span class="token punctuation">]</span>
+        
+        <span class="token comment"># Sort by TF-IDF score and return top-k</span>
+        expansion_candidates<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> <span class="token punctuation">[</span>term <span class="token keyword">for</span> term<span class="token punctuation">,</span> score <span class="token keyword">in</span> expansion_candidates<span class="token punctuation">[</span><span class="token punctuation">:</span>top_k<span class="token punctuation">]</span><span class="token punctuation">]</span>
+    
+    <span class="token keyword">def</span> <span class="token function">generate_expanded_query</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> context_docs<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Combine different expansion techniques</span>
+        expanded_terms <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Add synonym-based expansions</span>
+        synonym_expansions <span class="token operator">=</span> self<span class="token punctuation">.</span>expand_with_synonyms<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+        expanded_terms<span class="token punctuation">.</span>extend<span class="token punctuation">(</span>synonym_expansions<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Add context-based expansions if context is provided</span>
+        <span class="token keyword">if</span> context_docs<span class="token punctuation">:</span>
+            context_expansions <span class="token operator">=</span> self<span class="token punctuation">.</span>expand_with_context<span class="token punctuation">(</span>query<span class="token punctuation">,</span> context_docs<span class="token punctuation">)</span>
+            expanded_terms<span class="token punctuation">.</span>extend<span class="token punctuation">(</span>context_expansions<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Remove duplicates while preserving order</span>
+        unique_expansions <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> term <span class="token keyword">in</span> expanded_terms<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> term <span class="token keyword">not</span> <span class="token keyword">in</span> unique_expansions<span class="token punctuation">:</span>
+                unique_expansions<span class="token punctuation">.</span>append<span class="token punctuation">(</span>term<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Create expanded query</span>
+        expanded_query <span class="token operator">=</span> query <span class="token operator">+</span> <span class="token string">" "</span> <span class="token operator">+</span> <span class="token string">" "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>unique_expansions<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># Limit to 5 additional terms</span>
+        
+        <span class="token keyword">return</span> expanded_query<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+</div>
+</div>
+
+</div>
+<!-- Footer / Pagination -->
+<div class="mt-24 pt-10 border-t border-faded flex justify-between items-center group/footer">
+<a class="flex flex-col items-start gap-2 hover:bg-parchment/50 p-4 -ml-4 rounded transition-colors w-1/2" href="module_05_hybrid_search.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Previous Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Hybrid Search
+                        </span>
+</a>
+<div class="h-12 w-px bg-faded mx-4"></div>
+<a class="flex flex-col items-end gap-2 hover:bg-parchment/50 p-4 -mr-4 rounded transition-colors w-1/2" href="module_07_multi_query_expansion.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Next Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+                            Multi-Query Expansion
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</span>
+</a>
+</div>
+</article>
+<!-- Right Rail: Marginalia -->
+<aside class="hidden xl:block w-[240px] sticky top-14 h-[calc(100vh-3.5rem)] pt-32 pb-10 pr-10 pl-4 overflow-y-auto">
+<div class="flex flex-col gap-24 relative">
+<!-- Note 1: Aligned with introduction -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[1]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Query understanding</strong> is fundamental to effective retrieval in RAG systems.
+                        </p>
+</div>
+<!-- Note 2: Aligned with query classification -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-12">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[2]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Query classification</strong> determines appropriate retrieval strategies.
+                        </p>
+<a class="inline-flex items-center gap-1 mt-2 text-[10px] uppercase tracking-widest text-primary font-bold hover:underline" href="artifact_view.html" target="_blank">
+                            View Code <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+</a>
+</div>
+<!-- Note 3: Aligned with intent analysis -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-24">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[3]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <code class="bg-parchment px-0.5 rounded-sm">Intent analysis</code> enables sophisticated query processing.
+                        </p>
+</div>
+<!-- Additional marginalia for module-specific content -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[4]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Entity recognition</strong> helps identify key concepts in queries.
+                        </p>
+</div>
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[5]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Query expansion</strong> improves retrieval coverage and relevance.
+                        </p>
+</div>
+</div>
+</aside>
+</div>
+</main>
+
+<script>
+    // Function to copy code to clipboard
+    function copyCode(button) {
+        const codeBlock = button.closest('.not-prose').querySelector('pre code');
+        navigator.clipboard.writeText(codeBlock.textContent.trim()).then(() => {
+            const originalIcon = button.querySelector('.material-symbols-outlined').textContent;
+            button.querySelector('.material-symbols-outlined').textContent = 'check';
+            setTimeout(() => {
+                button.querySelector('.material-symbols-outlined').textContent = originalIcon;
+            }, 2000);
+        });
+    }
+
+    // Calculate reading time based on content
+    document.addEventListener('DOMContentLoaded', function() {
+        const content = document.querySelector('.prose-academic').textContent;
+        const wordsPerMinute = 200; // Average reading speed
+        const wordCount = content.split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / wordsPerMinute);
+        
+        document.getElementById('reading-time').textContent = `${readingTime} min read`;
+    });
+
+    // Search button functionality
+    document.getElementById('search-btn').addEventListener('click', function() {
+        window.location.href = 'search_index.html';
+    });
+</script>
+</body></html>

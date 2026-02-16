@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic RAG Journal - The Artifact</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Lora:ital,wght@0,400..700;1,400..700&amp;family=Geist+Mono:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              ink: "#2C2420",
+              paper: "#F9F7F1",
+              parchment: "#EBE6DA",
+              border: "#D8D1C4",
+              accent: "#9E2A2B",
+              secondary: "#4A5D44",
+              muted: "#8A817C",
+              // Mapping provided theme config to our design tokens
+              primary: "#9E2A2B",
+              "background-light": "#F9F7F1",
+              "background-dark": "#221011",
+            },
+            fontFamily: {
+              display: ["Newsreader", "serif"],
+              body: ["Lora", "serif"],
+              mono: ["Geist Mono", "monospace"],
+              code: ["JetBrains Mono", "monospace"],
+            },
+            borderRadius: {
+              DEFAULT: "0.125rem", // 2px
+              lg: "0.25rem",
+              xl: "0.5rem",
+              full: "0.75rem",
+            },
+            backgroundImage: {
+              'noise': "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIi8+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNjY2MiLz4KPC9zdmc+')",
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        /* Custom scrollbar for the code block */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #EBE6DA;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #D8D1C4;
+            border-radius: 2px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #8A817C;
+        }
+
+        /* Subtle grain overlay */
+        .grain-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+        }
+
+        /* Syntax Highlighting Colors - Sepia Theme */
+        .token.keyword { color: #9E2A2B; font-weight: bold; } /* Editorial Red */
+        .token.class-name { color: #2C2420; font-weight: bold; } /* Deep Ink */
+        .token.function { color: #4A5D44; } /* Library Green */
+        .token.string { color: #4A5D44; } /* Library Green */
+        .token.comment { color: #8A817C; font-style: italic; } /* Graphite */
+        .token.operator { color: #8A817C; }
+        .token.number { color: #9E2A2B; }
+
+        .code-line {
+            counter-increment: line;
+            position: relative;
+            padding-left: 1rem;
+        }
+        .code-line::before {
+            content: counter(line);
+            position: absolute;
+            left: -2.5rem;
+            width: 2rem;
+            text-align: right;
+            color: #8A817C;
+            font-size: 0.75rem;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body class="bg-paper text-ink font-body antialiased selection:bg-accent/20 selection:text-accent overflow-hidden h-screen flex flex-col">
+<!-- Texture Overlay -->
+<div class="grain-overlay"></div>
+<!-- Header Navigation -->
+<header class="flex-none border-b border-border bg-paper z-40 px-6 py-4 flex justify-between items-center h-16">
+<div class="flex items-center gap-6">
+<a class="group flex items-center gap-2 text-ink hover:text-accent transition-colors" href="module_04_vector_databases.html">
+<span class="material-symbols-outlined text-lg">arrow_back</span>
+<span class="font-mono text-xs uppercase tracking-wider font-medium">Return to Article</span>
+</a>
+<div class="h-4 w-px bg-border"></div>
+<h1 class="font-display font-semibold text-xl tracking-tight text-ink">Module 04: Contextual Reranking Implementation</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-parchment rounded border border-border text-xs font-mono text-muted">
+<span class="material-symbols-outlined text-sm">code</span>
+<span>Python 3.10</span>
+</div>
+<button class="flex items-center justify-center gap-2 px-4 py-1.5 bg-ink text-paper hover:bg-accent transition-colors rounded text-xs font-mono font-medium tracking-wide">
+<span class="material-symbols-outlined text-sm">download</span>
+                Download Source
+            </button>
+</div>
+</header>
+<!-- Main Split View -->
+<main class="flex-1 flex overflow-hidden">
+<!-- Left Pane: Narrative Explanation -->
+<div class="w-1/2 overflow-y-auto custom-scrollbar border-r border-border bg-paper p-12 pb-32">
+<div class="max-w-xl mx-auto space-y-12">
+<div class="space-y-4">
+<span class="font-mono text-xs font-medium text-accent uppercase tracking-widest">Part 1: Setup</span>
+<h2 class="font-display text-3xl font-bold text-ink leading-tight">Initialization &amp; Dependencies</h2>
+<p class="text-lg leading-relaxed text-ink/90">
+                        The foundation of our reranker relies on the <span class="font-mono text-sm bg-parchment px-1 rounded text-accent">CrossEncoder</span> architecture from the Sentence Transformers library. Unlike bi-encoders, which process queries and documents independently, this approach feeds both inputs simultaneously into the transformer model.
+                    </p>
+<p class="text-lg leading-relaxed text-ink/90">
+                        We begin by importing necessary libraries. Note specifically the usage of <span class="font-mono text-sm bg-parchment px-1 rounded text-accent">torch</span> for tensor operations, which allows us to efficiently manage the logits produced during the inference phase.
+                    </p>
+</div>
+<div class="relative group cursor-pointer transition-all duration-300">
+<div class="absolute -left-6 top-0 bottom-0 w-1 bg-border group-hover:bg-accent transition-colors"></div>
+<div class="space-y-4 pl-4 group-hover:bg-parchment/30 -ml-4 rounded-r p-4 transition-colors">
+<span class="font-mono text-xs font-medium text-muted uppercase tracking-widest">Part 2: The Class Structure</span>
+<h3 class="font-display text-2xl font-semibold text-ink">Defining the ContextualReranker</h3>
+<p class="text-lg leading-relaxed text-ink/90">
+                            Here we define the core class. The constructor accepts a <span class="font-mono text-sm bg-parchment px-1 rounded text-accent">model_name</span> string, defaulting to the robust MS Marco distilled model.
+                        </p>
+<p class="text-lg leading-relaxed text-ink/90">
+                            This initialization phase is critical. We force the device to CUDA if available, ensuring that the heavy lifting of cross-attention calculation doesn't bottleneck the retrieval pipeline on the CPU.
+                        </p>
+</div>
+</div>
+<div class="space-y-4 opacity-60 hover:opacity-100 transition-opacity duration-300">
+<span class="font-mono text-xs font-medium text-muted uppercase tracking-widest">Part 3: Inference Logic</span>
+<h3 class="font-display text-2xl font-semibold text-ink">The Rank Method</h3>
+<p class="text-lg leading-relaxed text-ink/90">
+                        The <span class="font-mono text-sm bg-parchment px-1 rounded text-accent">rank()</span> method is where the magic happens. It takes a query and a list of candidate documents.
+                    </p>
+<p class="text-lg leading-relaxed text-ink/90">
+                        It first pairs the query with each document, creating a list of tuples. The model then predicts scores for these pairs. Finally, we sort the original documents based on these new semantic scores in descending order, effectively bubbling the most relevant context to the top.
+                    </p>
+</div>
+<div class="p-6 bg-parchment/50 border border-border rounded">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-accent mt-0.5">info</span>
+<div class="space-y-2">
+<h4 class="font-display font-bold text-ink">Performance Note</h4>
+<p class="text-sm font-body text-ink/80 leading-relaxed">
+                                While accurate, cross-encoders are computationally expensive. In production, this <span class="font-mono text-xs">rank()</span> method should only be applied to the top 50-100 results from a faster initial retrieval step (like BM25 or a vector search).
+                            </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Pane: Code Artifact -->
+<div class="w-1/2 flex flex-col bg-parchment relative">
+<!-- Code Toolbar -->
+<div class="flex-none flex items-center justify-between px-6 py-3 border-b border-border bg-parchment/90 backdrop-blur sticky top-0 z-10">
+<span class="font-mono text-sm text-ink font-bold">reranker_pipeline.py</span>
+<div class="flex gap-3">
+<button class="text-muted hover:text-ink transition-colors p-1" title="Copy Code" onclick="copyCode()">
+<span class="material-symbols-outlined text-lg">content_copy</span>
+</button>
+<button class="text-muted hover:text-ink transition-colors p-1" title="Toggle Wrap">
+<span class="material-symbols-outlined text-lg">wrap_text</span>
+</button>
+</div>
+</div>
+<!-- Code Content -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-8 pl-12 font-code text-sm leading-7">
+<pre class="relative"><code class="language-python block">
+<span class="code-line"><span class="token comment"># Standard library imports</span></span>
+<span class="code-line"><span class="token keyword">from</span> typing <span class="token keyword">import</span> List, Tuple, Dict, Any</span>
+<span class="code-line"><span class="token keyword">import</span> time</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="token comment"># Third-party imports for tensor operations and modeling</span></span>
+<span class="code-line"><span class="token keyword">import</span> torch</span>
+<span class="code-line"><span class="token keyword">import</span> numpy <span class="token keyword">as</span> np</span>
+<span class="code-line"><span class="token keyword">from</span> sentence_transformers <span class="token keyword">import</span> CrossEncoder</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="token comment"># -----------------------------------------------------------------------------</span></span>
+<span class="code-line"><span class="token comment"># Configuration Constants</span></span>
+<span class="code-line"><span class="token comment"># -----------------------------------------------------------------------------</span></span>
+<span class="code-line"><span class="token class-name">DEFAULT_MODEL</span> <span class="token operator">=</span> <span class="token string">"cross-encoder/ms-marco-MiniLM-L-6-v2"</span></span>
+<span class="code-line"><span class="token class-name">MAX_LENGTH</span> <span class="token operator">=</span> <span class="token number">512</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="token comment"># Active Highlight Area Start (Matches Part 2 in Left Pane)</span></span>
+<div class="absolute left-[-2rem] right-[-2rem] bg-border/40 border-l-4 border-accent pointer-events-none mix-blend-multiply" style="top: 390px; height: 310px;"></div>
+<span class="code-line"><span class="token keyword">class</span> <span class="token class-name">ContextualReranker</span>:</span>
+<span class="code-line">    <span class="token string">"""</span></span>
+<span class="code-line"><span class="token string">    A wrapper class for Cross-Encoder models to re-rank retrieved documents</span></span>
+<span class="code-line"><span class="token string">    based on their relevance to a specific query.</span></span>
+<span class="code-line"><span class="token string">    """</span></span>
+<span class="code-line">    </span>
+<span class="code-line">    <span class="token keyword">def</span> <span class="token function">__init__</span>(self, model_name: str = <span class="token class-name">DEFAULT_MODEL</span>, device: str = <span class="token keyword">None</span>):</span>
+<span class="code-line">        <span class="token string">"""</span></span>
+<span class="code-line"><span class="token string">        Initialize the CrossEncoder model.</span></span>
+<span class="code-line"><span class="token string">        </span></span>
+<span class="code-line"><span class="token string">        Args:</span></span>
+<span class="code-line"><span class="token string">            model_name (str): HuggingFace model identifier.</span></span>
+<span class="code-line"><span class="token string">            device (str): Computation device ('cuda' or 'cpu'). Auto-detected if None.</span></span>
+<span class="code-line"><span class="token string">        """</span></span>
+<span class="code-line">        <span class="token keyword">if</span> device <span class="token keyword">is</span> <span class="token keyword">None</span>:</span>
+<span class="code-line">            self.device <span class="token operator">=</span> <span class="token string">"cuda"</span> <span class="token keyword">if</span> torch.cuda.is_available() <span class="token keyword">else</span> <span class="token string">"cpu"</span></span>
+<span class="code-line">        <span class="token keyword">else</span>:</span>
+<span class="code-line">            self.device <span class="token operator">=</span> device</span>
+<span class="code-line">            </span>
+<span class="code-line">        <span class="token keyword">print</span>(<span class="token string">f"Loading Reranker on {self.device}..."</span>)</span>
+<span class="code-line">        self.model <span class="token operator">=</span> <span class="token class-name">CrossEncoder</span>(</span>
+<span class="code-line">            model_name, </span>
+<span class="code-line">            max_length=<span class="token class-name">MAX_LENGTH</span>, </span>
+<span class="code-line">            device=self.device</span>
+<span class="code-line">        )</span>
+<span class="code-line"><span class="token comment"># Active Highlight Area End</span></span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="token keyword">def</span> <span class="token function">rank</span>(self, query: str, docs: List[str], top_k: int = <span class="token keyword">None</span>) -&gt; List[Dict[str, Any]]:</span>
+<span class="code-line">        <span class="token string">"""</span></span>
+<span class="code-line"><span class="token string">        Re-ranks a list of documents based on the query.</span></span>
+<span class="code-line"><span class="token string">        """</span></span>
+<span class="code-line">        <span class="token keyword">if</span> <span class="token keyword">not</span> docs:</span>
+<span class="code-line">            <span class="token keyword">return</span> []</span>
+<span class="code-line">            </span>
+<span class="code-line">        <span class="token comment"># Prepare pairs for the CrossEncoder: [[query, doc1], [query, doc2], ...]</span></span>
+<span class="code-line">        model_inputs <span class="token operator">=</span> [[query, doc] <span class="token keyword">for</span> doc <span class="token keyword">in</span> docs]</span>
+<span class="code-line">        </span>
+<span class="code-line">        <span class="token comment"># Predict scores</span></span>
+<span class="code-line">        scores <span class="token operator">=</span> self.model.predict(model_inputs)</span>
+<span class="code-line">        </span>
+<span class="code-line">        <span class="token comment"># Combine docs with scores</span></span>
+<span class="code-line">        results <span class="token operator">=</span> []</span>
+<span class="code-line">        <span class="token keyword">for</span> i, doc <span class="token keyword">in</span> enumerate(docs):</span>
+<span class="code-line">            results.append({</span>
+<span class="code-line">                <span class="token string">"text"</span>: doc,</span>
+<span class="code-line">                <span class="token string">"score"</span>: float(scores[i]),</span>
+<span class="code-line">                <span class="token string">"original_index"</span>: i</span>
+<span class="code-line">            })</span>
+<span class="code-line">            </span>
+<span class="code-line">        <span class="token comment"># Sort by score descending</span></span>
+<span class="code-line">        results <span class="token operator">=</span> sorted(results, key=<span class="token keyword">lambda</span> x: x[<span class="token string">"score"</span>], reverse=<span class="token keyword">True</span>)</span>
+<span class="code-line">        </span>
+<span class="code-line">        <span class="token keyword">if</span> top_k:</span>
+<span class="code-line">            results <span class="token operator">=</span> results[:top_k]</span>
+<span class="code-line">            </span>
+<span class="code-line">        <span class="token keyword">return</span> results</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="token comment"># -----------------------------------------------------------------------------</span></span>
+<span class="code-line"><span class="token comment"># Usage Example</span></span>
+<span class="code-line"><span class="token comment"># -----------------------------------------------------------------------------</span></span>
+<span class="code-line"><span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span>:</span>
+<span class="code-line">    reranker <span class="token operator">=</span> <span class="token class-name">ContextualReranker</span>()</span>
+<span class="code-line">    q <span class="token operator">=</span> <span class="token string">"What is the capital of France?"</span></span>
+<span class="code-line">    candidates <span class="token operator">=</span> [</span>
+<span class="code-line">        <span class="token string">"Berlin is the capital of Germany."</span>,</span>
+<span class="code-line">        <span class="token string">"Paris is the capital of France."</span>,</span>
+<span class="code-line">        <span class="token string">"Lyon is a major city in France."</span></span>
+<span class="code-line">    ]</span>
+<span class="code-line">    ranked_docs <span class="token operator">=</span> reranker.rank(q, candidates)</span>
+<span class="code-line">    <span class="token keyword">print</span>(ranked_docs)</span>
+</code></pre>
+</div>
+<!-- Bottom Fade for infinite scroll feel -->
+<div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-parchment to-transparent pointer-events-none"></div>
+</div>
+</main>
+
+<script>
+    function copyCode() {
+        const codeElement = document.querySelector('pre code');
+        const text = codeElement.innerText;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            // Show temporary success indicator
+            const copyButton = document.querySelector('[title="Copy Code"]');
+            const originalIcon = copyButton.innerHTML;
+            copyButton.innerHTML = '<span class="material-symbols-outlined text-lg">check</span>';
+            
+            setTimeout(() => {
+                copyButton.innerHTML = originalIcon;
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy code: ', err);
+        });
+    }
+</script>
+</body></html>

@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic RAG Journal - Module 14: Advanced Architectures</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;family=Geist+Mono:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#b80f12",
+                        "ink": "#2C2420",
+                        "paper": "#F9F7F1",
+                        "parchment": "#EBE6DA",
+                        "graphite": "#8A817C",
+                        "faded": "#D8D1C4",
+                        "library-green": "#4A5D44",
+                    },
+                    fontFamily: {
+                        "display": ["Newsreader", "serif"],
+                        "serif": ["Lora", "serif"],
+                        "mono": ["Geist Mono", "monospace"],
+                        "code": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.5rem"
+                    },
+                    backgroundImage: {
+                        'grain': "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9F7F1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8D1C4;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8A817C;
+        }
+
+        /* Hide scrollbar for clean UI but allow scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Typography overrides */
+        .prose-academic p {
+            margin-top: 1.5em;
+            margin-bottom: 1.5em;
+            line-height: 1.8;
+            font-family: 'Lora', serif;
+            font-size: 19px;
+            color: #2C2420;
+        }
+        .prose-academic h2 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 2em;
+            font-size: 32px;
+            letter-spacing: -0.01em;
+        }
+        .prose-academic h3 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 1.5em;
+            font-size: 24px;
+        }
+
+        /* Sepia Code Theme */
+        .token.comment { color: #8A817C; font-style: italic; }
+        .token.function { color: #9E2A2B; }
+        .token.keyword { color: #b80f12; font-weight: bold; }
+        .token.string { color: #4A5D44; }
+        .token.number { color: #b80f12; }
+
+        /* Marginalia hover effect */
+        .marginalia-item {
+            transition: transform 0.2s ease;
+        }
+        .marginalia-item:hover {
+            transform: translateX(-4px);
+        }
+    </style>
+</head>
+<body class="bg-paper text-ink antialiased selection:bg-primary/20 selection:text-ink min-h-screen flex flex-col font-serif relative">
+<!-- Grain Texture Overlay -->
+<div class="fixed inset-0 pointer-events-none z-50 bg-grain mix-blend-multiply opacity-40"></div>
+<!-- Top Navigation (Minimal) -->
+<header class="sticky top-0 z-40 w-full border-b border-faded bg-paper/95 backdrop-blur-sm h-14 flex items-center justify-between px-6 lg:px-10">
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-2 text-ink hover:text-primary transition-colors group" href="index.html">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-display font-medium text-lg tracking-tight">Syllabus</span>
+</a>
+<div class="h-4 w-px bg-faded mx-2"></div>
+<span class="font-mono text-xs uppercase tracking-wider text-graphite">Module 14</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-2 text-graphite text-xs font-mono">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span id="reading-time">60 min read</span>
+</div>
+<div class="flex gap-3">
+<button id="search-btn" aria-label="Search" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<button aria-label="Settings" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">text_fields</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 flex justify-center w-full relative">
+<div class="w-full max-w-[1440px] flex flex-row">
+<!-- Left Rail: Table of Contents -->
+<aside class="hidden lg:flex w-[240px] flex-col sticky top-14 h-[calc(100vh-3.5rem)] border-r border-faded overflow-y-auto pt-12 pb-10 pl-10 pr-6">
+<nav class="flex flex-col gap-8">
+<div>
+<h4 class="font-mono text-xs uppercase tracking-widest text-graphite mb-4">Contents</h4>
+<ul class="flex flex-col gap-3 font-mono text-[13px] leading-relaxed">
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#introduction">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Introduction
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#multi-vector-architectures">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Multi-Vector Architectures
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#graph-rag">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Graph RAG
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#modular-rag">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Modular RAG
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#hybrid-approaches">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Hybrid Approaches
+                                </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-8 border-t border-faded">
+<div class="flex flex-col gap-2">
+<span class="font-mono text-[11px] uppercase tracking-widest text-graphite">Progress</span>
+<div class="w-full bg-parchment h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[35%]"></div>
+</div>
+<span class="font-mono text-xs text-ink text-right">35%</span>
+</div>
+</div>
+</nav>
+</aside>
+<!-- Center Stage: The Reader -->
+<article class="flex-1 max-w-[720px] mx-auto pt-16 pb-32 px-6 md:px-12 min-h-screen">
+<!-- Module Header -->
+<header class="mb-16 border-b border-faded pb-12">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-mono text-sm font-medium text-primary px-2 py-1 bg-primary/10 rounded">Module 14</span>
+<span class="font-mono text-sm text-graphite">Advanced RAG Architectures</span>
+</div>
+<h1 class="font-display text-[48px] md:text-[56px] leading-[1.1] font-semibold text-ink tracking-tight mb-6">
+                        Advanced RAG Architectures
+                    </h1>
+<p class="font-serif text-xl text-ink/80 leading-relaxed max-w-[90%]">
+                        Exploring cutting-edge RAG architectures including multi-vector systems, graph-based retrieval, modular designs, and hybrid approaches.
+                    </p>
+</header>
+<!-- Content Body -->
+<div class="prose-academic">
+<h2 id="introduction">Introduction to Advanced RAG Architectures</h2>
+<p>
+As RAG systems mature, researchers and practitioners have developed increasingly sophisticated architectures to address limitations of traditional approaches. Advanced RAG architectures go beyond simple retrieval and generation, incorporating complex data structures, multiple retrieval strategies, and adaptive components to enhance performance across diverse use cases.
+</p>
+
+<div class="my-10 border border-faded bg-parchment/50 p-6 rounded-sm">
+<figure>
+<img alt="Advanced RAG Architecture Evolution" class="w-full h-auto mix-blend-multiply mb-4 filter sepia-[0.3]" data-alt="Visualization showing the evolution from basic RAG to advanced architectures" src="https://placehold.co/600x300/f9f7f1/ebe6da?text=Advanced+RAG+Architectures" />
+<figcaption class="font-mono text-xs text-graphite text-center mt-2">Figure 1: Evolution of RAG Architectures</figcaption>
+</figure>
+</div>
+
+<p>
+These advanced architectures address key challenges in traditional RAG systems, including handling complex relationships in data, managing multi-modal information, supporting dynamic adaptation to different query types, and optimizing for specific performance characteristics like latency or accuracy.
+</p>
+
+<h2 id="multi-vector-architectures">Multi-Vector Architectures</h2>
+<p>
+Multi-vector architectures leverage multiple embedding representations of the same content to improve retrieval quality across different aspects of the data.
+</p>
+
+<h3>Dual-Encoder with Multiple Representations</h3>
+<p>
+Instead of using a single embedding per document, multi-vector approaches create multiple embeddings that capture different aspects of the content.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">multi_vector_rag.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Tuple
+<span class="token keyword">from</span> sentence_transformers <span class="token keyword">import</span> SentenceTransformer
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics<span class="token punctuation">.</span>pairwise <span class="token keyword">import</span> cosine_similarity
+
+<span class="token keyword">class</span> <span class="token class-name">MultiVectorRAG</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> embedding_models<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Initialize multiple embedding models</span>
+        self<span class="token punctuation">.</span>models <span class="token operator">=</span> <span class="token punctuation">[</span>SentenceTransformer<span class="token punctuation">(</span>model_name<span class="token punctuation">)</span> <span class="token keyword">for</span> model_name <span class="token keyword">in</span> embedding_models<span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>document_vectors <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>  <span class="token comment"># Stores multiple vectors per document</span>
+        self<span class="token punctuation">.</span>documents <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+    <span class="token keyword">def</span> <span class="token function">encode_document</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> text<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>np<span class="token punctuation">.</span>ndarray<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Generate multiple embeddings for the same document</span>
+        embeddings <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> model <span class="token keyword">in</span> self<span class="token punctuation">.</span>models<span class="token punctuation">:</span>
+            embedding <span class="token operator">=</span> model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>text<span class="token punctuation">]</span><span class="token punctuation">)</span>
+            embeddings<span class="token punctuation">.</span>append<span class="token punctuation">(</span>embedding<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> embeddings
+
+    <span class="token keyword">def</span> <span class="token function">add_documents</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> texts<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Add documents with multiple vector representations</span>
+        <span class="token keyword">for</span> i<span class="token punctuation">,</span> text <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>texts<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            doc_id <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>documents<span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>documents<span class="token punctuation">.</span>append<span class="token punctuation">(</span>text<span class="token punctuation">)</span>
+            
+            <span class="token comment"># Store multiple embeddings for this document</span>
+            doc_embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>encode_document<span class="token punctuation">(</span>text<span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>document_vectors<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span> <span class="token operator">=</span> doc_embeddings
+
+    <span class="token keyword">def</span> <span class="token function">encode_query</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>np<span class="token punctuation">.</span>ndarray<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Generate multiple embeddings for the query</span>
+        query_embeddings <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> model <span class="token keyword">in</span> self<span class="token punctuation">.</span>models<span class="token punctuation">:</span>
+            embedding <span class="token operator">=</span> model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>query<span class="token punctuation">]</span><span class="token punctuation">)</span>
+            query_embeddings<span class="token punctuation">.</span>append<span class="token punctuation">(</span>embedding<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> query_embeddings
+
+    <span class="token keyword">def</span> <span class="token function">retrieve</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">,</span> weights<span class="token punctuation">:</span> List<span class="token punctuation">[</span>float<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Tuple<span class="token punctuation">[</span>int<span class="token punctuation">,</span> float<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Retrieve documents using weighted combination of multiple embeddings</span>
+        <span class="token keyword">if</span> weights <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            weights <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1.0</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>models<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token builtin">len</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>models<span class="token punctuation">)</span>
+
+        query_embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>encode_query<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Calculate similarities for each model</span>
+        all_similarities <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        <span class="token keyword">for</span> model_idx<span class="token punctuation">,</span> query_emb <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>query_embeddings<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">for</span> doc_id <span class="token keyword">in</span> self<span class="token punctuation">.</span>document_vectors<span class="token punctuation">:</span>
+                doc_emb <span class="token operator">=</span> self<span class="token punctuation">.</span>document_vectors<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span><span class="token punctuation">[</span>model_idx<span class="token punctuation">]</span>
+                
+                <span class="token comment"># Calculate cosine similarity</span>
+                similarity <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span>query_emb<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+                                          doc_emb<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span>
+                
+                <span class="token keyword">if</span> doc_id <span class="token keyword">not</span> <span class="token keyword">in</span> all_similarities<span class="token punctuation">:</span>
+                    all_similarities<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+                all_similarities<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span><span class="token punctuation">.</span>append<span class="token punctuation">(</span>similarity <span class="token operator">*</span> weights<span class="token punctuation">[</span>model_idx<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Combine similarities using weighted average</span>
+        combined_scores <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        <span class="token keyword">for</span> doc_id<span class="token punctuation">,</span> scores <span class="token keyword">in</span> all_similarities<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            combined_scores<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>scores<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>scores<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Sort by combined score and return top-k</span>
+        sorted_docs <span class="token operator">=</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>combined_scores<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> sorted_docs<span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span>
+
+    <span class="token keyword">def</span> <span class="token function">retrieve_with_fusion</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Tuple<span class="token punctuation">[</span>int<span class="token punctuation">,</span> float<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Alternative retrieval using score fusion</span>
+        query_embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>encode_query<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Get top-k results from each model separately</span>
+        model_results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> model_idx<span class="token punctuation">,</span> query_emb <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>query_embeddings<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            similarities <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+            <span class="token keyword">for</span> doc_id <span class="token keyword">in</span> self<span class="token punctuation">.</span>document_vectors<span class="token punctuation">:</span>
+                doc_emb <span class="token operator">=</span> self<span class="token punctuation">.</span>document_vectors<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span><span class="token punctuation">[</span>model_idx<span class="token punctuation">]</span>
+                similarity <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span>query_emb<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+                                          doc_emb<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span>
+                similarities<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">(</span>doc_id<span class="token punctuation">,</span> similarity<span class="token punctuation">)</span><span class="token punctuation">)</span>
+            
+            <span class="token comment"># Sort and take top-k from this model</span>
+            sorted_sims <span class="token operator">=</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>similarities<span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+            model_results<span class="token punctuation">.</span>append<span class="token punctuation">(</span>sorted_sims<span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Reciprocal rank fusion</span>
+        fused_scores <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        k_rrf <span class="token operator">=</span> <span class="token number">60</span>  <span class="token comment"># Smoothing constant for reciprocal rank fusion</span>
+        
+        <span class="token keyword">for</span> model_rankings <span class="token keyword">in</span> model_results<span class="token punctuation">:</span>
+            <span class="token keyword">for</span> rank<span class="token punctuation">,</span> <span class="token punctuation">(</span>doc_id<span class="token punctuation">,</span> score<span class="token punctuation">)</span> <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>model_rankings<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token comment"># Add reciprocal rank score</span>
+                rrf_score <span class="token operator">=</span> <span class="token number">1.0</span> <span class="token operator">/</span> <span class="token punctuation">(</span>k_rrf <span class="token operator">+</span> rank<span class="token punctuation">)</span>
+                <span class="token keyword">if</span> doc_id <span class="token keyword">not</span> <span class="token keyword">in</span> fused_scores<span class="token punctuation">:</span>
+                    fused_scores<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0.0</span>
+                fused_scores<span class="token punctuation">[</span>doc_id<span class="token punctuation">]</span> <span class="token operator">+</span><span class="token operator">=</span> rrf_score
+        
+        <span class="token comment"># Sort by fused scores and return top-k</span>
+        sorted_fused <span class="token operator">=</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>fused_scores<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> sorted_fused<span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span>
+
+<span class="token comment"># Example usage</span>
+<span class="token comment"># rag = MultiVectorRAG(["all-MiniLM-L6-v2", "multi-qa-MiniLM-L6-cos-v1", "paraphrase-multilingual-MiniLM-L12-v2"])</span>
+<span class="token comment"># rag.add_documents(["Document 1 content...", "Document 2 content..."])</span>
+<span class="token comment"># results = rag.retrieve("Query text", k=5)</span></code></pre>
+</div>
+</div>
+
+<h3>Hybrid Dense-Sparse Retrieval</h3>
+<p>
+Combining dense embeddings with sparse lexical matching to leverage the strengths of both approaches.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">hybrid_retrieval.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Tuple
+<span class="token keyword">from</span> sklearn.feature_extraction.text <span class="token keyword">import</span> TfidfVectorizer
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics<span class="token punctuation">.</span>pairwise <span class="token keyword">import</span> cosine_similarity
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+
+<span class="token keyword">class</span> <span class="token class-name">HybridRetriever</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> dense_model_name<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"all-MiniLM-L6-v2"</span><span class="token punctuation">,</span> 
+                 sparse_weight<span class="token punctuation">:</span> float <span class="token operator">=</span> <span class="token number">0.3</span><span class="token punctuation">,</span> dense_weight<span class="token punctuation">:</span> float <span class="token operator">=</span> <span class="token number">0.7</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">from</span> sentence_transformers <span class="token keyword">import</span> SentenceTransformer
+        self<span class="token punctuation">.</span>dense_model <span class="token operator">=</span> SentenceTransformer<span class="token punctuation">(</span>dense_model_name<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>sparse_vectorizer <span class="token operator">=</span> TfidfVectorizer<span class="token punctuation">(</span>ngram_range<span class="token operator">=</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+                                              max_features<span class="token operator">=</span><span class="token number">10000</span><span class="token punctuation">,</span> 
+                                              stop_words<span class="token operator">=</span><span class="token string">'english'</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>sparse_weight <span class="token operator">=</span> sparse_weight
+        self<span class="token punctuation">.</span>dense_weight <span class="token operator">=</span> dense_weight
+        self<span class="token punctuation">.</span>documents <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>sparse_doc_vectors <span class="token operator">=</span> <span class="token boolean">None</span>
+        self<span class="token punctuation">.</span>dense_doc_vectors <span class="token operator">=</span> <span class="token boolean">None</span>
+
+    <span class="token keyword">def</span> <span class="token function">add_documents</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> documents<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>documents <span class="token operator">=</span> documents
+        
+        <span class="token comment"># Fit sparse vectorizer and encode documents</span>
+        self<span class="token punctuation">.</span>sparse_doc_vectors <span class="token operator">=</span> self<span class="token punctuation">.</span>sparse_vectorizer<span class="token punctuation">.</span>fit_transform<span class="token punctuation">(</span>documents<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Encode documents with dense model</span>
+        self<span class="token punctuation">.</span>dense_doc_vectors <span class="token operator">=</span> self<span class="token punctuation">.</span>dense_model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span>documents<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">retrieve</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Tuple<span class="token punctuation">[</span>int<span class="token punctuation">,</span> float<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Encode query with both sparse and dense models</span>
+        sparse_query_vector <span class="token operator">=</span> self<span class="token punctuation">.</span>sparse_vectorizer<span class="token punctuation">.</span>transform<span class="token punctuation">(</span><span class="token punctuation">[</span>query<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        dense_query_vector <span class="token operator">=</span> self<span class="token punctuation">.</span>dense_model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>query<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Calculate sparse similarities</span>
+        sparse_similarities <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span>sparse_query_vector<span class="token punctuation">,</span> self<span class="token punctuation">.</span>sparse_doc_vectors<span class="token punctuation">)</span><span class="token punctuation">.</span>flatten<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Normalize sparse similarities to [0, 1]</span>
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>sparse_similarities<span class="token punctuation">)</span> <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">:</span>
+            sparse_similarities <span class="token operator">=</span> <span class="token punctuation">(</span>sparse_similarities <span class="token operator">-</span> sparse_similarities<span class="token punctuation">.</span><span class="token builtin">min</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token punctuation">(</span>sparse_similarities<span class="token punctuation">.</span><span class="token builtin">max</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> sparse_similarities<span class="token punctuation">.</span><span class="token builtin">min</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Calculate dense similarities</span>
+        dense_similarities <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span>dense_query_vector<span class="token punctuation">,</span> self<span class="token punctuation">.</span>dense_doc_vectors<span class="token punctuation">)</span><span class="token punctuation">.</span>flatten<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Combine scores using weighted average</span>
+        combined_scores <span class="token operator">=</span> <span class="token punctuation">(</span>self<span class="token punctuation">.</span>sparse_weight <span class="token operator">*</span> sparse_similarities <span class="token operator">+</span> 
+                          self<span class="token punctuation">.</span>dense_weight <span class="token operator">*</span> dense_similarities<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Get top-k results</span>
+        top_k_indices <span class="token operator">=</span> np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>combined_scores<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span>
+        
+        <span class="token comment"># Return document indices with their combined scores</span>
+        results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">(</span>idx<span class="token punctuation">,</span> combined_scores<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">for</span> idx <span class="token keyword">in</span> top_k_indices<span class="token punctuation">]</span>
+        <span class="token keyword">return</span> results
+
+<span class="token comment"># Example usage</span>
+<span class="token comment"># retriever = HybridRetriever(sparse_weight=0.4, dense_weight=0.6)</span>
+<span class="token comment"># retriever.add_documents(["Document 1 content...", "Document 2 content..."])</span>
+<span class="token comment"># results = retriever.retrieve("Query text", k=5)</span></code></pre>
+</div>
+</div>
+
+<h2 id="graph-rag">Graph-Based RAG (Graph RAG)</h2>
+<p>
+Graph RAG leverages graph structures to represent relationships between entities, concepts, and documents, enabling more sophisticated reasoning and retrieval.
+</p>
+
+<h3>Entity-Relationship Graph Construction</h3>
+<p>
+Building knowledge graphs from unstructured text to capture semantic relationships between entities.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">graph_rag.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> networkx <span class="token keyword">as</span> nx
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Tuple<span class="token punctuation">,</span> Set
+<span class="token keyword">from</span> collections <span class="token keyword">import</span> defaultdict
+<span class="token keyword">import</span> spacy
+<span class="token keyword">from</span> sentence_transformers <span class="token keyword">import</span> SentenceTransformer
+
+<span class="token keyword">class</span> <span class="token class-name">GraphRAG</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> embedding_model<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"all-MiniLM-L6-v2"</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>graph <span class="token operator">=</span> nx<span class="token punctuation">.</span>MultiDiGraph<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>embedding_model <span class="token operator">=</span> SentenceTransformer<span class="token punctuation">(</span>embedding_model<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>nlp <span class="token operator">=</span> spacy<span class="token punctuation">.</span>load<span class="token punctuation">(</span><span class="token string">"en_core_web_sm"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>entity_embeddings <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        self<span class="token punctuation">.</span>document_embeddings <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+
+    <span class="token keyword">def</span> <span class="token function">extract_entities_and_relations</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> text<span class="token punctuation">:</span> str<span class="token punctuation">,</span> doc_id<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Tuple<span class="token punctuation">[</span>str<span class="token punctuation">,</span> str<span class="token punctuation">,</span> str<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Extract named entities and relations using spaCy</span>
+        doc <span class="token operator">=</span> self<span class="token punctuation">.</span>nlp<span class="token punctuation">(</span>text<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Add entities as nodes</span>
+        entities <span class="token operator">=</span> <span class="token punctuation">[</span>ent<span class="token punctuation">.</span>text <span class="token keyword">for</span> ent <span class="token keyword">in</span> doc<span class="token punctuation">.</span>ents<span class="token punctuation">]</span>
+        <span class="token keyword">for</span> entity <span class="token keyword">in</span> entities<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> entity <span class="token keyword">not</span> <span class="token keyword">in</span> self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>nodes<span class="token punctuation">:</span>
+                self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>add_node<span class="token punctuation">(</span>entity<span class="token punctuation">,</span> type<span class="token operator">=</span><span class="token string">"ENTITY"</span><span class="token punctuation">,</span> embedding<span class="token operator">=</span>self<span class="token punctuation">.</span>embedding_model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>entity<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Add document node</span>
+        self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>add_node<span class="token punctuation">(</span>doc_id<span class="token punctuation">,</span> type<span class="token operator">=</span><span class="token string">"DOCUMENT"</span><span class="token punctuation">,</span> content<span class="token operator">=</span>text<span class="token punctuation">,</span> 
+                            embedding<span class="token operator">=</span>self<span class="token punctuation">.</span>embedding_model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>text<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Add edges between entities and document</span>
+        <span class="token keyword">for</span> entity <span class="token keyword">in</span> entities<span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>add_edge<span class="token punctuation">(</span>entity<span class="token punctuation">,</span> doc_id<span class="token punctuation">,</span> relation<span class="token operator">=</span><span class="token string">"MENTIONED_IN"</span><span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>add_edge<span class="token punctuation">(</span>doc_id<span class="token punctuation">,</span> entity<span class="token punctuation">,</span> relation<span class="token operator">=</span><span class="token string">"MENTIONS"</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Extract relations based on dependency parsing</span>
+        relations <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> sent <span class="token keyword">in</span> doc<span class="token punctuation">.</span>sents<span class="token punctuation">:</span>
+            <span class="token comment"># Find subject-object relationships</span>
+            subjects <span class="token operator">=</span> <span class="token punctuation">[</span>tok<span class="token punctuation">.</span>text <span class="token keyword">for</span> tok <span class="token keyword">in</span> sent <span class="token keyword">if</span> tok<span class="token punctuation">.</span>dep_ <span class="token operator">==</span> <span class="token string">"nsubj"</span><span class="token punctuation">]</span>
+            objects <span class="token operator">=</span> <span class="token punctuation">[</span>tok<span class="token punctuation">.</span>text <span class="token keyword">for</span> tok <span class="token keyword">in</span> sent <span class="token keyword">if</span> tok<span class="token punctuation">.</span>dep_ <span class="token operator">==</span> <span class="token string">"dobj"</span><span class="token punctuation">]</span>
+            verbs <span class="token operator">=</span> <span class="token punctuation">[</span>tok<span class="token punctuation">.</span>text <span class="token keyword">for</span> tok <span class="token keyword">in</span> sent <span class="token keyword">if</span> tok<span class="token punctuation">.</span>pos_ <span class="token operator">==</span> <span class="token string">"VERB"</span><span class="token punctuation">]</span>
+            
+            <span class="token keyword">for</span> subj <span class="token keyword">in</span> subjects<span class="token punctuation">:</span>
+                <span class="token keyword">for</span> obj <span class="token keyword">in</span> objects<span class="token punctuation">:</span>
+                    <span class="token keyword">for</span> verb <span class="token keyword">in</span> verbs<span class="token punctuation">:</span>
+                        <span class="token comment"># Add relationship edge</span>
+                        self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>add_edge<span class="token punctuation">(</span>subj<span class="token punctuation">,</span> obj<span class="token punctuation">,</span> relation<span class="token operator">=</span>verb<span class="token punctuation">,</span> sentence<span class="token operator">=</span>sent<span class="token punctuation">.</span>text<span class="token punctuation">)</span>
+                        relations<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">(</span>subj<span class="token punctuation">,</span> verb<span class="token punctuation">,</span> obj<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> relations
+
+    <span class="token keyword">def</span> <span class="token function">add_document</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> text<span class="token punctuation">:</span> str<span class="token punctuation">,</span> doc_id<span class="token punctuation">:</span> str<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Add document to the graph with entities and relations</span>
+        self<span class="token punctuation">.</span>extract_entities_and_relations<span class="token punctuation">(</span>text<span class="token punctuation">,</span> doc_id<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">retrieve_by_entity</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> entity<span class="token punctuation">:</span> str<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Retrieve documents related to a specific entity</span>
+        <span class="token keyword">if</span> entity <span class="token keyword">not</span> <span class="token keyword">in</span> self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>nodes<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Find documents connected to this entity</span>
+        connected_docs <span class="token operator">=</span> <span class="token punctuation">[</span>neighbor <span class="token keyword">for</span> neighbor <span class="token keyword">in</span> self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>neighbors<span class="token punctuation">(</span>entity<span class="token punctuation">)</span> 
+                      <span class="token keyword">if</span> self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>nodes<span class="token punctuation">[</span>neighbor<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"type"</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">"DOCUMENT"</span><span class="token punctuation">]</span>
+        
+        <span class="token keyword">return</span> connected_docs<span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span>
+
+    <span class="token keyword">def</span> <span class="token function">retrieve_by_path</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> start_entity<span class="token punctuation">:</span> str<span class="token punctuation">,</span> end_entity<span class="token punctuation">:</span> str<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Find paths between two entities in the graph</span>
+        <span class="token keyword">if</span> start_entity <span class="token keyword">not</span> <span class="token keyword">in</span> self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>nodes <span class="token keyword">or</span> end_entity <span class="token keyword">not</span> <span class="token keyword">in</span> self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>nodes<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Find shortest paths between entities</span>
+        <span class="token keyword">try</span><span class="token punctuation">:</span>
+            paths <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span>nx<span class="token punctuation">.</span>shortest_simple_paths<span class="token punctuation">(</span>self<span class="token punctuation">.</span>graph<span class="token punctuation">,</span> start_entity<span class="token punctuation">,</span> end_entity<span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span> paths<span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span>
+        <span class="token keyword">except</span> nx<span class="token punctuation">.</span>NetworkXNoPath<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+    <span class="token keyword">def</span> <span class="token function">retrieve_with_contextual_walk</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">,</span> walk_depth<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Tuple<span class="token punctuation">[</span>str<span class="token punctuation">,</span> float<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Perform random walks from query-related nodes to find relevant documents</span>
+        query_embedding <span class="token operator">=</span> self<span class="token punctuation">.</span>embedding_model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>query<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Find entities in the query</span>
+        query_doc <span class="token operator">=</span> self<span class="token punctuation">.</span>nlp<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+        query_entities <span class="token operator">=</span> <span class="token punctuation">[</span>ent<span class="token punctuation">.</span>text <span class="token keyword">for</span> ent <span class="token keyword">in</span> query_doc<span class="token punctuation">.</span>ents<span class="token punctuation">]</span>
+        
+        <span class="token comment"># Score documents based on graph proximity to query entities</span>
+        doc_scores <span class="token operator">=</span> defaultdict<span class="token punctuation">(</span><span class="token builtin">float</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">for</span> entity <span class="token keyword">in</span> query_entities<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> entity <span class="token keyword">in</span> self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>nodes<span class="token punctuation">:</span>
+                <span class="token comment"># Perform breadth-first search from the entity</span>
+                visited <span class="token operator">=</span> <span class="token punctuation">{</span>entity<span class="token punctuation">}</span>
+                current_level <span class="token operator">=</span> <span class="token punctuation">[</span>entity<span class="token punctuation">]</span>
+                
+                <span class="token keyword">for</span> depth <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>walk_depth<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                    next_level <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+                    
+                    <span class="token keyword">for</span> node <span class="token keyword">in</span> current_level<span class="token punctuation">:</span>
+                        <span class="token keyword">for</span> neighbor <span class="token keyword">in</span> self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>neighbors<span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                            <span class="token keyword">if</span> neighbor <span class="token keyword">not</span> <span class="token keyword">in</span> visited<span class="token punctuation">:</span>
+                                visited<span class="token punctuation">.</span>add<span class="token punctuation">(</span>neighbor<span class="token punctuation">)</span>
+                                next_level<span class="token punctuation">.</span>append<span class="token punctuation">(</span>neighbor<span class="token punctuation">)</span>
+                                
+                                <span class="token comment"># If neighbor is a document, score it based on relevance</span>
+                                <span class="token keyword">if</span> self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>nodes<span class="token punctuation">[</span>neighbor<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"type"</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">"DOCUMENT"</span><span class="token punctuation">:</span>
+                                    <span class="token comment"># Calculate similarity between query and document</span>
+                                    doc_embedding <span class="token operator">=</span> self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>nodes<span class="token punctuation">[</span>neighbor<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"embedding"</span><span class="token punctuation">]</span>
+                                    similarity <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>query_embedding <span class="token operator">*</span> doc_embedding<span class="token punctuation">)</span> <span class="token operator">/</span> \
+                                               <span class="token punctuation">(</span>np<span class="token punctuation">.</span>linalg<span class="token punctuation">.</span>norm<span class="token punctuation">(</span>query_embedding<span class="token punctuation">)</span> <span class="token operator">*</span> np<span class="token punctuation">.</span>linalg<span class="token punctuation">.</span>norm<span class="token punctuation">(</span>doc_embedding<span class="token punctuation">)</span><span class="token punctuation">)</span>
+                                    
+                                    <span class="token comment"># Weight score by proximity (closer nodes get higher weight)</span>
+                                    weight <span class="token operator">=</span> <span class="token number">1.0</span> <span class="token operator">/</span> <span class="token punctuation">(</span>depth <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+                                    doc_scores<span class="token punctuation">[</span>neighbor<span class="token punctuation">]</span> <span class="token operator">+</span><span class="token operator">=</span> similarity <span class="token operator">*</span> weight
+                    
+                    current_level <span class="token operator">=</span> next_level
+        
+        <span class="token comment"># Sort documents by score and return top-k</span>
+        sorted_docs <span class="token operator">=</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>doc_scores<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> sorted_docs<span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span>
+
+<span class="token comment"># Example usage</span>
+<span class="token comment"># graph_rag = GraphRAG()</span>
+<span class="token comment"># graph_rag.add_document("Apple Inc. is a technology company founded by Steve Jobs.", "doc1")</span>
+<span class="token comment"># results = graph_rag.retrieve_with_contextual_walk("technology companies founded by Steve Jobs", k=3)</span></code></pre>
+</div>
+</div>
+
+<h2 id="modular-rag">Modular RAG Systems</h2>
+<p>
+Modular RAG systems decompose the traditional RAG pipeline into interchangeable components that can be optimized independently.
+</p>
+
+<h3>Component-Based Architecture</h3>
+<p>
+A flexible architecture where each component (retriever, reader, router, etc.) can be swapped out or optimized independently.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">modular_rag.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> abc <span class="token keyword">import</span> ABC<span class="token punctuation">,</span> abstractmethod
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Any<span class="token punctuation">,</span> Optional
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+
+<span class="token keyword">class</span> <span class="token class-name">BaseComponent</span><span class="token punctuation">(</span>ABC<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token decorator">@abstractmethod</span>
+    <span class="token keyword">def</span> <span class="token function">process</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> input_data<span class="token punctuation">:</span> Any<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Any<span class="token punctuation">:</span>
+        <span class="token keyword">pass</span>
+
+<span class="token keyword">class</span> <span class="token class-name">Retriever</span><span class="token punctuation">(</span>BaseComponent<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token decorator">@abstractmethod</span>
+    <span class="token keyword">def</span> <span class="token function">retrieve</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">pass</span>
+
+<span class="token keyword">class</span> <span class="token class-name">DenseRetriever</span><span class="token punctuation">(</span>Retriever<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> model_name<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"all-MiniLM-L6-v2"</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">from</span> sentence_transformers <span class="token keyword">import</span> SentenceTransformer
+        self<span class="token punctuation">.</span>model <span class="token operator">=</span> SentenceTransformer<span class="token punctuation">(</span>model_name<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>documents <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>embeddings <span class="token operator">=</span> <span class="token boolean">None</span>
+
+    <span class="token keyword">def</span> <span class="token function">add_documents</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> docs<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>documents <span class="token operator">=</span> docs
+        self<span class="token punctuation">.</span>embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span>docs<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">retrieve</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics<span class="token punctuation">.</span>pairwise <span class="token keyword">import</span> cosine_similarity
+        query_embedding <span class="token operator">=</span> self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>query<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        similarities <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span>query_embedding<span class="token punctuation">,</span> self<span class="token punctuation">.</span>embeddings<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        
+        top_k_indices <span class="token operator">=</span> np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>similarities<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span>
+        
+        results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> idx <span class="token keyword">in</span> top_k_indices<span class="token punctuation">:</span>
+            results<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">{</span>
+                <span class="token string">"content"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>documents<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">,</span>
+                <span class="token string">"score"</span><span class="token punctuation">:</span> float<span class="token punctuation">(</span>similarities<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                <span class="token string">"id"</span><span class="token punctuation">:</span> idx
+            <span class="token punctuation">}</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> results
+
+<span class="token keyword">class</span> <span class="token class-name">SparseRetriever</span><span class="token punctuation">(</span>Retriever<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">from</span> sklearn.feature_extraction.text <span class="token keyword">import</span> BM25Transformer  <span class="token comment"># Note: BM25Transformer doesn't exist, using TF-IDF as example</span>
+        <span class="token keyword">from</span> sklearn.feature_extraction.text <span class="token keyword">import</span> TfidfVectorizer
+        self<span class="token punctuation">.</span>vectorizer <span class="token operator">=</span> TfidfVectorizer<span class="token punctuation">(</span>ngram_range<span class="token operator">=</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">,</span> stop_words<span class="token operator">=</span><span class="token string">'english'</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>documents <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>doc_vectors <span class="token operator">=</span> <span class="token boolean">None</span>
+
+    <span class="token keyword">def</span> <span class="token function">add_documents</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> docs<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>documents <span class="token operator">=</span> docs
+        self<span class="token punctuation">.</span>doc_vectors <span class="token operator">=</span> self<span class="token punctuation">.</span>vectorizer<span class="token punctuation">.</span>fit_transform<span class="token punctuation">(</span>docs<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">retrieve</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics<span class="token punctuation">.</span>pairwise <span class="token keyword">import</span> cosine_similarity
+        query_vector <span class="token operator">=</span> self<span class="token punctuation">.</span>vectorizer<span class="token punctuation">.</span>transform<span class="token punctuation">(</span><span class="token punctuation">[</span>query<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        similarities <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span>query_vector<span class="token punctuation">,</span> self<span class="token punctuation">.</span>doc_vectors<span class="token punctuation">)</span><span class="token punctuation">.</span>flatten<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        top_k_indices <span class="token operator">=</span> np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>similarities<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">:</span>k<span class="token punctuation">]</span>
+        
+        results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> idx <span class="token keyword">in</span> top_k_indices<span class="token punctuation">:</span>
+            results<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">{</span>
+                <span class="token string">"content"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>documents<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">,</span>
+                <span class="token string">"score"</span><span class="token punctuation">:</span> float<span class="token punctuation">(</span>similarities<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                <span class="token string">"id"</span><span class="token punctuation">:</span> idx
+            <span class="token punctuation">}</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> results
+
+<span class="token keyword">class</span> <span class="token class-name">Reader</span><span class="token punctuation">(</span>BaseComponent<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token decorator">@abstractmethod</span>
+    <span class="token keyword">def</span> <span class="token function">read</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> context<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token keyword">pass</span>
+
+<span class="token keyword">class</span> <span class="token class-name">SimpleReader</span><span class="token punctuation">(</span>Reader<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">read</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> context<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Simple approach: return context as is</span>
+        <span class="token keyword">return</span> context
+
+<span class="token keyword">class</span> <span class="token class-name">QuestionRouter</span><span class="token punctuation">(</span>BaseComponent<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Simple keyword-based routing</span>
+        self<span class="token punctuation">.</span>routes <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">"historical"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"when"</span><span class="token punctuation">,</span> <span class="token string">"date"</span><span class="token punctuation">,</span> <span class="token string">"year"</span><span class="token punctuation">,</span> <span class="token string">"history"</span><span class="token punctuation">,</span> <span class="token string">"past"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token string">"definition"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"what is"</span><span class="token punctuation">,</span> <span class="token string">"define"</span><span class="token punctuation">,</span> <span class="token string">"meaning"</span><span class="token punctuation">,</span> <span class="token string">"explain"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token string">"technical"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"how"</span><span class="token punctuation">,</span> <span class="token string">"process"</span><span class="token punctuation">,</span> <span class="token string">"algorithm"</span><span class="token punctuation">,</span> <span class="token string">"implementation"</span><span class="token punctuation">]</span>
+        <span class="token punctuation">}</span>
+
+    <span class="token keyword">def</span> <span class="token function">process</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        query_lower <span class="token operator">=</span> query<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">for</span> route<span class="token punctuation">,</span> keywords <span class="token keyword">in</span> self<span class="token punctuation">.</span>routes<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">for</span> keyword <span class="token keyword">in</span> keywords<span class="token punctuation">:</span>
+                <span class="token keyword">if</span> keyword <span class="token keyword">in</span> query_lower<span class="token punctuation">:</span>
+                    <span class="token keyword">return</span> route
+        
+        <span class="token keyword">return</span> <span class="token string">"general"</span>
+
+<span class="token keyword">class</span> <span class="token class-name">ModularRAG</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> retriever<span class="token punctuation">:</span> Retriever<span class="token punctuation">,</span> reader<span class="token punctuation">:</span> Reader<span class="token punctuation">,</span> router<span class="token punctuation">:</span> QuestionRouter <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>retriever <span class="token operator">=</span> retriever
+        self<span class="token punctuation">.</span)reader <span class="token operator">=</span> reader
+        self<span class="token punctuation">.</span>router <span class="token operator">=</span> router <span class="token keyword">if</span> router <span class="token keyword">else</span> QuestionRouter<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">query</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Route the query if router is available</span>
+        route <span class="token operator">=</span> self<span class="token punctuation">.</span>router<span class="token punctuation">.</span>process<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>f<span class="token string">"Routing query to: {route}"</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Retrieve relevant documents</span>
+        retrieved_docs <span class="token operator">=</span> self<span class="token punctuation">.</span>retriever<span class="token punctuation">.</span>retrieve<span class="token punctuation">(</span>query<span class="token punctuation">,</span> k<span class="token operator">=</span>k<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Combine retrieved documents into context</span>
+        context <span class="token operator">=</span> <span class="token string">" "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token punctuation">[</span>doc<span class="token punctuation">[</span><span class="token string">"content"</span><span class="token punctuation">]</span> <span class="token keyword">for</span> doc <span class="token keyword">in</span> retrieved_docs<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Generate response using the reader</span>
+        response <span class="token operator">=</span> self<span class="token punctuation">.</span)reader<span class="token punctuation">.</span>read<span class="token punctuation">(</span>query<span class="token punctuation">,</span> context<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> response
+
+<span class="token comment"># Example usage</span>
+<span class="token comment"># dense_retriever = DenseRetriever()</span>
+<span class="token comment"># dense_retriever.add_documents(["Document 1...", "Document 2..."])</span>
+<span class="token comment"># reader = SimpleReader()</span>
+<span class="token comment"># rag_system = ModularRAG(dense_retriever, reader)</span>
+<span class="token comment"># response = rag_system.query("What is RAG?")</span></code></pre>
+</div>
+</div>
+
+<h2 id="hybrid-approaches">Emerging Hybrid Approaches</h2>
+<p>
+Modern RAG systems increasingly combine multiple techniques to leverage the strengths of different approaches.
+</p>
+
+<h3>Fusion-in-Decoder Architecture</h3>
+<p>
+Fusion-in-Decoder combines multiple retrieval strategies at the decoding stage rather than at the retrieval stage.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">fusion_decoder.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> torch
+<span class="token keyword">import</span> torch<span class="token punctuation">.</span>nn <span class="token keyword">as</span> nn
+<span class="token keyword">from</span> transformers <span class="token keyword">import</span> AutoTokenizer<span class="token punctuation">,</span> AutoModelForSeq2SeqLM
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Tuple
+
+<span class="token keyword">class</span> <span class="token class-name">FusionInDecoder</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> generator_model<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"facebook/bart-large-cnn"</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>tokenizer <span class="token operator">=</span> AutoTokenizer<span class="token punctuation">.</span>from_pretrained<span class="token punctuation">(</span>generator_model<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>generator <span class="token operator">=</span> AutoModelForSeq2SeqLM<span class="token punctuation">.</span>from_pretrained<span class="token punctuation">(</span>generator_model<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Initialize multiple retrievers</span>
+        self<span class="token punctuation">.</span>retrievers <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">"dense"</span><span class="token punctuation">:</span> DenseRetriever<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">"sparse"</span><span class="token punctuation">:</span> SparseRetriever<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token punctuation">}</span>
+
+    <span class="token keyword">def</span> <span class="token function">add_documents</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> documents<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Add documents to all retrievers</span>
+        <span class="token keyword">for</span> retriever <span class="token keyword">in</span> self<span class="token punctuation">.</span>retrievers<span class="token punctuation">.</span>values<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            retriever<span class="token punctuation">.</span>add_documents<span class="token punctuation">(</span>documents<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">fuse_contexts</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> contexts<span class="token punctuation">:</span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">,</span> weights<span class="token punctuation">:</span> List<span class="token punctuation">[</span>float<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Combine contexts from multiple retrievers</span>
+        <span class="token keyword">if</span> weights <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            weights <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1.0</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>contexts<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token builtin">len</span><span class="token punctuation">(</span>contexts<span class="token punctuation">)</span>
+        
+        <span class="token comment"># For Fusion-in-Decoder, we concatenate contexts with special separators</span>
+        fused_context <span class="token operator">=</span> <span class="token string">" [SEP] "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>contexts<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> fused_context
+
+    <span class="token keyword">def</span> <span class="token function">generate</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> k<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">,</span> max_length<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">150</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Retrieve from multiple sources</span>
+        all_retrieved <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        <span class="token keyword">for</span> name<span class="token punctuation">,</span> retriever <span class="token keyword">in</span> self<span class="token punctuation">.</span>retrievers<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            all_retrieved<span class="token punctuation">[</span>name<span class="token punctuation">]</span> <span class="token operator">=</span> retriever<span class="token punctuation">.</span>retrieve<span class="token punctuation">(</span>query<span class="token punctuation">,</span> k<span class="token operator">=</span>k<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Extract contexts from each retriever</span>
+        contexts <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> name<span class="token punctuation">,</span> retrieved <span class="token keyword">in</span> all_retrieved<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            context <span class="token operator">=</span> <span class="token string">" "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token punctuation">[</span>doc<span class="token punctuation">[</span><span class="token string">"content"</span><span class="token punctuation">]</span> <span class="token keyword">for</span> doc <span class="token keyword">in</span> retrieved<span class="token punctuation">]</span><span class="token punctuation">)</span>
+            contexts<span class="token punctuation">.</span>append<span class="token punctuation">(</span>context<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Fuse contexts</span>
+        fused_context <span class="token operator">=</span> self<span class="token punctuation">.</span>fuse_contexts<span class="token punctuation">(</span>contexts<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Create input for the generator</span>
+        input_text <span class="token operator">=</span> f<span class="token string">"question: {query} context: {fused_context}"</span>
+        
+        <span class="token comment"># Tokenize and generate</span>
+        inputs <span class="token operator">=</span> self<span class="token punctuation">.</span>tokenizer<span class="token punctuation">(</span>input_text<span class="token punctuation">,</span> <span class="token builtin">max</span>_length<span class="token operator">=</span><span class="token number">1024</span><span class="token punctuation">,</span> truncation<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span> 
+                                <span class="token keyword">return</span>_tensors<span class="token operator">=</span><span class="token string">"pt"</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">with</span> torch<span class="token punctuation">.</span>no_grad<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            outputs <span class="token operator">=</span> self<span class="token punctuation">.</span>generator<span class="token punctuation">.</span>generate<span class="token punctuation">(</span>
+                <span class="token operator">**</span>inputs<span class="token punctuation">,</span>
+                <span class="token builtin">max</span>_length<span class="token operator">=</span>max_length<span class="token punctuation">,</span>
+                <span class="token builtin">min</span>_length<span class="token operator">=</span><span class="token number">40</span><span class="token punctuation">,</span>
+                <span class="token builtin">do</span>_sample<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span>
+                <span class="token builtin">num_beams</span><span class="token operator">=</span><span class="token number">4</span><span class="token punctuation">,</span>
+                <span class="token builtin">early_stopping</span><span class="token operator">=</span><span class="token boolean">True</span>
+            <span class="token punctuation">)</span>
+        
+        <span class="token comment"># Decode the output</span>
+        generated_text <span class="token operator">=</span> self<span class="token punctuation">.</span>tokenizer<span class="token punctuation">.</span>decode<span class="token punctuation">(</span>outputs<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> skip_special_tokens<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> generated_text
+
+<span class="token comment"># Example usage</span>
+<span class="token comment"># fusion_model = FusionInDecoder()</span>
+<span class="token comment"># fusion_model.add_documents(["Document 1...", "Document 2..."])</span>
+<span class="token comment"># response = fusion_model.generate("What is RAG?")</span></code></pre>
+</div>
+</div>
+
+</div>
+<!-- Footer / Pagination -->
+<div class="mt-24 pt-10 border-t border-faded flex justify-between items-center group/footer">
+<a class="flex flex-col items-start gap-2 hover:bg-parchment/50 p-4 -ml-4 rounded transition-colors w-1/2" href="module_13_domain_adaptation.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Previous Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Domain Adaptation
+                        </span>
+</a>
+<div class="h-12 w-px bg-faded mx-4"></div>
+<a class="flex flex-col items-end gap-2 hover:bg-parchment/50 p-4 -mr-4 rounded transition-colors w-1/2" href="module_15_production_deployment.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Next Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+                            Production Deployment
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</span>
+</a>
+</div>
+</article>
+<!-- Right Rail: Marginalia -->
+<aside class="hidden xl:block w-[240px] sticky top-14 h-[calc(100vh-3.5rem)] pt-32 pb-10 pr-10 pl-4 overflow-y-auto">
+<div class="flex flex-col gap-24 relative">
+<!-- Note 1: Aligned with introduction -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[1]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Advanced architectures</strong> address limitations of basic RAG.
+                        </p>
+</div>
+<!-- Note 2: Aligned with multi-vector architectures -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-12">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[2]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Multi-vector approaches</strong> combine multiple embedding strategies.
+                        </p>
+<a class="inline-flex items-center gap-1 mt-2 text-[10px] uppercase tracking-widest text-primary font-bold hover:underline" href="artifact_view.html" target="_blank">
+                            View Code <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+</a>
+</div>
+<!-- Note 3: Aligned with graph rag -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-24">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[3]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <code class="bg-parchment px-0.5 rounded-sm">Graph RAG</code> captures entity relationships effectively.
+                        </p>
+</div>
+<!-- Additional marginalia for module-specific content -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[4]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Modular systems</strong> allow for component optimization.
+                        </p>
+</div>
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[5]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Fusion-in-Decoder</strong> combines multiple retrieval strategies.
+                        </p>
+</div>
+</div>
+</aside>
+</div>
+</main>
+
+<script>
+    // Function to copy code to clipboard
+    function copyCode(button) {
+        const codeBlock = button.closest('.not-prose').querySelector('pre code');
+        navigator.clipboard.writeText(codeBlock.textContent.trim()).then(() => {
+            const originalIcon = button.querySelector('.material-symbols-outlined').textContent;
+            button.querySelector('.material-symbols-outlined').textContent = 'check';
+            setTimeout(() => {
+                button.querySelector('.material-symbols-outlined').textContent = originalIcon;
+            }, 2000);
+        });
+    }
+
+    // Calculate reading time based on content
+    document.addEventListener('DOMContentLoaded', function() {
+        const content = document.querySelector('.prose-academic').textContent;
+        const wordsPerMinute = 200; // Average reading speed
+        const wordCount = content.split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / wordsPerMinute);
+
+        document.getElementById('reading-time').textContent = `${readingTime} min read`;
+    });
+
+    // Search button functionality
+    document.getElementById('search-btn').addEventListener('click', function() {
+        window.location.href = 'search_index.html';
+    });
+</script>
+</body></html>

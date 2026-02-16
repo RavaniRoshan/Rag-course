@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic RAG Journal - Module 03: Embedding Models</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;family=Geist+Mono:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#b80f12",
+                        "ink": "#2C2420",
+                        "paper": "#F9F7F1",
+                        "parchment": "#EBE6DA",
+                        "graphite": "#8A817C",
+                        "faded": "#D8D1C4",
+                        "library-green": "#4A5D44",
+                    },
+                    fontFamily: {
+                        "display": ["Newsreader", "serif"],
+                        "serif": ["Lora", "serif"],
+                        "mono": ["Geist Mono", "monospace"],
+                        "code": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.5rem"
+                    },
+                    backgroundImage: {
+                        'grain': "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9F7F1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8D1C4;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8A817C;
+        }
+
+        /* Hide scrollbar for clean UI but allow scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Typography overrides */
+        .prose-academic p {
+            margin-top: 1.5em;
+            margin-bottom: 1.5em;
+            line-height: 1.8;
+            font-family: 'Lora', serif;
+            font-size: 19px;
+            color: #2C2420;
+        }
+        .prose-academic h2 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 2em;
+            font-size: 32px;
+            letter-spacing: -0.01em;
+        }
+        .prose-academic h3 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 1.5em;
+            font-size: 24px;
+        }
+
+        /* Sepia Code Theme */
+        .token.comment { color: #8A817C; font-style: italic; }
+        .token.function { color: #9E2A2B; }
+        .token.keyword { color: #b80f12; font-weight: bold; }
+        .token.string { color: #4A5D44; }
+        .token.number { color: #b80f12; }
+        
+        /* Marginalia hover effect */
+        .marginalia-item {
+            transition: transform 0.2s ease;
+        }
+        .marginalia-item:hover {
+            transform: translateX(-4px);
+        }
+        
+        /* Mermaid diagram styling */
+        .mermaid-diagram {
+            background: white;
+            border: 1px solid #D8D1C4;
+            border-radius: 4px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="bg-paper text-ink antialiased selection:bg-primary/20 selection:text-ink min-h-screen flex flex-col font-serif relative">
+<!-- Grain Texture Overlay -->
+<div class="fixed inset-0 pointer-events-none z-50 bg-grain mix-blend-multiply opacity-40"></div>
+<!-- Top Navigation (Minimal) -->
+<header class="sticky top-0 z-40 w-full border-b border-faded bg-paper/95 backdrop-blur-sm h-14 flex items-center justify-between px-6 lg:px-10">
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-2 text-ink hover:text-primary transition-colors group" href="index.html">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-display font-medium text-lg tracking-tight">Syllabus</span>
+</a>
+<div class="h-4 w-px bg-faded mx-2"></div>
+<span class="font-mono text-xs uppercase tracking-wider text-graphite">Module 03</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-2 text-graphite text-xs font-mono">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span id="reading-time">50 min read</span>
+</div>
+<div class="flex gap-3">
+<button id="search-btn" aria-label="Search" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<button aria-label="Settings" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">text_fields</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 flex justify-center w-full relative">
+<div class="w-full max-w-[1440px] flex flex-row">
+<!-- Left Rail: Table of Contents -->
+<aside class="hidden lg:flex w-[240px] flex-col sticky top-14 h-[calc(100vh-3.5rem)] border-r border-faded overflow-y-auto pt-12 pb-10 pl-10 pr-6">
+<nav class="flex flex-col gap-8">
+<div>
+<h4 class="font-mono text-xs uppercase tracking-widest text-graphite mb-4">Contents</h4>
+<ul class="flex flex-col gap-3 font-mono text-[13px] leading-relaxed">
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#introduction">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Introduction
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#model-architectures">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Model Architectures
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#evaluation-metrics">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Evaluation Metrics
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#domain-adaptation">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Domain Adaptation
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#practical-considerations">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Practical Considerations
+                                </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-8 border-t border-faded">
+<div class="flex flex-col gap-2">
+<span class="font-mono text-[11px] uppercase tracking-widest text-graphite">Progress</span>
+<div class="w-full bg-parchment h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[35%]"></div>
+</div>
+<span class="font-mono text-xs text-ink text-right">35%</span>
+</div>
+</div>
+</nav>
+</aside>
+<!-- Center Stage: The Reader -->
+<article class="flex-1 max-w-[720px] mx-auto pt-16 pb-32 px-6 md:px-12 min-h-screen">
+<!-- Module Header -->
+<header class="mb-16 border-b border-faded pb-12">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-mono text-sm font-medium text-primary px-2 py-1 bg-primary/10 rounded">Module 03</span>
+<span class="font-mono text-sm text-graphite">Advanced RAG Architectures</span>
+</div>
+<h1 class="font-display text-[48px] md:text-[56px] leading-[1.1] font-semibold text-ink tracking-tight mb-6">
+                        Embedding Models
+                    </h1>
+<p class="font-serif text-xl text-ink/80 leading-relaxed max-w-[90%]">
+                        Understanding embedding architectures, evaluation metrics, and domain adaptation techniques for RAG systems.
+                    </p>
+</header>
+<!-- Content Body -->
+<div class="prose-academic">
+<h2 id="introduction">Introduction to Embedding Models</h2>
+<p>
+Embedding models form the backbone of modern Retrieval-Augmented Generation (RAG) systems. These models transform text into high-dimensional vector representations that capture semantic meaning, enabling efficient similarity search and contextual understanding. The quality of embeddings directly impacts retrieval accuracy and downstream task performance.
+</p>
+
+<p>
+The fundamental principle behind embedding models is to map discrete symbols (words, sentences, documents) into continuous vector spaces where semantic similarity corresponds to geometric proximity. This transformation enables mathematical operations that reflect linguistic relationships, such as:
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">embedding_operations.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token comment"># Conceptual example of embedding operations</span>
+<span class="token comment"># king_vector - man_vector + woman_vector ≈ queen_vector</span>
+
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+<span class="token keyword">from</span> sentence_transformers <span class="token keyword">import</span> SentenceTransformer
+
+<span class="token comment"># Load a pre-trained embedding model</span>
+model <span class="token operator">=</span> SentenceTransformer<span class="token punctuation">(</span><span class="token string">'all-MiniLM-L6-v2'</span><span class="token punctuation">)</span>
+
+<span class="token comment"># Encode sentences into embeddings</span>
+sentences <span class="token operator">=</span> <span class="token punctuation">[</span>
+    <span class="token string">"The cat sat on the mat"</span><span class="token punctuation">,</span>
+    <span class="token string">"A feline rested on the rug"</span><span class="token punctuation">,</span>
+    <span class="token string">"The weather is sunny today"</span>
+<span class="token punctuation">]</span>
+
+embeddings <span class="token operator">=</span> model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span>sentences<span class="token punctuation">)</span>
+
+<span class="token comment"># Calculate cosine similarity between embeddings</span>
+<span class="token keyword">def</span> <span class="token function">cosine_similarity</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> np<span class="token punctuation">.</span>dot<span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token punctuation">(</span>np<span class="token punctuation">.</span>linalg<span class="token punctuation">.</span>norm<span class="token punctuation">(</span>a<span class="token punctuation">)</span> <span class="token operator">*</span> np<span class="token punctuation">.</span>linalg<span class="token punctuation">.</span>norm<span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+similarity_1_2 <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span>embeddings<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> embeddings<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># Should be high</span>
+similarity_1_3 <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span>embeddings<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> embeddings<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># Should be low</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>f<span class="token string">"Similarity between semantically similar sentences: {similarity_1_2:.3f}"</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>f<span class="token string">"Similarity between unrelated sentences: {similarity_1_3:.3f}"</span><span class="token punctuation">)</span></code></pre>
+</div>
+</div>
+
+<h2 id="model-architectures">Embedding Model Architectures</h2>
+<h3>Dense Embedding Models</h3>
+<p>
+Dense embedding models generate fixed-length vectors in high-dimensional spaces (typically 384-1536 dimensions). These models use transformer architectures to create rich semantic representations that capture nuanced relationships between texts.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">dense_embedding_model.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> transformers <span class="token keyword">import</span> AutoTokenizer<span class="token punctuation">,</span> AutoModel
+<span class="token keyword">import</span> torch
+<span class="token keyword">import</span> torch<span class="token punctuation">.</span>nn<span class="token punctuation">.</span>functional <span class="token keyword">as</span> F
+
+<span class="token keyword">class</span> <span class="token class-name">DenseEmbedder</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> model_name<span class="token punctuation">:</span> str<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>tokenizer <span class="token operator">=</span> AutoTokenizer<span class="token punctuation">.</span>from_pretrained<span class="token punctuation">(</span>model_name<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>model <span class="token operator">=</span> AutoModel<span class="token punctuation">.</span>from_pretrained<span class="token punctuation">(</span>model_name<span class="token punctuation">)</span>
+        
+    <span class="token keyword">def</span> <span class="token function">encode</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> texts<span class="token punctuation">,</span> normalize<span class="token punctuation">:</span> bool <span class="token operator">=</span> <span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Tokenize input texts</span>
+        inputs <span class="token operator">=</span> self<span class="token punctuation">.</span>tokenizer<span class="token punctuation">(</span>
+            texts<span class="token punctuation">,</span> 
+            padding<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span> 
+            truncation<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span> 
+            <span class="token builtin">max</span><span class="token operator">-</span>length<span class="token operator">=</span><span class="token number">512</span><span class="token punctuation">,</span> 
+            <span class="token keyword">return</span>_tensors<span class="token operator">=</span><span class="token string">'pt'</span>
+        <span class="token punctuation">)</span>
+        
+        <span class="token comment"># Get model outputs</span>
+        <span class="token keyword">with</span> torch<span class="token punctuation">.</span>no_grad<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            outputs <span class="token operator">=</span> self<span class="token punctuation">.</span>model<span class="token punctuation">(</span>**inputs<span class="token punctuation">)</span>
+            
+        <span class="token comment"># Use mean pooling to get sentence embeddings</span>
+        embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>mean_pooling<span class="token punctuation">(</span>outputs<span class="token punctuation">.</span>last_hidden_state<span class="token punctuation">,</span> inputs<span class="token punctuation">[</span><span class="token string">'attention_mask'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Optionally normalize embeddings</span>
+        <span class="token keyword">if</span> normalize<span class="token punctuation">:</span>
+            embeddings <span class="token operator">=</span> F<span class="token punctuation">.</span>normalize<span class="token punctuation">(</span>embeddings<span class="token punctuation">,</span> p<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> dim<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>
+            
+        <span class="token keyword">return</span> embeddings<span class="token punctuation">.</span>numpy<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">mean_pooling</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> token_embeddings<span class="token punctuation">,</span> attention_mask<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        input_mask_expanded <span class="token operator">=</span> attention_mask<span class="token punctuation">.</span>unsqueeze<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span>expand<span class="token punctuation">(</span>token_embeddings<span class="token punctuation">.</span>size<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>float<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> torch<span class="token punctuation">.</span>sum<span class="token punctuation">(</span>token_embeddings <span class="token operator">*</span> input_mask_expanded<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> torch<span class="token punctuation">.</span>clamp<span class="token punctuation">(</span>input_mask_expanded<span class="token punctuation">.</span>sum<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> min<span class="token operator">=</span><span class="token number">1e-9</span><span class="token punctuation">)</span></code></pre>
+</div>
+</div>
+
+<h3>Sparse Embedding Models</h3>
+<p>
+Sparse embedding models, such as those using TF-IDF or BM25, create high-dimensional vectors where most values are zero. These models excel at keyword matching and complement dense embeddings in hybrid retrieval systems.
+</p>
+
+<h2 id="evaluation-metrics">Evaluation Metrics for Embedding Models</h2>
+<p>
+Evaluating embedding models requires specialized metrics that assess both the quality of semantic representations and their effectiveness in downstream tasks. Common evaluation approaches include:
+</p>
+
+<ul class="list-disc pl-6 my-6">
+<li><strong>Semantic Textual Similarity (STS)</strong>: Measures correlation between predicted and human-rated similarities</li>
+<li><strong>Retrieval Accuracy</strong>: Evaluates how well embeddings support relevant document retrieval</li>
+<li><strong>Downstream Task Performance</strong>: Assesses impact on tasks like classification or question answering</li>
+<li><strong>Robustness Tests</strong>: Evaluates performance under perturbations or domain shifts</li>
+</ul>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">evaluation_framework.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+<span class="token keyword">from</span> scipy<span class="token punctuation">.</span>spatial<span class="token punctuation">.</span>distance <span class="token keyword">import</span> cosine
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics <span class="token keyword">import</span> ndcg_score<span class="token punctuation">,</span> precision_recall_curve<span class="token punctuation">,</span> auc
+
+<span class="token keyword">class</span> <span class="token class-name">EmbeddingEvaluator</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> embedder<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>embedder <span class="token operator">=</span> embedder
+    
+    <span class="token keyword">def</span> <span class="token function">evaluate_sts</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> sentences1<span class="token punctuation">,</span> sentences2<span class="token punctuation">,</span> gold_scores<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""
+        Evaluate on Semantic Textual Similarity tasks
+        """</span>
+        embeddings1 <span class="token operator">=</span> self<span class="token punctuation">.</span>embedder<span class="token punctuation">.</span>encode<span class="token punctuation">(</span>sentences1<span class="token punctuation">)</span>
+        embeddings2 <span class="token operator">=</span> self<span class="token punctuation">.</span>embedder<span class="token punctuation">.</span>encode<span class="token punctuation">(</span>sentences2<span class="token punctuation">)</span>
+        
+        predicted_scores <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span> <span class="token operator">-</span> cosine<span class="token punctuation">(</span>emb1<span class="token punctuation">,</span> emb2<span class="token punctuation">)</span> <span class="token keyword">for</span> emb1<span class="token punctuation">,</span> emb2 <span class="token keyword">in</span> <span class="token builtin">zip</span><span class="token punctuation">(</span>embeddings1<span class="token punctuation">,</span> embeddings2<span class="token punctuation">)</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Calculate Pearson correlation</span>
+        corr <span class="token operator">=</span> np<span class="token punctuation">.</span>corrcoef<span class="token punctuation">(</span>gold_scores<span class="token punctuation">,</span> predicted_scores<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span>
+        <span class="token keyword">return</span> corr
+    
+    <span class="token keyword">def</span> <span class="token function">evaluate_retrieval</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query_embeddings<span class="token punctuation">,</span> document_embeddings<span class="token punctuation">,</span> ground_truth<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""
+        Evaluate retrieval performance using NDCG and other metrics
+        """</span>
+        <span class="token comment"># Calculate similarity matrix</span>
+        similarity_matrix <span class="token operator">=</span> np<span class="token punctuation">.</span>dot<span class="token punctuation">(</span>query_embeddings<span class="token punctuation">,</span> document_embeddings<span class="token punctuation">.</span>T<span class="token punctuation">)</span>
+        
+        ndcg_scores <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>similarity_matrix<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># Create binary relevance labels based on ground truth</span>
+            y_true <span class="token operator">=</span> np<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>document_embeddings<span class="token punctuation">)</span><span class="token punctuation">)</span>
+            y_true<span class="token punctuation">[</span>ground_truth<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span>
+            
+            <span class="token comment"># Get predicted scores for this query</span>
+            y_scores <span class="token operator">=</span> similarity_matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+            
+            <span class="token comment"># Calculate NDCG</span>
+            ndcg <span class="token operator">=</span> ndcg_score<span class="token punctuation">(</span><span class="token punctuation">[</span>y_true<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>y_scores<span class="token punctuation">]</span><span class="token punctuation">)</span>
+            ndcg_scores<span class="token punctuation">.</span>append<span class="token punctuation">(</span>ndcg<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> <span class="token punctuation">{</span>
+            <span class="token string">"ndcg_mean"</span><span class="token punctuation">:</span> np<span class="token punctuation">.</span>mean<span class="token punctuation">(</span>ndcg_scores<span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">"ndcg_std"</span><span class="token punctuation">:</span> np<span class="token punctuation">.</span>std<span class="token punctuation">(</span>ndcg_scores<span class="token punctuation">)</span>
+        <span class="token punctuation">}</span></code></pre>
+</div>
+</div>
+
+<h2 id="domain-adaptation">Domain Adaptation Techniques</h2>
+<p>
+General-purpose embedding models often underperform on domain-specific tasks. Domain adaptation techniques adjust models to better capture domain-specific semantics and terminology.
+</p>
+
+<h3>Contrastive Learning for Domain Adaptation</h3>
+<p>
+Contrastive learning trains models to pull similar examples closer together while pushing dissimilar examples apart in the embedding space. This approach is particularly effective for domain adaptation.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">contrastive_learning.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> torch
+<span class="token keyword">import</span> torch<span class="token punctuation">.</span>nn <span class="token keyword">as</span> nn
+<span class="token keyword">from</span> torch<span class="token punctuation">.</span>utils<span class="token punctuation">.</span>data <span class="token keyword">import</span> DataLoader<span class="token punctuation">,</span> Dataset
+<span class="token keyword">from</span> sentence_transformers <span class="token keyword">import</span> SentenceTransformer<span class="token punctuation">,</span> LoggingHandler
+<span class="token keyword">from</span> sentence_transformers<span class="token punctuation">.</span>readers <span class="token keyword">import</span> InputExample
+<span class="token keyword">from</span> sentence_transformers<span class="token punctuation">.</span>losses <span class="token keyword">import</span> MultipleNegativesRankingLoss
+<span class="token keyword">import</span> logging
+
+logging<span class="token punctuation">.</span>basicConfig<span class="token punctuation">(</span>format<span class="token operator">=</span><span class="token string">'%(asctime)s - %(message)s'</span><span class="token punctuation">,</span> datefmt<span class="token operator">=</span><span class="token string">'%Y-%m-%d %H:%M:%S'</span><span class="token punctuation">,</span> level<span class="token operator">=</span>logging<span class="token punctuation">.</span>INFO<span class="token punctuation">,</span> handlers<span class="token operator">=</span><span class="token punctuation">[</span>LoggingHandler<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+<span class="token keyword">class</span> <span class="token class-name">DomainAdaptedEmbedder</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> base_model_name<span class="token punctuation">:</span> str<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>model <span class="token operator">=</span> SentenceTransformer<span class="token punctuation">(</span>base_model_name<span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">adapt_to_domain</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> domain_data<span class="token punctuation">,</span> output_path<span class="token punctuation">:</span> str<span class="token punctuation">,</span> epochs<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""
+        Adapt the model to a specific domain using contrastive learning
+        domain_data: List of tuples (text1, text2) where text1 and text2 are semantically similar
+        """</span>
+        <span class="token comment"># Prepare training examples</span>
+        train_examples <span class="token operator">=</span> <span class="token punctuation">[</span>InputExample<span class="token punctuation">(</span>texts<span class="token operator">=</span><span class="token punctuation">[</span>text1<span class="token punctuation">,</span> text2<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">for</span> text1<span class="token punctuation">,</span> text2 <span class="token keyword">in</span> domain_data<span class="token punctuation">]</span>
+        
+        <span class="token comment"># Create dataloader</span>
+        train_dataloader <span class="token operator">=</span> DataLoader<span class="token punctuation">(</span>train_examples<span class="token punctuation">,</span> shuffle<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span> batch_size<span class="token operator">=</span><span class="token number">16</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Use Multiple Negatives Ranking Loss</span>
+        train_loss <span class="token operator">=</span> MultipleNegativesRankingLoss<span class="token punctuation">(</span>self<span class="token punctuation">.</span>model<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Train the model</span>
+        self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>fit<span class="token punctuation">(</span>
+            train_objectives<span class="token operator">=</span><span class="token punctuation">[</span><span class="token punctuation">(</span>train_dataloader<span class="token punctuation">,</span> train_loss<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            epochs<span class="token operator">=</span>epochs<span class="token punctuation">,</span>
+            warmup_steps<span class="token operator">=</span><span class="token number">100</span><span class="token punctuation">,</span>
+            output_path<span class="token operator">=</span>output_path
+        <span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">encode</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> texts<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>model<span class="token punctuation">.</span>encode<span class="token punctuation">(</span>texts<span class="token punctuation">)</span></code></pre>
+</div>
+</div>
+
+<h2 id="practical-considerations">Practical Considerations</h2>
+<h3>Model Selection Guidelines</h3>
+<p>
+Choosing the right embedding model depends on several factors:
+</p>
+
+<ul class="list-disc pl-6 my-6">
+<li><strong>Model Size vs. Performance Trade-offs</strong>: Larger models typically offer better performance but require more computational resources</li>
+<li><strong>Domain Specificity</strong>: Domain-adapted models often outperform general-purpose models on specialized tasks</li>
+<li><strong>Latency Requirements</strong>: Consider inference speed for real-time applications</li>
+<li><strong>Memory Constraints</strong>: Balance model capacity with available hardware resources</li>
+</ul>
+
+<h3>Implementation Best Practices</h3>
+<p>
+Effective embedding model implementation requires attention to detail:
+</p>
+
+<ol class="list-decimal pl-6 my-6">
+<li><strong>Proper Normalization</strong>: Normalize embeddings to unit length for consistent similarity calculations</li>
+<li><strong>Batch Processing</strong>: Process texts in batches to maximize throughput</li>
+<li><strong>Memory Management</strong>: Clear GPU memory when switching between models</li>
+<li><strong>Quality Control</strong>: Validate embeddings for NaN values or unexpected distributions</li>
+</ol>
+
+</div>
+<!-- Footer / Pagination -->
+<div class="mt-24 pt-10 border-t border-faded flex justify-between items-center group/footer">
+<a class="flex flex-col items-start gap-2 hover:bg-parchment/50 p-4 -ml-4 rounded transition-colors w-1/2" href="module_02_chunking_strategies.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Previous Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Chunking Strategies
+                        </span>
+</a>
+<div class="h-12 w-px bg-faded mx-4"></div>
+<a class="flex flex-col items-end gap-2 hover:bg-parchment/50 p-4 -mr-4 rounded transition-colors w-1/2" href="module_04_vector_databases.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Next Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+                            Vector Databases
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</span>
+</a>
+</div>
+</article>
+<!-- Right Rail: Marginalia -->
+<aside class="hidden xl:block w-[240px] sticky top-14 h-[calc(100vh-3.5rem)] pt-32 pb-10 pr-10 pl-4 overflow-y-auto">
+<div class="flex flex-col gap-24 relative">
+<!-- Note 1: Aligned with introduction -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[1]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Embedding quality</strong> directly impacts retrieval accuracy in RAG systems.
+                        </p>
+</div>
+<!-- Note 2: Aligned with model architectures -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-12">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[2]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Dense vs. sparse embeddings</strong> serve complementary roles in hybrid retrieval systems.
+                        </p>
+<a class="inline-flex items-center gap-1 mt-2 text-[10px] uppercase tracking-widest text-primary font-bold hover:underline" href="artifact_view.html" target="_blank">
+                            View Code <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+</a>
+</div>
+<!-- Note 3: Aligned with evaluation metrics -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-24">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[3]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <code class="bg-parchment px-0.5 rounded-sm">NDCG</code> is a key metric for evaluating retrieval system effectiveness.
+                        </p>
+</div>
+<!-- Additional marginalia for module-specific content -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[4]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Domain adaptation</strong> can significantly improve performance on specialized tasks.
+                        </p>
+</div>
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[5]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Model selection</strong> should balance performance, latency, and resource constraints.
+                        </p>
+</div>
+</div>
+</aside>
+</div>
+</main>
+
+<script>
+    // Function to copy code to clipboard
+    function copyCode(button) {
+        const codeBlock = button.closest('.not-prose').querySelector('pre code');
+        navigator.clipboard.writeText(codeBlock.textContent.trim()).then(() => {
+            const originalIcon = button.querySelector('.material-symbols-outlined').textContent;
+            button.querySelector('.material-symbols-outlined').textContent = 'check';
+            setTimeout(() => {
+                button.querySelector('.material-symbols-outlined').textContent = originalIcon;
+            }, 2000);
+        });
+    }
+
+    // Calculate reading time based on content
+    document.addEventListener('DOMContentLoaded', function() {
+        const content = document.querySelector('.prose-academic').textContent;
+        const wordsPerMinute = 200; // Average reading speed
+        const wordCount = content.split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / wordsPerMinute);
+        
+        document.getElementById('reading-time').textContent = `${readingTime} min read`;
+    });
+
+    // Search button functionality
+    document.getElementById('search-btn').addEventListener('click', function() {
+        window.location.href = 'search_index.html';
+    });
+</script>
+</body></html>

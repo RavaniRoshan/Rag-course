@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic RAG Journal - Module 07: Multi-Query Expansion</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;family=Geist+Mono:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#b80f12",
+                        "ink": "#2C2420",
+                        "paper": "#F9F7F1",
+                        "parchment": "#EBE6DA",
+                        "graphite": "#8A817C",
+                        "faded": "#D8D1C4",
+                        "library-green": "#4A5D44",
+                    },
+                    fontFamily: {
+                        "display": ["Newsreader", "serif"],
+                        "serif": ["Lora", "serif"],
+                        "mono": ["Geist Mono", "monospace"],
+                        "code": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.5rem"
+                    },
+                    backgroundImage: {
+                        'grain': "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9F7F1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8D1C4;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8A817C;
+        }
+
+        /* Hide scrollbar for clean UI but allow scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Typography overrides */
+        .prose-academic p {
+            margin-top: 1.5em;
+            margin-bottom: 1.5em;
+            line-height: 1.8;
+            font-family: 'Lora', serif;
+            font-size: 19px;
+            color: #2C2420;
+        }
+        .prose-academic h2 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 2em;
+            font-size: 32px;
+            letter-spacing: -0.01em;
+        }
+        .prose-academic h3 {
+            font-family: 'Newsreader', serif;
+            font-weight: 600;
+            color: #2C2420;
+            margin-top: 1.5em;
+            font-size: 24px;
+        }
+
+        /* Sepia Code Theme */
+        .token.comment { color: #8A817C; font-style: italic; }
+        .token.function { color: #9E2A2B; }
+        .token.keyword { color: #b80f12; font-weight: bold; }
+        .token.string { color: #4A5D44; }
+        .token.number { color: #b80f12; }
+        
+        /* Marginalia hover effect */
+        .marginalia-item {
+            transition: transform 0.2s ease;
+        }
+        .marginalia-item:hover {
+            transform: translateX(-4px);
+        }
+        
+        /* Mermaid diagram styling */
+        .mermaid-diagram {
+            background: white;
+            border: 1px solid #D8D1C4;
+            border-radius: 4px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="bg-paper text-ink antialiased selection:bg-primary/20 selection:text-ink min-h-screen flex flex-col font-serif relative">
+<!-- Grain Texture Overlay -->
+<div class="fixed inset-0 pointer-events-none z-50 bg-grain mix-blend-multiply opacity-40"></div>
+<!-- Top Navigation (Minimal) -->
+<header class="sticky top-0 z-40 w-full border-b border-faded bg-paper/95 backdrop-blur-sm h-14 flex items-center justify-between px-6 lg:px-10">
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-2 text-ink hover:text-primary transition-colors group" href="index.html">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-display font-medium text-lg tracking-tight">Syllabus</span>
+</a>
+<div class="h-4 w-px bg-faded mx-2"></div>
+<span class="font-mono text-xs uppercase tracking-wider text-graphite">Module 07</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-2 text-graphite text-xs font-mono">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span id="reading-time">40 min read</span>
+</div>
+<div class="flex gap-3">
+<button id="search-btn" aria-label="Search" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<button aria-label="Settings" class="flex items-center justify-center size-8 rounded hover:bg-parchment transition-colors text-ink">
+<span class="material-symbols-outlined text-[20px]">text_fields</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 flex justify-center w-full relative">
+<div class="w-full max-w-[1440px] flex flex-row">
+<!-- Left Rail: Table of Contents -->
+<aside class="hidden lg:flex w-[240px] flex-col sticky top-14 h-[calc(100vh-3.5rem)] border-r border-faded overflow-y-auto pt-12 pb-10 pl-10 pr-6">
+<nav class="flex flex-col gap-8">
+<div>
+<h4 class="font-mono text-xs uppercase tracking-widest text-graphite mb-4">Contents</h4>
+<ul class="flex flex-col gap-3 font-mono text-[13px] leading-relaxed">
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#introduction">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Introduction
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#query-decomposition">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Query Decomposition
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#multi-query-generation">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Multi-Query Generation
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#query-reformulation">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Query Reformulation
+                                </a>
+</li>
+<li>
+<a class="text-ink hover:text-primary transition-colors flex items-start gap-2 group" href="#implementation-patterns">
+<span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity absolute -left-4">→</span>
+                                    Implementation Patterns
+                                </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-8 border-t border-faded">
+<div class="flex flex-col gap-2">
+<span class="font-mono text-[11px] uppercase tracking-widest text-graphite">Progress</span>
+<div class="w-full bg-parchment h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[35%]"></div>
+</div>
+<span class="font-mono text-xs text-ink text-right">35%</span>
+</div>
+</div>
+</nav>
+</aside>
+<!-- Center Stage: The Reader -->
+<article class="flex-1 max-w-[720px] mx-auto pt-16 pb-32 px-6 md:px-12 min-h-screen">
+<!-- Module Header -->
+<header class="mb-16 border-b border-faded pb-12">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-mono text-sm font-medium text-primary px-2 py-1 bg-primary/10 rounded">Module 07</span>
+<span class="font-mono text-sm text-graphite">Advanced RAG Architectures</span>
+</div>
+<h1 class="font-display text-[48px] md:text-[56px] leading-[1.1] font-semibold text-ink tracking-tight mb-6">
+                        Multi-Query Expansion &amp; Decomposition
+                    </h1>
+<p class="font-serif text-xl text-ink/80 leading-relaxed max-w-[90%]">
+                        Breaking down complex multi-hop questions into sub-queries for more accurate retrieval steps.
+                    </p>
+</header>
+<!-- Content Body -->
+<div class="prose-academic">
+<h2 id="introduction">Introduction to Multi-Query Expansion</h2>
+<p>
+Multi-query expansion is an advanced technique that transforms a single user query into multiple related queries to improve retrieval coverage. This approach is particularly effective for complex questions that require information from multiple sources or perspectives. By generating semantically related queries, we can retrieve a more comprehensive set of relevant documents.
+</p>
+
+<div class="my-10 border border-faded bg-parchment/50 p-6 rounded-sm">
+<figure>
+<img alt="Multi-Query Expansion Visualization" class="w-full h-auto mix-blend-multiply mb-4 filter sepia-[0.3]" data-alt="Visualization showing how a single query is expanded into multiple related queries for improved retrieval" src="https://placehold.co/600x300/f9f7f1/ebe6da?text=Multi-Query+Expansion" />
+<figcaption class="font-mono text-xs text-graphite text-center mt-2">Figure 1: Multi-Query Expansion Process</figcaption>
+</figure>
+</div>
+
+<h2 id="query-decomposition">Query Decomposition</h2>
+<p>
+Query decomposition breaks complex queries into simpler sub-queries that can be processed individually. This is especially useful for multi-hop questions that require information from multiple documents to answer completely.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">query_decomposer.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> re
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> List<span class="token punctuation">,</span> Dict<span class="token punctuation">,</span> Any
+<span class="token keyword">from</span> transformers <span class="token keyword">import</span> pipeline
+
+<span class="token keyword">class</span> <span class="token class-name">QueryDecomposer</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Use a question generation model to decompose complex queries</span>
+        <span class="token comment"># In practice, you might use a fine-tuned model for query decomposition</span>
+        self<span class="token punctuation">.</span>question_generator <span class="token operator">=</span> pipeline<span class="token punctuation">(</span>
+            <span class="token string">"text2text-generation"</span><span class="token punctuation">,</span>
+            model<span class="token operator">=</span><span class="token string">"valhalla/t5-small-qg-prepend"</span><span class="token punctuation">,</span>
+            tokenizer<span class="token operator">=</span><span class="token string">"valhalla/t5-small-qg-prepend"</span>
+        <span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">decompose_query</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Identify multi-part queries using linguistic patterns</span>
+        subqueries <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Look for conjunctions that indicate multiple parts</span>
+        conjunctions <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">" and "</span><span class="token punctuation">,</span> <span class="token string">" or "</span><span class="token punctuation">,</span> <span class="token string">" but "</span><span class="token punctuation">,</span> <span class="token string">"; "</span><span class="token punctuation">,</span> <span class="token string">", "</span><span class="token punctuation">,</span> <span class="token string">" as well as "</span><span class="token punctuation">,</span> <span class="token string">" in addition to "</span><span class="token punctuation">]</span>
+        
+        <span class="token comment"># Check for complex query patterns</span>
+        <span class="token keyword">if</span> <span class="token builtin">any</span><span class="token punctuation">(</span>conj <span class="token keyword">in</span> query<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> conj <span class="token keyword">in</span> conjunctions<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># Split by conjunctions</span>
+            <span class="token keyword">for</span> conj <span class="token keyword">in</span> conjunctions<span class="token punctuation">:</span>
+                <span class="token keyword">if</span> conj <span class="token keyword">in</span> query<span class="token punctuation">:</span>
+                    parts <span class="token operator">=</span> query<span class="token punctuation">.</span>split<span class="token punctuation">(</span>conj<span class="token punctuation">)</span>
+                    subqueries<span class="token punctuation">.</span>extend<span class="token punctuation">(</span><span class="token punctuation">[</span>part<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> part <span class="token keyword">in</span> parts <span class="token keyword">if</span> part<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+                    <span class="token keyword">break</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># For complex questions, try to identify sub-components</span>
+            <span class="token comment"># This is a simplified approach - in practice, use NLP techniques</span>
+            subqueries<span class="token punctuation">.</span>append<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Remove duplicates while preserving order</span>
+        unique_subqueries <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> sq <span class="token keyword">in</span> subqueries<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> sq <span class="token keyword">not</span> <span class="token keyword">in</span> unique_subqueries<span class="token punctuation">:</span>
+                unique_subqueries<span class="token punctuation">.</span>append<span class="token punctuation">(</span>sq<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> unique_subqueries
+    
+    <span class="token keyword">def</span> <span class="token function">decompose_complex_query</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> context<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># More sophisticated decomposition using linguistic analysis</span>
+        decomposed <span class="token operator">=</span> self<span class="token punctuation">.</span>decompose_query<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+        
+        <span class="token comment"># For each subquery, determine its type and importance</span>
+        result <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> i<span class="token punctuation">,</span> subquery <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>decomposed<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            result<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">{</span>
+                <span class="token string">'id'</span><span class="token punctuation">:</span> i<span class="token punctuation">,</span>
+                <span class="token string">'query'</span><span class="token punctuation">:</span> subquery<span class="token punctuation">,</span>
+                <span class="token string">'type'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>_classify_subquery<span class="token punctuation">(</span>subquery<span class="token punctuation">)</span><span class="token punctuation">,</span>
+                <span class="token string">'weight'</span><span class="token punctuation">:</span> <span class="token number">1.0</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>decomposed<span class="token punctuation">)</span><span class="token punctuation">,</span>  <span class="token comment"># Equal weight for now</span>
+                <span class="token string">'dependencies'</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>  <span class="token comment"># Other subqueries this one depends on</span>
+            <span class="token punctuation">}</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> result
+    
+    <span class="token keyword">def</span> <span class="token function">_classify_subquery</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> subquery<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Simple classification based on query patterns</span>
+        subquery_lower <span class="token operator">=</span> subquery<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> <span class="token builtin">any</span><span class="token punctuation">(</span>word <span class="token keyword">in</span> subquery_lower <span class="token keyword">for</span> word <span class="token keyword">in</span> <span class="token punctuation">[</span><span class="token string">"what"</span><span class="token punctuation">,</span> <span class="token string">"when"</span><span class="token punctuation">,</span> <span class="token string">"where"</span><span class="token punctuation">,</span> <span class="token string">"who"</span><span class="token punctuation">,</span> <span class="token string">"how"</span><span class="token punctuation">,</span> <span class="token string">"why"</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token string">"informational"</span>
+        <span class="token keyword">elif</span> <span class="token builtin">any</span><span class="token punctuation">(</span>word <span class="token keyword">in</span> subquery_lower <span class="token keyword">for</span> word <span class="token keyword">in</span> <span class="token punctuation">[</span><span class="token string">"compare"</span><span class="token punctuation">,</span> <span class="token string">"vs"</span><span class="token punctuation">,</span> <span class="token string">"versus"</span><span class="token punctuation">,</span> <span class="token string">"difference"</span><span class="token punctuation">,</span> <span class="token string">"similarities"</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token string">"comparative"</span>
+        <span class="token keyword">elif</span> <span class="token builtin">any</span><span class="token punctuation">(</span>word <span class="token keyword">in</span> subquery_lower <span class="token keyword">for</span> word <span class="token keyword">in</span> <span class="token punctuation">[</span><span class="token string">"how to"</span><span class="token punctuation">,</span> <span class="token string">"steps"</span><span class="token punctuation">,</span> <span class="token string">"process"</span><span class="token punctuation">,</span> <span class="token string">"procedure"</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token string">"procedural"</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token string">"general"</span></code></pre>
+</div>
+</div>
+
+<h2 id="multi-query-generation">Multi-Query Generation</h2>
+<p>
+Multi-query generation creates semantically equivalent or related queries to expand the search space. This technique helps retrieve documents that might not match the original query formulation but are still relevant to the user's information need.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">multi_query_generator.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">from</span> transformers <span class="token keyword">import</span> pipeline<span class="token punctuation">,</span> AutoTokenizer<span class="token punctuation">,</span> AutoModelForSeq2SeqLM
+<span class="token keyword">from</span> sentence_transformers <span class="token keyword">import</span> SentenceTransformer
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics<span class="token punctuation">.</span>pairwise <span class="token keyword">import</span> cosine_similarity
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+
+<span class="token keyword">class</span> <span class="token class-name">MultiQueryGenerator</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> model_name<span class="token punctuation">:</span> str <span class="token operator">=</span> <span class="token string">"t5-base"</span><span class="token punctuation">,</span> similarity_threshold<span class="token punctuation">:</span> float <span class="token operator">=</span> <span class="token number">0.7</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Use a text-to-text generation model to create variations</span>
+        self<span class="token punctuation">.</span>generator <span class="token operator">=</span> pipeline<span class="token punctuation">(</span>
+            <span class="token string">"text2text-generation"</span><span class="token punctuation">,</span>
+            model<span class="token operator">=</span>model_name<span class="token punctuation">,</span>
+            tokenizer<span class="token operator">=</span>model_name<span class="token punctuation">,</span>
+            device<span class="token operator">=</span><span class="token operator">-</span><span class="token number">1</span>  <span class="token comment"># Use CPU</span>
+        <span class="token punctuation">)</span>
+        
+        <span class="token comment"># Use a sentence transformer for similarity checking</span>
+        self<span class="token punctuation">.</span>embedder <span class="token operator">=</span> SentenceTransformer<span class="token punctuation">(</span><span class="token string">"all-MiniLM-L6-v2"</span><span class="token punctuation">)</span>
+        
+        self<span class="token punctuation">.</span>similarity_threshold <span class="token operator">=</span> similarity_threshold
+    
+    <span class="token keyword">def</span> <span class="token function">generate_variations</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> num_variations<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Generate query variations using prompt engineering</span>
+        prompts <span class="token operator">=</span> <span class="token punctuation">[</span>
+            f<span class="token string">"Generate a paraphrase of: {query}"</span><span class="token punctuation">,</span>
+            f<span class="token string">"Rephrase this query: {query}"</span><span class="token punctuation">,</span>
+            f<span class="token string">"Express this differently: {query}"</span>
+        <span class="token punctuation">]</span>
+        
+        variations <span class="token operator">=</span> <span class="token punctuation">[</span>query<span class="token punctuation">]</span>  <span class="token comment"># Include original query</span>
+        
+        <span class="token keyword">for</span> prompt <span class="token keyword">in</span> prompts<span class="token punctuation">:</span>
+            <span class="token keyword">try</span><span class="token punctuation">:</span>
+                <span class="token comment"># Generate variation</span>
+                result <span class="token operator">=</span> self<span class="token punctuation">.</span>generator<span class="token punctuation">(</span>
+                    prompt<span class="token punctuation">,</span>
+                    max_length<span class="token operator">=</span><span class="token number">50</span><span class="token punctuation">,</span>
+                    num_return_sequences<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span>
+                    temperature<span class="token operator">=</span><span class="token number">0.7</span>
+                <span class="token punctuation">)</span>
+                
+                <span class="token comment"># Extract the generated text</span>
+                variation <span class="token operator">=</span> result<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'generated_text'</span><span class="token punctuation">]</span>
+                
+                <span class="token comment"># Clean up the result (remove the prompt part if present)</span>
+                <span class="token keyword">if</span> <span class="token string">":"</span> <span class="token keyword">in</span> variation<span class="token punctuation">:</span>
+                    variation <span class="token operator">=</span> variation<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+                
+                <span class="token comment"># Check similarity to original to avoid duplicates</span>
+                all_queries <span class="token operator">=</span> <span class="token punctuation">[</span>query<span class="token punctuation">,</span> variation<span class="token punctuation">]</span>
+                embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>embedder<span class="token punctuation">.</span>encode<span class="token punctuation">(</span>all_queries<span class="token punctuation">)</span>
+                similarity <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span><span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+                
+                <span class="token comment"># Only add if sufficiently different but still related</span>
+                <span class="token keyword">if</span> similarity <span class="token operator">&lt;</span> <span class="token number">0.95</span> <span class="token keyword">and</span> similarity <span class="token operator">></span> self<span class="token punctuation">.</span>similarity_threshold<span class="token punctuation">:</span>
+                    variations<span class="token punctuation">.</span>append<span class="token punctuation">(</span>variation<span class="token punctuation">)</span>
+            <span class="token keyword">except</span><span class="token punctuation">:</span>
+                <span class="token comment"># If generation fails, skip this prompt</span>
+                <span class="token keyword">continue</span>
+        
+        <span class="token comment"># Return up to num_variations unique variations</span>
+        <span class="token keyword">return</span> variations<span class="token punctuation">[</span><span class="token punctuation">:</span>num_variations<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">]</span>  <span class="token comment"># +1 to include original</span>
+    
+    <span class="token keyword">def</span> <span class="token function">generate_multi_query_set</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">,</span> num_queries<span class="token punctuation">:</span> int <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Generate a diverse set of queries</span>
+        variations <span class="token operator">=</span> self<span class="token punctuation">.</span>generate_variations<span class="token punctuation">(</span>query<span class="token punctuation">,</span> num_queries<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>  <span class="token comment"># -1 to account for original</span>
+        
+        <span class="token comment"># Create query objects with metadata</span>
+        query_set <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> i<span class="token punctuation">,</span> q <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>variations<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            query_set<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">{</span>
+                <span class="token string">'id'</span><span class="token punctuation">:</span> i<span class="token punctuation">,</span>
+                <span class="token string">'query'</span><span class="token punctuation">:</span> q<span class="token punctuation">,</span>
+                <span class="token string">'original'</span><span class="token punctuation">:</span> i <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">,</span>  <span class="token comment"># Mark original query</span>
+                <span class="token string">'similarity_to_original'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>_calculate_similarity<span class="token punctuation">(</span>query<span class="token punctuation">,</span> q<span class="token punctuation">)</span><span class="token punctuation">,</span>
+                <span class="token string">'type'</span><span class="token punctuation">:</span> <span class="token string">"variation"</span> <span class="token keyword">if</span> i <span class="token operator">></span> <span class="token number">0</span> <span class="token keyword">else</span> <span class="token string">"original"</span>
+            <span class="token punctuation">}</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> query_set
+    
+    <span class="token keyword">def</span> <span class="token function">_calculate_similarity</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query1<span class="token punctuation">:</span> str<span class="token punctuation">,</span> query2<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> float<span class="token punctuation">:</span>
+        <span class="token comment"># Calculate semantic similarity between queries</span>
+        embeddings <span class="token operator">=</span> self<span class="token punctuation">.</span>embedder<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">[</span>query1<span class="token punctuation">,</span> query2<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        similarity <span class="token operator">=</span> cosine_similarity<span class="token punctuation">(</span><span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>embeddings<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        <span class="token keyword">return</span> similarity</code></pre>
+</div>
+</div>
+
+<h2 id="query-reformulation">Query Reformulation</h2>
+<p>
+Query reformulation involves transforming the original query into a more effective form for retrieval. This can include expanding abbreviations, clarifying ambiguous terms, or rephrasing to better match document language patterns.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">query_reformulator.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">import</span> re
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> Dict<span class="token punctuation">,</span> List
+
+<span class="token keyword">class</span> <span class="token class-name">QueryReformulator</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Define common abbreviations and their expansions</span>
+        self<span class="token punctuation">.</span>abbreviations <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">"AI"</span><span class="token punctuation">:</span> <span class="token string">"Artificial Intelligence"</span><span class="token punctuation">,</span>
+            <span class="token string">"ML"</span><span class="token punctuation">:</span> <span class="token string">"Machine Learning"</span><span class="token punctuation">,</span>
+            <span class="token string">"DL"</span><span class="token punctuation">:</span> <span class="token string">"Deep Learning"</span><span class="token punctuation">,</span>
+            <span class="token string">"NLP"</span><span class="token punctuation">:</span> <span class="token string">"Natural Language Processing"</span><span class="token punctuation">,</span>
+            <span class="token string">"RAG"</span><span class="token punctuation">:</span> <span class="token string">"Retrieval Augmented Generation"</span><span class="token punctuation">,</span>
+            <span class="token string">"BERT"</span><span class="token punctuation">:</span> <span class="token string">"Bidirectional Encoder Representations from Transformers"</span><span class="token punctuation">,</span>
+            <span class="token string">"GPT"</span><span class="token punctuation">:</span> <span class="token string">"Generative Pre-trained Transformer"</span><span class="token punctuation">,</span>
+            <span class="token string">"API"</span><span class="token punctuation">:</span> <span class="token string">"Application Programming Interface"</span><span class="token punctuation">,</span>
+            <span class="token string">"HTTP"</span><span class="token punctuation">:</span> <span class="token string">"HyperText Transfer Protocol"</span><span class="token punctuation">,</span>
+            <span class="token string">"URL"</span><span class="token punctuation">:</span> <span class="token string">"Uniform Resource Locator"</span>
+        <span class="token punctuation">}</span>
+        
+        <span class="token comment"># Define domain-specific expansions</span>
+        self<span class="token punctuation">.</span>domain_expansions <span class="token operator">=</span> <span class="token punctuation">{</span>
+            <span class="token string">"transformer"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"attention mechanism"</span><span class="token punctuation">,</span> <span class="token string">"neural network architecture"</span><span class="token punctuation">,</span> <span class="token string">"sequence to sequence"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token string">"embedding"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"vector representation"</span><span class="token punctuation">,</span> <span class="token string">"semantic space"</span><span class="token punctuation">,</span> <span class="token string">"numerical encoding"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token string">"retrieval"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"information search"</span><span class="token punctuation">,</span> <span class="token string">"document lookup"</span><span class="token punctuation">,</span> <span class="token string">"similarity matching"</span><span class="token punctuation">]</span>
+        <span class="token punctuation">}</span>
+    
+    <span class="token keyword">def</span> <span class="token function">expand_abbreviations</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> str<span class="token punctuation">:</span>
+        <span class="token comment"># Expand abbreviations in the query</span>
+        expanded_query <span class="token operator">=</span> query
+        <span class="token keyword">for</span> abbr<span class="token punctuation">,</span> expansion <span class="token keyword">in</span> self<span class="token punctuation">.</span>abbreviations<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># Use word boundaries to avoid partial matches</span>
+            pattern <span class="token operator">=</span> r<span class="token string">'\b'</span> <span class="token operator">+</span> re<span class="token punctuation">.</span>escape<span class="token punctuation">(</span>abbr<span class="token punctuation">)</span> <span class="token operator">+</span> r<span class="token string">'\b'</span>
+            expanded_query <span class="token operator">=</span> re<span class="token punctuation">.</span>sub<span class="token punctuation">(</span>pattern<span class="token punctuation">,</span> expansion<span class="token punctuation">,</span> expanded_query<span class="token punctuation">,</span> flags<span class="token operator">=</span>re<span class="token punctuation">.</span>I<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> expanded_query
+    
+    <span class="token keyword">def</span> <span class="token function">add_domain_expansions</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Add domain-specific expansions to the query</span>
+        expansions <span class="token operator">=</span> <span class="token punctuation">[</span>query<span class="token punctuation">]</span>
+        query_lower <span class="token operator">=</span> query<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">for</span> term<span class="token punctuation">,</span> expansions_list <span class="token keyword">in</span> self<span class="token punctuation">.</span>domain_expansions<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> term <span class="token keyword">in</span> query_lower<span class="token punctuation">:</span>
+                <span class="token keyword">for</span> expansion <span class="token keyword">in</span> expansions_list<span class="token punctuation">:</span>
+                    <span class="token comment"># Create a new query with the expansion</span>
+                    new_query <span class="token operator">=</span> query <span class="token operator">+</span> <span class="token string">" "</span> <span class="token operator">+</span> expansion
+                    <span class="token keyword">if</span> new_query <span class="token keyword">not</span> <span class="token keyword">in</span> expansions<span class="token punctuation">:</span>
+                        expansions<span class="token punctuation">.</span>append<span class="token punctuation">(</span>new_query<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> expansions
+    
+    <span class="token keyword">def</span> <span class="token function">reformulate_query</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Perform comprehensive query reformulation</span>
+        <span class="token keyword">return</span> <span class="token punctuation">{</span>
+            <span class="token string">'original'</span><span class="token punctuation">:</span> query<span class="token punctuation">,</span>
+            <span class="token string">'expanded_abbreviations'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>expand_abbreviations<span class="token punctuation">(</span>query<span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">'domain_expansions'</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>add_domain_expansions<span class="token punctuation">(</span>query<span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">'all_variants'</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+                query<span class="token punctuation">,</span>
+                self<span class="token punctuation">.</span>expand_abbreviations<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+            <span class="token punctuation">]</span> <span class="token operator">+</span> self<span class="token punctuation">.</span>add_domain_expansions<span class="token punctuation">(</span>query<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span>  <span class="token comment"># Exclude original from domain expansions</span>
+        <span class="token punctuation">}</span>
+    
+    <span class="token keyword">def</span> <span class="token function">reformulate_for_retrieval</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Return a list of reformulated queries optimized for retrieval</span>
+        reformulation <span class="token operator">=</span> self<span class="token punctuation">.</span>reformulate_query<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+        
+        <span class="token comment"># Combine all variants, removing duplicates while preserving order</span>
+        all_queries <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> q <span class="token keyword">in</span> reformulation<span class="token punctuation">[</span><span class="token string">'all_variants'</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> q <span class="token keyword">not</span> <span class="token keyword">in</span> all_queries<span class="token punctuation">:</span>
+                all_queries<span class="token punctuation">.</span>append<span class="token punctuation">(</span>q<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> all_queries</code></pre>
+</div>
+</div>
+
+<h2 id="implementation-patterns">Implementation Patterns</h2>
+<p>
+Effective multi-query expansion requires thoughtful implementation patterns that balance retrieval improvement with computational efficiency.
+</p>
+
+<h3>Query Router Pattern</h3>
+<p>
+The query router pattern intelligently routes different query types to appropriate expansion strategies based on query characteristics.
+</p>
+
+<div class="not-prose my-12 border border-faded bg-parchment rounded-sm overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 border-b border-faded bg-[#e6dfd1]">
+<span class="font-mono text-xs text-ink">query_router.py</span>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono text-graphite uppercase">Python</span>
+<button class="text-graphite hover:text-primary transition-colors" onclick="copyCode(this)">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 overflow-x-auto">
+<pre class="font-code text-[13px] leading-6"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">QueryRouter</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>decomposer <span class="token operator">=</span> QueryDecomposer<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>generator <span class="token operator">=</span> MultiQueryGenerator<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>reformulator <span class="token operator">=</span> QueryReformulator<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">def</span> <span class="token function">route_query</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> List<span class="token punctuation">[</span>str<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Analyze the query to determine the best expansion strategy</span>
+        query_analysis <span class="token operator">=</span> self<span class="token punctuation">.</span>_analyze_query<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+        
+        <span class="token keyword">if</span> query_analysis<span class="token punctuation">[</span><span class="token string">'complexity'</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'multi_part'</span><span class="token punctuation">:</span>
+            <span class="token comment"># Use decomposition for multi-part queries</span>
+            decomposed <span class="token operator">=</span> self<span class="token punctuation">.</span>decomposer<span class="token punctuation">.</span>decompose_query<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+            <span class="token keyword">return</span> decomposed
+        <span class="token keyword">elif</span> query_analysis<span class="token punctuation">[</span><span class="token string">'complexity'</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'simple'</span> <span class="token keyword">and</span> query_analysis<span class="token punctuation">[</span><span class="token string">'specificity'</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'low'</span><span class="token punctuation">:</span>
+            <span class="token comment"># Use generation for vague/simple queries</span>
+            variations <span class="token operator">=</span> self<span class="token punctuation">.</span>generator<span class="token punctuation">.</span>generate_variations<span class="token punctuation">(</span>query<span class="token punctuation">,</span> num_variations<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span> variations
+        <span class="token keyword">elif</span> query_analysis<span class="token punctuation">[</span><span class="token string">'contains_abbrev'</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+            <span class="token comment"># Use reformulation for queries with abbreviations</span>
+            <span class="token keyword">return</span> self<span class="token punctuation">.</span>reformulator<span class="token punctuation">.</span>reformulate_for_retrieval<span class="token punctuation">(</span>query<span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># Default: return original with a few variations</span>
+            variations <span class="token operator">=</span> self<span class="token punctuation">.</span>generator<span class="token punctuation">.</span>generate_variations<span class="token punctuation">(</span>query<span class="token punctuation">,</span> num_variations<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span> variations
+    
+    <span class="token keyword">def</span> <span class="token function">_analyze_query</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> query<span class="token punctuation">:</span> str<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> Dict<span class="token punctuation">[</span>str<span class="token punctuation">,</span> Any<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># Analyze query characteristics</span>
+        query_lower <span class="token operator">=</span> query<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Check for multi-part indicators</span>
+        multi_part <span class="token operator">=</span> <span class="token builtin">any</span><span class="token punctuation">(</span>word <span class="token keyword">in</span> query_lower <span class="token keyword">for</span> word <span class="token keyword">in</span> <span class="token punctuation">[</span><span class="token string">" and "</span><span class="token punctuation">,</span> <span class="token string">" or "</span><span class="token punctuation">,</span> <span class="token string">"; "</span><span class="token punctuation">,</span> <span class="token string">" but "</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Check for abbreviations</span>
+        contains_abbrev <span class="token operator">=</span> <span class="token builtin">any</span><span class="token punctuation">(</span>abbr <span class="token keyword">in</span> query <span class="token keyword">for</span> abbr <span class="token keyword">in</span> self<span class="token punctuation">.</span>reformulator<span class="token punctuation">.</span>abbreviations<span class="token punctuation">.</span>keys<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># Estimate specificity (very simple heuristic)</span>
+        words <span class="token operator">=</span> query<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        specificity <span class="token operator">=</span> <span class="token string">"low"</span> <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>words<span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">4</span> <span class="token keyword">else</span> <span class="token string">"high"</span>
+        
+        <span class="token keyword">return</span> <span class="token punctuation">{</span>
+            <span class="token string">'complexity'</span><span class="token punctuation">:</span> <span class="token string">'multi_part'</span> <span class="token keyword">if</span> multi_part <span class="token keyword">else</span> <span class="token string">'simple'</span><span class="token punctuation">,</span>
+            <span class="token string">'contains_abbrev'</span><span class="token punctuation">:</span> contains_abbrev<span class="token punctuation">,</span>
+            <span class="token string">'specificity'</span><span class="token punctuation">:</span> specificity
+        <span class="token punctuation">}</span></code></pre>
+</div>
+</div>
+
+</div>
+<!-- Footer / Pagination -->
+<div class="mt-24 pt-10 border-t border-faded flex justify-between items-center group/footer">
+<a class="flex flex-col items-start gap-2 hover:bg-parchment/50 p-4 -ml-4 rounded transition-colors w-1/2" href="module_06_query_understanding.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Previous Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Query Understanding
+                        </span>
+</a>
+<div class="h-12 w-px bg-faded mx-4"></div>
+<a class="flex flex-col items-end gap-2 hover:bg-parchment/50 p-4 -mr-4 rounded transition-colors w-1/2" href="module_08_context_compression.html">
+<span class="font-mono text-xs text-graphite uppercase tracking-wider">Next Module</span>
+<span class="font-display text-lg font-medium text-ink flex items-center gap-2">
+                            Context Compression
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</span>
+</a>
+</div>
+</article>
+<!-- Right Rail: Marginalia -->
+<aside class="hidden xl:block w-[240px] sticky top-14 h-[calc(100vh-3.5rem)] pt-32 pb-10 pr-10 pl-4 overflow-y-auto">
+<div class="flex flex-col gap-24 relative">
+<!-- Note 1: Aligned with introduction -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[1]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Multi-query expansion</strong> improves retrieval by generating related queries.
+                        </p>
+</div>
+<!-- Note 2: Aligned with query decomposition -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-12">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[2]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+<strong class="text-ink">Query decomposition</strong> handles complex multi-hop questions effectively.
+                        </p>
+<a class="inline-flex items-center gap-1 mt-2 text-[10px] uppercase tracking-widest text-primary font-bold hover:underline" href="artifact_view.html" target="_blank">
+                            View Code <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+</a>
+</div>
+<!-- Note 3: Aligned with multi-query generation -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-24">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[3]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <code class="bg-parchment px-0.5 rounded-sm">Query generation</code> creates semantically related queries.
+                        </p>
+</div>
+<!-- Additional marginalia for module-specific content -->
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[4]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Query reformulation</strong> clarifies ambiguous terms and expands abbreviations.
+                        </p>
+</div>
+<div class="relative group cursor-pointer transition-transform hover:-translate-x-1 mt-16">
+<div class="absolute -left-3 top-1 text-[10px] font-bold text-primary font-mono">[5]</div>
+<p class="font-mono text-[12px] leading-5 text-graphite group-hover:text-ink transition-colors">
+                            <strong class="text-ink">Query routing</strong> applies appropriate expansion strategies based on query characteristics.
+                        </p>
+</div>
+</div>
+</aside>
+</div>
+</main>
+
+<script>
+    // Function to copy code to clipboard
+    function copyCode(button) {
+        const codeBlock = button.closest('.not-prose').querySelector('pre code');
+        navigator.clipboard.writeText(codeBlock.textContent.trim()).then(() => {
+            const originalIcon = button.querySelector('.material-symbols-outlined').textContent;
+            button.querySelector('.material-symbols-outlined').textContent = 'check';
+            setTimeout(() => {
+                button.querySelector('.material-symbols-outlined').textContent = originalIcon;
+            }, 2000);
+        });
+    }
+
+    // Calculate reading time based on content
+    document.addEventListener('DOMContentLoaded', function() {
+        const content = document.querySelector('.prose-academic').textContent;
+        const wordsPerMinute = 200; // Average reading speed
+        const wordCount = content.split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / wordsPerMinute);
+        
+        document.getElementById('reading-time').textContent = `${readingTime} min read`;
+    });
+
+    // Search button functionality
+    document.getElementById('search-btn').addEventListener('click', function() {
+        window.location.href = 'search_index.html';
+    });
+</script>
+</body></html>
